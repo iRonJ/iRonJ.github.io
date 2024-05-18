@@ -2,7 +2,7 @@
 layout: post
 title:  "Empowering blind instructors to control classroom technology"
 author: ron
-categories: [ profession, research ]
+categories: [ profession, research, contalk, youtube ]
 image: assets/images/blindtech.png
 ---
 

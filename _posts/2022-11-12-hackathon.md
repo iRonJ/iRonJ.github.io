@@ -2,7 +2,7 @@
 layout: post
 title:  "Cohere AI: LLM Hackathon #3 3rd place winner"
 author: ron
-categories: [ hobby, hackathon, AI ]
+categories: [ hobby, hackathon, AI, youtube]
 image: assets/images/hacakthonthumb.png
 beforetoc: "Markdown editor is a very powerful thing. In this article I'm going to show you what you can actually do with it, some tricks and tips while editing your post."
 toc: false
