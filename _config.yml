@@ -1,7 +1,7 @@
 # Site
 name: "Ron J's Projects"
 title: "Mediumish"
-description: "An overview of some of the things i've done and why you should work with me!"
+description: "An overview of some of the things i've done!"
 logo: 'assets/images/ronlogo.png'
 favicon: 'assets/images/logo.png'
 baseurl: ""
@@ -33,11 +33,11 @@ authors:
   ron:
     name: Ron Jailall
     display_name: Ron J    
-    avatar: 'assets/images/avatar.png'
+    avatar: 'assets/images/avatarron.png'
     gravatar: b1cc14991db7a456fcd761680bbc8f81
     email: rojailal@gmail.com
-    web: https://www.wowthemes.net
-    twitter: https://twitter.com/wowthemesnet
+    web: https://www.linkedin.com/in/ron-jailall-4b078610/
+    twitter: https://www.threads.net/@techronic9876
     description: "Engineer, Problem Solver, AI Expert"
 
 # Plugins
