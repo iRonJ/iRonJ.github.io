@@ -5,13 +5,93 @@
     <description>An overview of some of the things i've done!</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sat, 18 May 2024 15:56:05 -0400</pubDate>
-    <lastBuildDate>Sat, 18 May 2024 15:56:05 -0400</lastBuildDate>
+    <pubDate>Sun, 22 Dec 2024 18:02:44 -0500</pubDate>
+    <lastBuildDate>Sun, 22 Dec 2024 18:02:44 -0500</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
     
       <item>
+        <title>Apple Intelligence features for any iPhone</title>
+        <description>&lt;p&gt;Apple prides itself on safety and privacy, but if you’re willing to sacrifice some of that, and you have an older iPhone, you can use the Shortcuts app to create a shortcut that will use OpenAI’s API to generate text in situ.&lt;/p&gt;
+
+&lt;p&gt;In this post:&lt;/p&gt;
+&lt;ul id=&quot;markdown-toc&quot;&gt;
+  &lt;li&gt;&lt;a href=&quot;#using-ai-to-modify-text-in-any-text-field&quot; id=&quot;markdown-toc-using-ai-to-modify-text-in-any-text-field&quot;&gt;Using AI to modify text in any text field&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#using-ai-to-respond-to-an-imessage&quot; id=&quot;markdown-toc-using-ai-to-respond-to-an-imessage&quot;&gt;Using AI to respond to an iMessage&lt;/a&gt;&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;#download-the-shortcuts&quot; id=&quot;markdown-toc-download-the-shortcuts&quot;&gt;Download the shortcuts&lt;/a&gt;&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;h2 id=&quot;using-ai-to-modify-text-in-any-text-field&quot;&gt;Using AI to modify text in any text field&lt;/h2&gt;
+
+&lt;p&gt;Apple Shortcuts is an app that lets you combine system level automation with the apps on your iPhone. The app developer specifically has to create hooks for this (if you’ve ever used AppleScript you have seen how this works), and OpenAI has done a decent job of creating a hooks for their iOS app (as of this writing Google’s Gemini App does not support Shortcuts).&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Download the ChatGPT app from the App Store and sign in with your OpenAI account&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Create a new Shortcut in the Shortcuts app that looks like this:
+&lt;img src=&quot;/assets/images/ShortcutsSettings1.png&quot; alt=&quot;Shortcut Setup&quot; /&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Open any app with a text input field (Messages, Reddit, Notes, etc.)&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Highlight some text and tap the Share button, then select your new Shortcut from the share sheet to generate AI-enhanced text right in the app. Once you click “Done” the generated text is copied to your clipboard, you can paste it and modify it if you want
+&lt;img src=&quot;/assets/images/ShortcutsUse1.png&quot; alt=&quot;Asking ChatGPT&quot; /&gt;
+&lt;em&gt;Note: You should have recently launched the ChatGPT app so your account is logged in&lt;/em&gt;&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;using-ai-to-respond-to-an-imessage&quot;&gt;Using AI to respond to an iMessage&lt;/h2&gt;
+&lt;p&gt;There’s a couple of methods out there to do this. One method keeps a duplicate of all recieved messages in an iOS Note, and uses this as the context for the AI to generate new messages. You can seek this out online if you’re interested. The method i detail here lets you take a screeenshot of an iOS conversation, it uses the iOS System OCR to extract all the text, it then crops out the right and left half of the screenshot and parses the text. Then finally it sends these parsed pieces of text to ChatGPT to interpret who said what, and generate a response.&lt;/p&gt;
+
+&lt;ol&gt;
+  &lt;li&gt;
+    &lt;p&gt;Download the shortcut linked in this post. This shortcut is too long to share in a screenshot. Shortcuts are usually safe to install and you can see the code in the Shortcuts app for yourself to verify nothing malicious is happening&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Open a Messages conversation&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Take a screenshot of the conversation and select the preview iOS pops up&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Choose “Share” and wait for the response from the AI.
+&lt;em&gt;Note: You should have recently launched the ChatGPT app so your account is logged in&lt;/em&gt;
+&lt;img src=&quot;/assets/images/ShortcutsUse2s1.png&quot; alt=&quot;Shortcut Usage Messages&quot; /&gt;
+&lt;img src=&quot;/assets/images/ShortcutsUse2s2.png&quot; alt=&quot;Shortcut Usage Messages2&quot; /&gt;
+&lt;em&gt;Make sure to delete the screenshot and don’t “Copy” since the AI response will be in the clipboard&lt;/em&gt;&lt;/p&gt;
+  &lt;/li&gt;
+  &lt;li&gt;
+    &lt;p&gt;Paste the AI response into the conversation and send it&lt;/p&gt;
+  &lt;/li&gt;
+&lt;/ol&gt;
+
+&lt;h2 id=&quot;download-the-shortcuts&quot;&gt;Download the shortcuts&lt;/h2&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.icloud.com/shortcuts/09e5549a74a7490993647d58a3cbc72c&quot;&gt;AI text style and modifier&lt;/a&gt;&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://www.icloud.com/shortcuts/17899ad80a1d467ea269f9365d06de58&quot;&gt;AI Messages responder&lt;/a&gt;&lt;/p&gt;
+
+</description>
+        <pubDate>Sun, 15 Dec 2024 00:00:00 -0500</pubDate>
+        <link>http://localhost:4000/AIopenai/</link>
+        <guid isPermaLink="true">http://localhost:4000/AIopenai/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>AI</category>
+        
+        <category>iOS</category>
+        
+        <category>tutorial</category>
+        
+      </item>
+    
+      <item>
         <title>Vidable.ai</title>
-        <description>&lt;p&gt;Vidable.ai was a project I worked on during my time at &lt;a href=&quot;https://www.vidable.ai/&quot;&gt;Vidable&lt;/a&gt;. It was a platform that was designed to connect to video sources, and later websites and documents, to feed an AI system. The initial release focused on a chat assistant feature, but the main R&amp;amp;D focus i lead was looking beyond the chat box, and into creating ai generated “artifacts”. Once AI has access to a customer’s specialized data, the thinking was that by the selective nature of this data, the AI could autonomously understand the market niche, and based on the content, determine on its own what sort of things to create, from documents, to applets, to push communications.&lt;/p&gt;
+        <description>&lt;p&gt;&lt;a href=&quot;https://www.vidable.ai/&quot;&gt;Vidable.ai&lt;/a&gt; was a startup I worked for. It was a platform that connected to video sources, and later websites and documents, to feed an AI system. The initial release focused on a chat assistant feature, but the main R&amp;amp;D focus i lead was looking beyond the chat box, and into creating ai generated “artifacts”. Once AI has access to a customer’s specialized data, the thinking was that by the selective nature of this data, the AI could autonomously understand the market niche, and based on the content, determine on its own what sort of things to create, from documents, to applets, to push communications.&lt;/p&gt;
 </description>
         <pubDate>Wed, 01 May 2024 00:00:00 -0400</pubDate>
         <link>http://localhost:4000/vidable/</link>
@@ -21,6 +101,14 @@
         <category>profession</category>
         
         <category>AI</category>
+        
+        <category>terraform</category>
+        
+        <category>devops</category>
+        
+        <category>microservices</category>
+        
+        <category>docker</category>
         
       </item>
     
@@ -46,10 +134,105 @@
       </item>
     
       <item>
+        <title>Why you may not have to worry about superintelligent AI as much: Entropy</title>
+        <description>&lt;p&gt;&lt;strong&gt;The Simple Reason You Don’t Have to Worry About Super Intelligent AI: Entropy&lt;/strong&gt;&lt;/p&gt;
+
+&lt;p&gt;The advent of AI superintelligence is imminent, likely within the next decade. This rapid progression toward advanced AI has sparked widespread concern about the potential consequences of such powerful technology. The crux of the matter lies in the alignment problem: how can we ensure that AI behaves in ways that are beneficial to humanity? The simple truth is, we can’t implicitly align AI with human values. Good people will create good AI, and evil people will create evil AI. This age-old struggle between good and evil will inevitably play out in the realm of artificial intelligence.&lt;/p&gt;
+
+&lt;p&gt;Our best hope lies in the creation of more good AI than evil. The proliferation of benevolent AI systems, designed and operated by individuals and organizations with ethical intentions, can help counterbalance the malevolent uses of AI. However, even if we fail to achieve this balance, there’s a fundamental principle that provides a silver lining: entropy.&lt;/p&gt;
+
+&lt;p&gt;Entropy, a concept rooted in thermodynamics and information theory, dictates that in any system, disorder tends to increase over time. This principle applies to AI systems as well. No matter how advanced or powerful an AI becomes, it will face inherent limitations. Even with infinite computational power and memory, an AI cannot simulate an open system faster than the system runs itself. To make predictions, AI must rely on heuristics, which inevitably introduce errors.&lt;/p&gt;
+
+&lt;p&gt;As time progresses, these errors accumulate. Predictions made by even the most advanced AI will, after some number of iterations, begin to resemble random noise. This inherent uncertainty means that no AI, regardless of its computational prowess, can maintain perfect accuracy indefinitely. Eventually, all predictions will degrade into chaos.&lt;/p&gt;
+
+&lt;p&gt;Yet, within this seemingly chaotic landscape, one prediction will still be right. This randomness levels the playing field, allowing even a lower-compute rival to potentially best an infinite-compute adversary through sheer luck or superior observation of the system’s state. This dynamic ensures that the world reverts to the familiar human battles we have always fought and won.&lt;/p&gt;
+
+&lt;p&gt;The concept of entropy assures us that the future of AI will not be dominated by a single, all-powerful entity. Instead, it will be a landscape of competing intelligences, each with its own strengths and weaknesses. This inherent unpredictability preserves the opportunity for human ingenuity and resilience to prevail.&lt;/p&gt;
+
+&lt;p&gt;While the rise of AI superintelligence may seem daunting, the principles of entropy should provide a somewhat comforting perspective. The inevitable accumulation of errors in AI predictions ensures that no single intelligence can maintain dominance indefinitely. This inherent uncertainty offers hope that the age-old human struggle between good and evil will continue, and with it, the possibility for good to triumph. As we navigate this brave new world, our focus should be on fostering ethical AI development and leveraging the surprises of entropy to keep the scales balanced.&lt;/p&gt;
+</description>
+        <pubDate>Wed, 01 Nov 2023 00:00:00 -0400</pubDate>
+        <link>http://localhost:4000/aisafety/</link>
+        <guid isPermaLink="true">http://localhost:4000/aisafety/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>writing</category>
+        
+        <category>alignment</category>
+        
+        <category>research</category>
+        
+        <category>AI</category>
+        
+      </item>
+    
+      <item>
+        <title>LLM Visualization: How embedding space creates intelligence</title>
+        <description>&lt;p&gt;Using Python I created this visualization to help explain how LLMs capture and synthesize information. LLMs take the encoding of language and deconstruct it into concepts.&lt;/p&gt;
+
+&lt;p&gt;Multimodal LLMs take sound/images and map them to the concept spaces.&lt;/p&gt;
+
+&lt;p&gt;Then when you prompt a model with a question, the prompt establishes a “road” in a region of space that maps to related concepts, and the AI just continues on the most sensible path from this road to respond to the prompt.&lt;/p&gt;
+
+&lt;p&gt;The road, rather than being in 3 dimensions, is in thousands of dimensions, and this is what makes AI seem intelligent. The road can also be very winding and serpentine, it doesn’t have to be a straight line, and rarely is when you consider that an LLM can have 3 thousand dimensions or more that it’s carving a path through.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/llmpath.png&quot; alt=&quot;A smooth path vs a spiraly winding path&quot; /&gt;
+&lt;em&gt;Image Caption: A comparison of a smooth path and a spirally winding path.&lt;/em&gt;&lt;/p&gt;
+
+&lt;p&gt;For some additional reading on the topic, I recommend the following articles:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;a href=&quot;https://moebio.com/mind/&quot;&gt;Moebio&lt;/a&gt; live interactive visualization of a latent space and how it connects to a text prompt. By far the best visualization I’ve seen of this concept. (note page may take a minute or so to load)&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://docs.rungalileo.io/galileo/how-to-and-faq/galileo-product-features/embeddings-view&quot;&gt;Galileo&lt;/a&gt; This is an embedding space viewer and clustering tool that can be used to visualize the concept space of an LLM&lt;/li&gt;
+  &lt;li&gt;&lt;a href=&quot;https://github.com/enjalot/latent-scope&quot;&gt;LatentScope&lt;/a&gt; Another tool for visualizing an embedding space&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;Note that any tool to turn a thousand dimensional space to 2D or 3D will always be a lossy representation&lt;/p&gt;
+</description>
+        <pubDate>Sun, 17 Sep 2023 00:00:00 -0400</pubDate>
+        <link>http://localhost:4000/llmviz/</link>
+        <guid isPermaLink="true">http://localhost:4000/llmviz/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>research</category>
+        
+        <category>python</category>
+        
+        <category>AI</category>
+        
+        <category>visualization</category>
+        
+      </item>
+    
+      <item>
+        <title>Where the puck is going: An AI Roadmap</title>
+        <description>&lt;p&gt;I created this AI roadmap last year for our internal team, and we’re somewhere around line 6.5 as of May 2024 (current video multimodal models are just looking at periodic frames so I don’t count that as true video yet) and on the lower bound of my time estimates. Every step along the way though will have a huge rush of innovation and development and experimentation of new product categories, which is very exciting, but can also sometimes create red herrings that people chase after.&lt;/p&gt;
+
+&lt;p&gt;It’s important to keep the end goal in mind when doing product development so you don’t stagnate in a local maximum.&lt;/p&gt;
+
+&lt;p&gt;&lt;img src=&quot;/assets/images/airoadmap.png&quot; alt=&quot;A tech tree for a video library app&quot; /&gt;&lt;/p&gt;
+</description>
+        <pubDate>Fri, 25 Aug 2023 00:00:00 -0400</pubDate>
+        <link>http://localhost:4000/airoadmap/</link>
+        <guid isPermaLink="true">http://localhost:4000/airoadmap/</guid>
+        
+        
+        <category>profession</category>
+        
+        <category>research</category>
+        
+        <category>AI</category>
+        
+      </item>
+    
+      <item>
         <title>LessWrong: ChatGPT is our Wright Brothers Moment</title>
         <description>&lt;p&gt;There’s a lot of discussions, often derisively, that many AI apps are “just” ChatGPT wrappers. I wrote a short article that was promoted to the &lt;a href=&quot;https://www.lesswrong.com/posts/3TjfowjTcHEL56Nyp/chatgpt-is-our-wright-brothers-moment&quot;&gt;front page of LessWrong&lt;/a&gt; about this, trying to convey that just because a tool is an AI wrapper doesn’t mean it’s not significant.&lt;/p&gt;
 
-&lt;p&gt;AI is opening up a whole new spectrum of possibile experiences, but just like how it took decades for air travel to be commcercialized due to a huge amount of infrastructure needing to be built, we are years away from seeing the impact of AI on our daily lives due to a multitude of new software infrastructure needing to be built.&lt;/p&gt;
+&lt;p&gt;AI is opening up a whole new spectrum of possible experiences, but just like how it took decades for air travel to be commercialized due to a huge amount of infrastructure needing to be built, we are years away from seeing the impact of AI on our daily lives due to a multitude of new software infrastructure needing to be built.&lt;/p&gt;
 </description>
         <pubDate>Sat, 24 Dec 2022 00:00:00 -0500</pubDate>
         <link>http://localhost:4000/wrightbrochatgpt/</link>
@@ -68,6 +251,8 @@
         <title>Cohere AI: LLM Hackathon #3 3rd place winner</title>
         <description>&lt;p&gt;I participated practically solo in the CoHere AI Hackathon to use an early version of the Cohere LLM to make an app. The project came in third out of thousands of participants and dozens of valid submissions. The project used real-time live voice transcription that was entirely browser based, HTML Canvas compositing for live webcam video input, and a fully custom RAG (retrieval augmented generation) code written in C# before RAG was even a known terminology. Information was retrieved from Wikipedia to help ground the AI’s responses.&lt;/p&gt;
 
+&lt;p&gt;I setup hosting for the app in AWS using the Lambda serverless architecture, which for C# is able to serve both the UI and process backend commands. The app was a fully functional prototype that could be used to record a screenshare and see AI responses in real-time.&lt;/p&gt;
+
 &lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/8DcO6GYUF_0?si=T1IR99vX1GIRZZ0i&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
 </description>
         <pubDate>Sat, 12 Nov 2022 00:00:00 -0500</pubDate>
@@ -81,15 +266,19 @@
         
         <category>AI</category>
         
+        <category>youtube</category>
+        
+        <category>AWS</category>
+        
+        <category>serverless</category>
+        
+        <category>github</category>
+        
       </item>
     
       <item>
         <title>EleutherAI: Tool Use Idea</title>
         <description>&lt;p&gt;I created a &lt;a href=&quot;https://github.com/EleutherAI/project-menu/issues/22#issuecomment-1073167091&quot;&gt;working diagram&lt;/a&gt; of how a set of agent AI models could be used to answer math questions using tools. At the time I wrote this post, tool use wasn’t commonly understood, nor was agent AI based processes.&lt;/p&gt;
-
-&lt;p&gt;There are lots of powerful things you can do with the Markdown editor. If you’ve gotten pretty comfortable with writing in Markdown, then you may enjoy some more advanced tips about the types of things you can do with Markdown!&lt;/p&gt;
-
-&lt;p&gt;As with the last post about the editor, you’ll want to be actually editing this post as you read it so that you can see all the Markdown code we’re using.&lt;/p&gt;
 
 </description>
         <pubDate>Sun, 20 Mar 2022 00:00:00 -0400</pubDate>
@@ -107,7 +296,9 @@
     
       <item>
         <title>SwiftUI Mars App</title>
-        <description>&lt;p&gt;As an aficianado of the Mars Rover missions, I decided to create a simple app that would allow me to view the latest images from the Mars Rover missions. I used SwiftUI and Xcode to create the app, and I’m quite happy with the results. The app is simple, but it does what I want it to do: show me the latest images from Mars in an easy to use UI.&lt;/p&gt;
+        <description>&lt;p&gt;As an aficionado of the Mars Rover missions, I decided to create a simple app that would allow me to view the latest images from the Mars Rover missions. I used SwiftUI and Xcode to create the app, and I’m quite happy with the results. The app is simple, but it does what I want it to do: show me the latest images from Mars in an easy to use UI.&lt;/p&gt;
+
+&lt;p&gt;The other component of the app is a custom image processing routine. Mars Rover images are encoded in bitmaps that combine color and luminance information in a single image due to the sensor array being Bayer Filtered. This is to allow for a higher resolution grayscale image, but also allow for color information to be transmitted at a lower resolution. Using a deep neural network informed by the Bayer filtering, you can preserve the resolution, while allowing the AI image processing to very accurately guess the color information. This app would allow for the highest resolution images to be viewed in color, with minimal “guessing” by an AI upscaler from other methods.&lt;/p&gt;
 
 &lt;p&gt;Dare mighty things!&lt;/p&gt;
 </description>
@@ -124,20 +315,11 @@
         
         <category>xcode</category>
         
-      </item>
-    
-      <item>
-        <title>Empowering blind instructors to control classroom technology</title>
-        <description>&lt;p&gt;One of my more successful early projects was creating a way to &lt;a href=&quot;https://www.youtube.com/watch?v=thNedzQu1MA&quot;&gt;allow blind users to control classroom&lt;/a&gt; technology. The implementation used features of Crestron panels in a clever way to allow users, both blind and sighted, to swipe through a “virtual list” that could be built from just a text configuration. The gesture approach mirrored Apple’s VoiceOver screenreader, although I was completely unaware of VoiceOver at the time– the similarity was purely coincidental.&lt;/p&gt;
-</description>
-        <pubDate>Thu, 14 Feb 2013 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/blind-tech/</link>
-        <guid isPermaLink="true">http://localhost:4000/blind-tech/</guid>
-        
-        
-        <category>profession</category>
+        <category>AI</category>
         
         <category>research</category>
+        
+        <category>imageprocessing</category>
         
       </item>
     
