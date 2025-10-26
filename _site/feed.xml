@@ -2,12 +2,164 @@
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
     <title>Mediumish</title>
-    <description>An overview of some of the things i've done!</description>
-    <link>http://localhost:4000/</link>
-    <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 10 Jan 2025 18:29:16 -0500</pubDate>
-    <lastBuildDate>Fri, 10 Jan 2025 18:29:16 -0500</lastBuildDate>
-    <generator>Jekyll v3.8.5</generator>
+    <description>An overview of some of the things i&apos;ve done!</description>
+    <link>/</link>
+    <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
+    <pubDate>Sun, 26 Oct 2025 17:57:03 +0000</pubDate>
+    <lastBuildDate>Sun, 26 Oct 2025 17:57:03 +0000</lastBuildDate>
+    <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>ConTalk: Apple&apos;s On-Device VLM: The Future of Multimodal AI</title>
+        <description>&lt;p&gt;When we think about the future of artificial intelligence, we often imagine systems that can think like humans—not just processing text, but understanding images, video, and even the physical properties of the world around us. This isn’t science fiction anymore. Vision-Language Models (VLMs) represent a critical step toward AI that can truly understand our multimodal world.&lt;/p&gt;
+
+&lt;p&gt;&lt;iframe width=&quot;560&quot; height=&quot;315&quot; src=&quot;https://www.youtube.com/embed/ygMqNaiBHzk&quot; title=&quot;YouTube video player&quot; frameborder=&quot;0&quot; allow=&quot;accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share&quot; referrerpolicy=&quot;strict-origin-when-cross-origin&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+
+&lt;p&gt;Today’s large language models are impressive, but they’re fundamentally limited by their text-only nature. They can describe what a sunset looks like, but they’ve never actually &lt;em&gt;seen&lt;/em&gt; one. They can explain physics equations but can’t observe physical phenomena directly. This is why VLMs are so important—they bridge the gap between abstract text and the visual, physical world we inhabit.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-vision-language-models-matter&quot;&gt;Why Vision-Language Models Matter&lt;/h2&gt;
+
+&lt;p&gt;The progression is clear: AI started with text, mastered conversation, and now needs to understand the world through multiple modalities. Just as humans learn by seeing, hearing, and experiencing—not just by reading—AI systems need multimodal understanding to become truly intelligent assistants.&lt;/p&gt;
+
+&lt;p&gt;Think about it: when you ask a question about an image on your phone, you want instant answers without uploading that image to the cloud. When you’re navigating an unfamiliar city or trying to identify a plant species, you need AI that can process visual information right there on your device, respecting your privacy and working offline.&lt;/p&gt;
+
+&lt;p&gt;This is where on-device VLMs become game-changing. They bring powerful multimodal AI to the edge—directly on your iPhone or Mac—without compromising privacy or requiring constant internet connectivity.&lt;/p&gt;
+
+&lt;h2 id=&quot;benchmarking-apples-vlm-implementation&quot;&gt;Benchmarking Apple’s VLM Implementation&lt;/h2&gt;
+
+&lt;p&gt;Can Apple’s on-device Vision-Language Model deliver true multimodal AI without the cloud? I ran a series of practical experiments to find out.&lt;/p&gt;
+
+&lt;p&gt;In the video above, I test Apple’s quantized, fine-tuned version of Qwen running on Apple Silicon across various real-world scenarios:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Q&amp;amp;A accuracy and reliability&lt;/strong&gt; - How well does it understand and respond to questions about images?&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Prompt sensitivity&lt;/strong&gt; - Does it handle different question styles and formats gracefully?&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Multilingual support&lt;/strong&gt; - Can it process text and visual tasks across languages?&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Cross-device performance&lt;/strong&gt; - How does it perform on M1, M2, and M3 chips?&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Resource usage&lt;/strong&gt; - What’s the impact on battery life and system performance?&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The results show both impressive capabilities and clear limitations—giving builders an unfiltered view of what works and what doesn’t when deploying multimodal AI at the edge.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-technology-stack&quot;&gt;The Technology Stack&lt;/h2&gt;
+
+&lt;p&gt;The implementation uses:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;iOS &amp;amp; macOS&lt;/strong&gt; on Apple Silicon (M1, M2, M3)&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Apple’s quantized VLM&lt;/strong&gt; based on Qwen&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Xcode &amp;amp; Swift&lt;/strong&gt; for native integration&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;On-device cameras&lt;/strong&gt; and local compute only&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;No cloud dependencies. No data uploads. Everything runs locally on your device.&lt;/p&gt;
+
+&lt;h2 id=&quot;looking-forward&quot;&gt;Looking Forward&lt;/h2&gt;
+
+&lt;p&gt;As AI continues to evolve, the systems that can seamlessly integrate text, vision, and eventually physics understanding will be the ones that feel truly intelligent. VLMs are a crucial stepping stone on this path—they’re teaching AI to “see” the world, not just read about it.&lt;/p&gt;
+
+&lt;p&gt;Apple’s approach of bringing these models on-device is particularly important for practical deployment. Privacy, speed, and offline capability aren’t just nice-to-have features—they’re essential for AI that can be integrated into our daily lives.&lt;/p&gt;
+
+&lt;p&gt;The experiments in this video are just the beginning. As these models improve and hardware becomes more capable, we’ll see on-device multimodal AI become as commonplace as smartphone cameras are today. The question isn’t whether this future will arrive, but how quickly we can build the infrastructure to support it.&lt;/p&gt;
+</description>
+        <pubDate>Tue, 30 Sep 2025 00:00:00 +0000</pubDate>
+        <link>/applevlm/</link>
+        <guid isPermaLink="true">/applevlm/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>AI</category>
+        
+        <category>iOS</category>
+        
+        <category>contalk</category>
+        
+        <category>youtube</category>
+        
+      </item>
+    
+      <item>
+        <title>Cerebras OS - OpenRouter Hackathon Project</title>
+        <description>&lt;p&gt;When AI becomes fast enough, computing itself changes. Cerebras OS is a hackathon project exploring what happens when inference speed crosses a threshold—when AI stops being something you wait for and becomes something you interact with.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-new-threshold&quot;&gt;A New Threshold&lt;/h2&gt;
+&lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/JLiflqAjGQg&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+&lt;p&gt;We’re used to designing around AI latency. You build your UI, add a loading spinner, send a request to the AI, and eventually get back a response. This pattern has shaped how we think about AI-powered applications: the AI is always somewhere else, always asynchronous, always a step removed from the interaction.&lt;/p&gt;
+
+&lt;p&gt;But what if it wasn’t? What if AI inference was so fast that it could live &lt;em&gt;inside&lt;/em&gt; the interaction loop itself?&lt;/p&gt;
+
+&lt;p&gt;That’s the question I set out to explore with Cerebras OS. Using Cerebras’ ultra-fast inference through OpenRouter, I built an interface where every interaction—every click, every widget request, every UI update—flows through an LLM in real-time. Not as a background process. Not with loading states. Just immediate, responsive, and always there.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-demo-widgets-as-a-proof-of-concept&quot;&gt;The Demo: Widgets as a Proof of Concept&lt;/h2&gt;
+
+&lt;p&gt;The interface I built uses widgets—small, dynamic components that can display anything from weather to task lists. But the widgets themselves aren’t the point. They’re just a way to demonstrate something more fundamental: when AI is fast enough, you can stop pre-programming your interface and start &lt;em&gt;generating&lt;/em&gt; it on demand.&lt;/p&gt;
+
+&lt;p&gt;Ask for a weather widget, and the AI creates one instantly. It generates the HTML, decides on the styling, pulls in live data, and updates it in real-time. Want something different? Just ask. The AI adapts, evolves, and responds without you ever feeling like you’re waiting for a machine to think.&lt;/p&gt;
+
+&lt;p&gt;This isn’t about making better widgets. It’s about what becomes possible when you can put an LLM directly in the decision-making path of your UI. Every interaction becomes an opportunity for the software to be smarter, more contextual, more adaptive—not because you pre-programmed those paths, but because the AI can make those decisions in the moment.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-speed-matters-a-paradigm-shift&quot;&gt;Why Speed Matters: A Paradigm Shift&lt;/h2&gt;
+
+&lt;p&gt;We spend a lot of time talking about AI capabilities—what models can do, what tasks they can solve, what benchmarks they can pass. But speed is different. Speed isn’t just about doing the same things faster; it unlocks entirely new ways of building software.&lt;/p&gt;
+
+&lt;p&gt;When Cerebras can return responses in under a second, consistently, something shifts. The AI stops being a tool you call and becomes something more fundamental—a layer of intelligence woven into the fabric of your application. You stop designing around it and start designing &lt;em&gt;with&lt;/em&gt; it.&lt;/p&gt;
+
+&lt;p&gt;In traditional software, you anticipate user needs and pre-build flows for every scenario. With fast AI, you can generate those flows on demand. The interface becomes fluid, adaptive, personal—not because you wrote a thousand if-statements, but because the AI can understand context and respond in real-time.&lt;/p&gt;
+
+&lt;p&gt;This is the real promise of Cerebras OS, and projects like it. They’re not about widgets or chat interfaces or any specific feature. They’re about exploring what computing looks like when intelligence is synchronous with interaction.&lt;/p&gt;
+
+&lt;h2 id=&quot;building-it&quot;&gt;Building It&lt;/h2&gt;
+
+&lt;p&gt;I built this using Blazor Server and .NET 8 for real-time WebSocket connections, with qwen3-32b running on Cerebras hardware through OpenRouter. The model was chosen for its speed and ability to output structured JSON—critical for generating consistent, usable HTML.&lt;/p&gt;
+
+&lt;p&gt;The architecture is deliberately simple: route everything through the AI. In most systems, this would be a terrible idea. But when your inference is fast enough, simplicity becomes viable. You don’t need complex caching strategies or pre-computation. You just ask the AI what to do next.&lt;/p&gt;
+
+&lt;p&gt;There’s also a background processing system that pulls in context from the web using OpenRouter’s search capabilities, enriching the AI’s responses without impacting the interaction speed. But the core insight remains: when AI is fast, your architecture can be fundamentally different.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-bigger-picture&quot;&gt;The Bigger Picture&lt;/h2&gt;
+
+&lt;p&gt;This project is aspirational. It’s not a production system; it’s a sketch of what could be. Just like early flight demonstrations weren’t about the specific aircraft but about proving that flight was possible, Cerebras OS is about proving that synchronous AI-powered interfaces are possible.&lt;/p&gt;
+
+&lt;p&gt;We’re at the beginning of a shift. As inference speeds continue to improve, we’ll see new categories of software that simply couldn’t exist before:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Interfaces that adapt in real-time to user intent without explicit programming&lt;/li&gt;
+  &lt;li&gt;Applications that generate their own UI based on context and conversation&lt;/li&gt;
+  &lt;li&gt;Systems where the boundary between “the application” and “the AI” dissolves entirely&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The widgets in this demo are just placeholders. Tomorrow it might be entire application flows generated on demand. The day after, interfaces that evolve as you use them. The underlying principle remains: when AI is fast enough to be synchronous, computing enters a new paradigm.&lt;/p&gt;
+
+&lt;p&gt;We’re still years away from seeing this widely deployed. Infrastructure needs to be built. Patterns need to be discovered. Costs need to come down. But the threshold has been crossed. Fast AI isn’t just faster AI—it’s a different kind of tool entirely.&lt;/p&gt;
+
+&lt;h2 id=&quot;try-it-yourself&quot;&gt;Try It Yourself&lt;/h2&gt;
+
+&lt;p&gt;The code is on GitHub if you want to explore. You’ll need an OpenRouter API key:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OPENROUTER_API_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;your_key_here
+dotnet run
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Play with it. Break it. Imagine what else could be built if AI was always this fast. That’s the real point of projects like this—not what they are, but what they help us imagine.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 24 May 2025 00:00:00 +0000</pubDate>
+        <link>/cerebrasos/</link>
+        <guid isPermaLink="true">/cerebrasos/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>hackathon</category>
+        
+        <category>AI</category>
+        
+        <category>youtube</category>
+        
+        <category>github</category>
+        
+      </item>
     
       <item>
         <title>Apple Intelligence features for any iPhone</title>
@@ -74,9 +226,9 @@
 &lt;p&gt;&lt;a href=&quot;https://www.icloud.com/shortcuts/17899ad80a1d467ea269f9365d06de58&quot;&gt;AI Messages responder&lt;/a&gt;&lt;/p&gt;
 
 </description>
-        <pubDate>Sun, 15 Dec 2024 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/AIopenai/</link>
-        <guid isPermaLink="true">http://localhost:4000/AIopenai/</guid>
+        <pubDate>Sun, 15 Dec 2024 00:00:00 +0000</pubDate>
+        <link>/AIopenai/</link>
+        <guid isPermaLink="true">/AIopenai/</guid>
         
         
         <category>hobby</category>
@@ -93,9 +245,9 @@
         <title>Vidable.ai</title>
         <description>&lt;p&gt;&lt;a href=&quot;https://www.vidable.ai/&quot;&gt;Vidable.ai&lt;/a&gt; was a startup I worked for. It was a platform that connected to video sources, and later websites and documents, to feed an AI system. The initial release focused on a chat assistant feature, but the main R&amp;amp;D focus i lead was looking beyond the chat box, and into creating ai generated “artifacts”. Once AI has access to a customer’s specialized data, the thinking was that by the selective nature of this data, the AI could autonomously understand the market niche, and based on the content, determine on its own what sort of things to create, from documents, to applets, to push communications.&lt;/p&gt;
 </description>
-        <pubDate>Wed, 01 May 2024 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/vidable/</link>
-        <guid isPermaLink="true">http://localhost:4000/vidable/</guid>
+        <pubDate>Wed, 01 May 2024 00:00:00 +0000</pubDate>
+        <link>/vidable/</link>
+        <guid isPermaLink="true">/vidable/</guid>
         
         
         <category>profession</category>
@@ -116,9 +268,9 @@
         <title>Apple Vision Pro Music Viz App</title>
         <description>&lt;p&gt;Currently a WIP, but using audio processing APIs and particle emitter SDK, i’m working on a music visualizer app to be completely immersed in a 3D field of dancing particles.&lt;/p&gt;
 </description>
-        <pubDate>Fri, 01 Mar 2024 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/mvizapp/</link>
-        <guid isPermaLink="true">http://localhost:4000/mvizapp/</guid>
+        <pubDate>Fri, 01 Mar 2024 00:00:00 +0000</pubDate>
+        <link>/mvizapp/</link>
+        <guid isPermaLink="true">/mvizapp/</guid>
         
         
         <category>hobby</category>
@@ -151,9 +303,9 @@
 
 &lt;p&gt;While the rise of AI superintelligence may seem daunting, the principles of entropy should provide a somewhat comforting perspective. The inevitable accumulation of errors in AI predictions ensures that no single intelligence can maintain dominance indefinitely. This inherent uncertainty offers hope that the age-old human struggle between good and evil will continue, and with it, the possibility for good to triumph. As we navigate this brave new world, our focus should be on fostering ethical AI development and leveraging the surprises of entropy to keep the scales balanced.&lt;/p&gt;
 </description>
-        <pubDate>Wed, 01 Nov 2023 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/aisafety/</link>
-        <guid isPermaLink="true">http://localhost:4000/aisafety/</guid>
+        <pubDate>Wed, 01 Nov 2023 00:00:00 +0000</pubDate>
+        <link>/aisafety/</link>
+        <guid isPermaLink="true">/aisafety/</guid>
         
         
         <category>hobby</category>
@@ -190,9 +342,9 @@
 
 &lt;p&gt;Note that any tool to turn a thousand dimensional space to 2D or 3D will always be a lossy representation&lt;/p&gt;
 </description>
-        <pubDate>Sun, 17 Sep 2023 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/llmviz/</link>
-        <guid isPermaLink="true">http://localhost:4000/llmviz/</guid>
+        <pubDate>Sun, 17 Sep 2023 00:00:00 +0000</pubDate>
+        <link>/llmviz/</link>
+        <guid isPermaLink="true">/llmviz/</guid>
         
         
         <category>hobby</category>
@@ -215,9 +367,9 @@
 
 &lt;p&gt;&lt;img src=&quot;/assets/images/airoadmap.png&quot; alt=&quot;A tech tree for a video library app&quot; /&gt;&lt;/p&gt;
 </description>
-        <pubDate>Fri, 25 Aug 2023 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/airoadmap/</link>
-        <guid isPermaLink="true">http://localhost:4000/airoadmap/</guid>
+        <pubDate>Fri, 25 Aug 2023 00:00:00 +0000</pubDate>
+        <link>/airoadmap/</link>
+        <guid isPermaLink="true">/airoadmap/</guid>
         
         
         <category>profession</category>
@@ -234,9 +386,9 @@
 
 &lt;p&gt;AI is opening up a whole new spectrum of possible experiences, but just like how it took decades for air travel to be commercialized due to a huge amount of infrastructure needing to be built, we are years away from seeing the impact of AI on our daily lives due to a multitude of new software infrastructure needing to be built.&lt;/p&gt;
 </description>
-        <pubDate>Sat, 24 Dec 2022 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/wrightbrochatgpt/</link>
-        <guid isPermaLink="true">http://localhost:4000/wrightbrochatgpt/</guid>
+        <pubDate>Sat, 24 Dec 2022 00:00:00 +0000</pubDate>
+        <link>/wrightbrochatgpt/</link>
+        <guid isPermaLink="true">/wrightbrochatgpt/</guid>
         
         
         <category>hobby</category>
@@ -255,9 +407,9 @@
 
 &lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/8DcO6GYUF_0?si=T1IR99vX1GIRZZ0i&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
 </description>
-        <pubDate>Sat, 12 Nov 2022 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/hackathon/</link>
-        <guid isPermaLink="true">http://localhost:4000/hackathon/</guid>
+        <pubDate>Sat, 12 Nov 2022 00:00:00 +0000</pubDate>
+        <link>/hackathon/</link>
+        <guid isPermaLink="true">/hackathon/</guid>
         
         
         <category>hobby</category>
@@ -273,53 +425,6 @@
         <category>serverless</category>
         
         <category>github</category>
-        
-      </item>
-    
-      <item>
-        <title>EleutherAI: Tool Use Idea</title>
-        <description>&lt;p&gt;I created a &lt;a href=&quot;https://github.com/EleutherAI/project-menu/issues/22#issuecomment-1073167091&quot;&gt;working diagram&lt;/a&gt; of how a set of agent AI models could be used to answer math questions using tools. At the time I wrote this post, tool use wasn’t commonly understood, nor was agent AI based processes.&lt;/p&gt;
-
-</description>
-        <pubDate>Sun, 20 Mar 2022 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/eleuther/</link>
-        <guid isPermaLink="true">http://localhost:4000/eleuther/</guid>
-        
-        
-        <category>AI</category>
-        
-        <category>hobby</category>
-        
-        <category>research</category>
-        
-      </item>
-    
-      <item>
-        <title>SwiftUI Mars App</title>
-        <description>&lt;p&gt;As an aficionado of the Mars Rover missions, I decided to create a simple app that would allow me to view the latest images from the Mars Rover missions. I used SwiftUI and Xcode to create the app, and I’m quite happy with the results. The app is simple, but it does what I want it to do: show me the latest images from Mars in an easy to use UI.&lt;/p&gt;
-
-&lt;p&gt;The other component of the app is a custom image processing routine. Mars Rover images are encoded in bitmaps that combine color and luminance information in a single image due to the sensor array being Bayer Filtered. This is to allow for a higher resolution grayscale image, but also allow for color information to be transmitted at a lower resolution. Using a deep neural network informed by the Bayer filtering, you can preserve the resolution, while allowing the AI image processing to very accurately guess the color information. This app would allow for the highest resolution images to be viewed in color, with minimal “guessing” by an AI upscaler from other methods.&lt;/p&gt;
-
-&lt;p&gt;Dare mighty things!&lt;/p&gt;
-</description>
-        <pubDate>Mon, 08 Mar 2021 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/marsapp/</link>
-        <guid isPermaLink="true">http://localhost:4000/marsapp/</guid>
-        
-        
-        <category>hobby</category>
-        
-        <category>mars</category>
-        
-        <category>swift</category>
-        
-        <category>xcode</category>
-        
-        <category>AI</category>
-        
-        <category>research</category>
-        
-        <category>imageprocessing</category>
         
       </item>
     
