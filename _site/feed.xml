@@ -5,9 +5,53 @@
     <description>An overview of some of the things i&apos;ve done!</description>
     <link>/</link>
     <atom:link href="/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Sun, 26 Oct 2025 17:57:03 +0000</pubDate>
-    <lastBuildDate>Sun, 26 Oct 2025 17:57:03 +0000</lastBuildDate>
+    <pubDate>Sun, 26 Oct 2025 17:59:59 +0000</pubDate>
+    <lastBuildDate>Sun, 26 Oct 2025 17:59:59 +0000</lastBuildDate>
     <generator>Jekyll v4.4.1</generator>
+    
+      <item>
+        <title>Upcoming Talk: When AI Gets Hyperfast - Rethinking Design for 1000 tokens/s</title>
+        <description>&lt;p&gt;I’ll be speaking at &lt;a href=&quot;https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4&quot;&gt;AI Tinkerers Raleigh&lt;/a&gt; about what happens when AI inference becomes fast enough to fundamentally change how we think about application design.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-talk&quot;&gt;The Talk&lt;/h2&gt;
+
+&lt;p&gt;When inference engines like Cerebras AI can generate up to 1000 tokens per second, we’re not just talking about faster responses—we’re witnessing a paradigm shift in how we design and interact with AI-powered tools.&lt;/p&gt;
+
+&lt;p&gt;I’ll be expanding on a project I started a few months ago using the Cerebras inference engine to demonstrate how AI models running at this rate require new ways of thinking about AI app design and UX. The demo will show how an OS might work where AI tools are generated on demand.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-this-matters&quot;&gt;Why This Matters&lt;/h2&gt;
+
+&lt;p&gt;Think about it: when AI can generate entire tools on a button click, the traditional boundaries of software design dissolve. You stop pre-programming every interaction and start generating interfaces in real-time. The AI becomes synchronous with the interaction itself.&lt;/p&gt;
+
+&lt;p&gt;This isn’t about making existing apps faster. It’s about what becomes possible when speed crosses a threshold—when AI stops being something you wait for and becomes something woven into the fabric of the interaction loop.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-glimpse-of-the-future&quot;&gt;A Glimpse of the Future&lt;/h2&gt;
+
+&lt;p&gt;The demo explores what computing looks like when:&lt;/p&gt;
+&lt;ul&gt;
+  &lt;li&gt;Tools and interfaces are generated on demand rather than pre-built&lt;/li&gt;
+  &lt;li&gt;AI lives inside the interaction loop, not as an async background process&lt;/li&gt;
+  &lt;li&gt;Every click can invoke an AI that responds faster than you can perceive the delay&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;We’re at the beginning of a shift. As inference speeds continue to improve, we’ll see entirely new categories of software that simply couldn’t exist before. This talk is about imagining—and demonstrating—what that future looks like.&lt;/p&gt;
+
+&lt;p&gt;&lt;a href=&quot;https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4&quot;&gt;Register for the talk here&lt;/a&gt;&lt;/p&gt;
+</description>
+        <pubDate>Wed, 10 Dec 2025 00:00:00 +0000</pubDate>
+        <link>/hyperfast-ai-talk/</link>
+        <guid isPermaLink="true">/hyperfast-ai-talk/</guid>
+        
+        
+        <category>AI</category>
+        
+        <category>talk</category>
+        
+        <category>research</category>
+        
+        <category>UX</category>
+        
+      </item>
     
       <item>
         <title>ConTalk: Apple&apos;s On-Device VLM: The Future of Multimodal AI</title>
@@ -396,35 +440,6 @@ dotnet run
         <category>AI</category>
         
         <category>writing</category>
-        
-      </item>
-    
-      <item>
-        <title>Cohere AI: LLM Hackathon #3 3rd place winner</title>
-        <description>&lt;p&gt;I participated practically solo in the CoHere AI Hackathon to use an early version of the Cohere LLM to make an app. The project came in third out of thousands of participants and dozens of valid submissions. The project used real-time live voice transcription that was entirely browser based, HTML Canvas compositing for live webcam video input, and a fully custom RAG (retrieval augmented generation) code written in C# before RAG was even a known terminology. Information was retrieved from Wikipedia to help ground the AI’s responses.&lt;/p&gt;
-
-&lt;p&gt;I setup hosting for the app in AWS using the Lambda serverless architecture, which for C# is able to serve both the UI and process backend commands. The app was a fully functional prototype that could be used to record a screenshare and see AI responses in real-time.&lt;/p&gt;
-
-&lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/8DcO6GYUF_0?si=T1IR99vX1GIRZZ0i&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sat, 12 Nov 2022 00:00:00 +0000</pubDate>
-        <link>/hackathon/</link>
-        <guid isPermaLink="true">/hackathon/</guid>
-        
-        
-        <category>hobby</category>
-        
-        <category>hackathon</category>
-        
-        <category>AI</category>
-        
-        <category>youtube</category>
-        
-        <category>AWS</category>
-        
-        <category>serverless</category>
-        
-        <category>github</category>
         
       </item>
     
