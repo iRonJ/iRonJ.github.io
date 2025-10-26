@@ -3,7 +3,7 @@ layout: post
 title:  "Upcoming Talk: When AI Gets Hyperfast - Rethinking Design for 1000 tokens/s"
 author: ron
 categories: [ AI, talk, research, UX ]
-image: assets/images/cerebrasos.png
+image: assets/images/hyperfast-ai-talk.png
 featured: true
 ---
 
