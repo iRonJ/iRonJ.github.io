@@ -4,6 +4,7 @@ title:  "Upcoming Talk: When AI Gets Hyperfast - Rethinking Design for 1000 toke
 author: ron
 categories: [ AI, talk, research, UX ]
 image: assets/images/cerebrasos.png
+featured: true
 ---
 
 I'll be speaking at [AI Tinkerers Raleigh](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4) about what happens when AI inference becomes fast enough to fundamentally change how we think about application design.
