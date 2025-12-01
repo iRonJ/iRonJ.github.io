@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDI Poly-Sequencer: Auto-Scroll</title>
+
+    <!-- React & ReactDOM -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <!-- Babel for JSX -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <!-- Tone.js MIDI Parser -->
+    <script src="https://unpkg.com/@tonejs/midi"></script>
+
+    <style>
+        body {
+            margin: 0;
+            background: #000;
+            overflow: hidden;
+        }
+
+        .hardware-accel {
+            transform: translateZ(0);
+            will-change: transform;
+        }
+
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            pointer-events: all;
+            width: 16px;
+            height: 16px;
+            -webkit-border-radius: 100px;
+            border-radius: 100px;
+            background: white;
+            cursor: pointer;
+        }
+
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+
+        .custom-checkbox:checked {
+            background-color: currentColor;
+            background-image: url("data:image/svg+xml,%3csvg viewBox='0 0 16 16' fill='white' xmlns='http://www.w3.org/2000/svg'%3e%3cpath d='M12.207 4.793a1 1 0 010 1.414l-5 5a1 1 0 01-1.414 0l-2-2a1 1 0 011.414-1.414L6.5 9.086l4.293-4.293a1 1 0 011.414 0z'/%3e%3c/svg%3e");
+        }
+
+        /* Smooth transition for the snap back, but instant for step-to-step */
+        .scroll-smooth-custom {
+            scroll-behavior: smooth;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useRef, useEffect, useCallback, memo, useMemo, forwardRef, useImperativeHandle } = React;
+
+        // --- ICONS ---
+        const Icons = {
+            Play: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>,
+            Pause: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="4" width="4" height="16"></rect><rect x="14" y="4" width="4" height="16"></rect></svg>,
+            Stop: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="6" y="6" width="12" height="12"></rect></svg>,
+            Trash2: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>,
+            Plus: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            X: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>,
+            Activity: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>,
+            Music: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg>,
+            MoveHorizontal: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="18 8 22 12 18 16"></polyline><polyline points="6 8 2 12 6 16"></polyline><line x1="2" y1="12" x2="22" y2="12"></line></svg>,
+            Upload: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>,
+            Check: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>,
+            Volume2: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"></path></svg>,
+            VolumeX: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><line x1="23" y1="9" x2="17" y2="15"></line><line x1="17" y1="9" x2="23" y2="15"></line></svg>,
+            Grid: (props) => <svg {...props} xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        };
+
+        // --- CONSTANTS ---
+        const RANGE_WIDTH = 48; // 4 Octaves
+        const GRID_STEP_PCT = 0.03;
+        const RANGE_GRID = Math.floor(1 / GRID_STEP_PCT);
+        const GRID_OFFSET = 12;
+        const ATTACK_TIME = 0.02; const MAX_GAIN = 0.3;
+        const NOTE_DURATION = 0.2;
+        const LOOKAHEAD = 100.0;
+        const SCHEDULE_AHEAD_TIME = 0.2;
+        const ROW_HEIGHT = 48;
+
+        // --- HELPERS ---
+        const getNoteName = (midi) => {
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(midi / 12) - 1;
+            return `${notes[midi % 12]}${octave}`;
+        };
+        const getFreq = (val, min) => 440 * Math.pow(2, ((min + (val * RANGE_WIDTH)) - 69) / 12);
+        const getRawFreq = (midi) => 440 * Math.pow(2, (midi - 69) / 12);
+        const midiNoteToVal = (note, min) => Math.max(0, Math.min(1, (note - min) / RANGE_WIDTH));
+        const getPitchFromY = (y, isGrid, min) => {
+            const val = Math.max(0, Math.min(1, 1 - y));
+            if (isGrid) {
+                const step = Math.floor(val / GRID_STEP_PCT);
+                const midiNote = min + GRID_OFFSET + step;
+                return 440 * Math.pow(2, (midiNote - 69) / 12);
+            } else {
+                const rawMidi = min + (val * RANGE_WIDTH);
+                return 440 * Math.pow(2, (Math.round(rawMidi) - 69) / 12);
+            }
+        };
+
+        // --- IMPORT MODAL ---
+        const ImportModal = ({ midiData, onClose, onConfirm, getAudioCtx }) => {
+            const [selectedSeq1, setSelectedSeq1] = useState(new Set());
+            const [selectedSeq2, setSelectedSeq2] = useState(new Set());
+            const [selectedHints, setSelectedHints] = useState(new Set());
+            const [playingTrack, setPlayingTrack] = useState(null);
+            const previewNodesRef = useRef([]);
+
+            useEffect(() => {
+                if (!midiData) return;
+                const seq1 = new Set(); const hints = new Set();
+                midiData.tracks.forEach((t, i) => {
+                    if (t.instrument.percussion) seq1.add(i); else if (t.notes.length > 0) hints.add(i);
+                });
+                setSelectedSeq1(seq1); setSelectedHints(hints);
+            }, [midiData]);
+
+            const toggleSet = (index, setObj, setFunc) => {
+                const newSet = new Set(setObj);
+                if (newSet.has(index)) newSet.delete(index); else newSet.add(index);
+                setFunc(newSet);
+            };
+
+            const togglePreview = async (trackIndex) => {
+                if (previewNodesRef.current.length > 0) {
+                    previewNodesRef.current.forEach(n => { try { n.gain.cancelScheduledValues(0); n.osc.stop(); } catch (e) { } });
+                    previewNodesRef.current = [];
+                }
+                if (playingTrack === trackIndex) { setPlayingTrack(null); return; }
+                const ctx = await getAudioCtx();
+                if (ctx.state === 'suspended') await ctx.resume();
+                setPlayingTrack(trackIndex);
+                const track = midiData.tracks[trackIndex];
+                const now = ctx.currentTime;
+                const firstNoteTime = track.notes.length > 0 ? track.notes[0].time : 0;
+                track.notes.forEach(note => {
+                    const relTime = note.time - firstNoteTime;
+                    if (relTime > 10) return;
+                    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                    osc.frequency.value = 440 * Math.pow(2, (note.midi - 69) / 12);
+                    osc.type = track.instrument.percussion ? 'square' : 'triangle';
+                    const startTime = now + relTime;
+                    const duration = Math.max(0.1, note.duration);
+                    gain.gain.setValueAtTime(0, startTime);
+                    gain.gain.linearRampToValueAtTime(0.2, startTime + 0.02);
+                    gain.gain.setValueAtTime(0.2, startTime + duration - 0.05);
+                    gain.gain.linearRampToValueAtTime(0, startTime + duration);
+                    osc.connect(gain); gain.connect(ctx.destination);
+                    osc.start(startTime); osc.stop(startTime + duration + 0.1);
+                    previewNodesRef.current.push({ osc, gain });
+                });
+                setTimeout(() => { if (playingTrack === trackIndex) setPlayingTrack(null); }, 10000);
+            };
+
+            useEffect(() => { return () => { previewNodesRef.current.forEach(n => { try { n.osc.stop(); } catch (e) { } }); } }, []);
+
+            if (!midiData) return null;
+            return (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4">
+                    <div className="bg-slate-900 border border-slate-700 rounded-lg shadow-2xl w-full max-w-4xl flex flex-col max-h-[90vh]">
+                        <div className="p-5 border-b border-slate-800 bg-slate-950 rounded-t-lg">
+                            <h2 className="text-xl font-bold text-white flex items-center gap-3"><Icons.Upload size={24} className="text-indigo-400" /> Import & Map MIDI</h2>
+                            <div className="text-xs text-slate-500 mt-1 font-mono flex gap-4"><span>{midiData.name || 'Untitled'}</span><span>•</span><span>{Math.round(midiData.header.tempos[0]?.bpm || 120)} BPM</span></div>
+                        </div>
+                        <div className="flex-1 overflow-y-auto p-0">
+                            <table className="w-full text-left text-xs border-collapse">
+                                <thead className="bg-slate-950 text-slate-400 sticky top-0 z-10 shadow-md">
+                                    <tr>
+                                        <th className="p-3 border-b border-slate-800 w-12 text-center">#</th>
+                                        <th className="p-3 border-b border-slate-800">Track</th>
+                                        <th className="p-3 border-b border-slate-800 text-center">Preview</th>
+                                        <th className="p-3 border-b border-slate-800 text-center w-24 bg-cyan-900/10 text-cyan-200">SEQ 1</th>
+                                        <th className="p-3 border-b border-slate-800 text-center w-24 bg-pink-900/10 text-pink-200">SEQ 2</th>
+                                        <th className="p-3 border-b border-slate-800 text-center w-24 bg-yellow-900/10 text-yellow-200">HINTS</th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-slate-800 text-slate-300">
+                                    {midiData.tracks.map((t, i) => (
+                                        <tr key={i} className={`hover:bg-white/5 transition-colors ${t.notes.length === 0 ? 'opacity-30' : ''}`}>
+                                            <td className="p-3 text-center font-mono text-slate-500">{i + 1}</td>
+                                            <td className="p-3"><div className="font-bold text-white">{t.name || 'Untitled'}</div><div className="text-[10px] text-slate-500 font-mono">{t.instrument.name || 'Unknown'} • {t.notes.length} notes</div></td>
+                                            <td className="p-3 text-center">{t.notes.length > 0 && (<button onClick={() => togglePreview(i)} className={`p-2 rounded-full border transition-all ${playingTrack === i ? 'bg-indigo-500 border-indigo-400 text-white animate-pulse' : 'bg-slate-800 border-slate-700 text-slate-400 hover:text-white hover:border-slate-500'}`}>{playingTrack === i ? <Icons.Stop size={12} fill="currentColor" /> : <Icons.Play size={12} fill="currentColor" />}</button>)}</td>
+                                            <td className="p-3 text-center bg-cyan-900/5"><input type="checkbox" className="w-5 h-5 rounded border-slate-600 text-cyan-500 focus:ring-cyan-500 bg-slate-800 cursor-pointer custom-checkbox" checked={selectedSeq1.has(i)} onChange={() => toggleSet(i, selectedSeq1, setSelectedSeq1)} disabled={t.notes.length === 0} /></td>
+                                            <td className="p-3 text-center bg-pink-900/5"><input type="checkbox" className="w-5 h-5 rounded border-slate-600 text-pink-500 focus:ring-pink-500 bg-slate-800 cursor-pointer custom-checkbox" checked={selectedSeq2.has(i)} onChange={() => toggleSet(i, selectedSeq2, setSelectedSeq2)} disabled={t.notes.length === 0} /></td>
+                                            <td className="p-3 text-center bg-yellow-900/5"><input type="checkbox" className="w-5 h-5 rounded border-slate-600 text-yellow-500 focus:ring-yellow-500 bg-slate-800 cursor-pointer custom-checkbox" checked={selectedHints.has(i)} onChange={() => toggleSet(i, selectedHints, setSelectedHints)} disabled={t.notes.length === 0} /></td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div className="p-4 border-t border-slate-800 bg-slate-950 rounded-b-lg flex justify-between items-center">
+                            <div className="text-xs text-slate-500">Duration logic now strictly follows file length.</div>
+                            <div className="flex gap-3">
+                                <button onClick={onClose} className="px-4 py-2 rounded text-xs font-bold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">CANCEL</button>
+                                <button onClick={() => onConfirm({ selectedSeq1, selectedSeq2, selectedHints })} className="px-6 py-2 rounded bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold shadow-lg shadow-indigo-900/50 flex items-center gap-2"><Icons.Check size={14} /> CONFIRM</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // --- OPTIMIZED STEP ROW ---
+        const StepRow = memo(({ step, idx, trackId, updateStepVal, handleStepAction }) => {
+            const handleSliderChange = (e) => updateStepVal(trackId, idx, parseFloat(e.target.value));
+            return (
+                <div id={`step-${trackId}-${idx}`} className={`absolute left-0 right-0 h-10 px-2 rounded-md flex items-center transition-colors hardware-accel ${step.skipped ? 'bg-slate-800 border border-slate-700 opacity-60' : trackId === 0 ? 'bg-cyan-900/20 border border-cyan-900/50' : 'bg-pink-900/20 border border-pink-900/50'}`} style={{ top: 0 }}>
+                    <span className="text-[10px] font-mono w-4 text-slate-500 mr-1">{idx + 1}</span>
+                    <div className={`flex-1 relative h-full flex items-center group cursor-ew-resize ${step.skipped ? 'grayscale opacity-50' : ''}`}>
+                        <div className="absolute left-0 right-0 h-1 bg-slate-800 rounded-full overflow-hidden"><div className={`h-full opacity-60 ${trackId === 0 ? 'bg-cyan-500' : 'bg-pink-500'}`} style={{ width: `${step.val * 100}%` }} /></div>
+                        <input type="range" min="0" max="1" step="0.01" value={step.val} onChange={handleSliderChange} className="absolute inset-0 w-full h-full opacity-0 z-10" />
+                        <div className={`absolute w-2 h-4 rounded-sm pointer-events-none transition-transform group-active:scale-125 ${trackId === 0 ? 'bg-cyan-400' : 'bg-pink-400'}`} style={{ left: `calc(${step.val * 100}% - 4px)` }} />
+                    </div>
+                    <button onClick={(e) => handleStepAction(e, trackId, idx)} className={`ml-2 p-1.5 rounded transition-colors z-20 ${step.skipped ? 'text-red-400 bg-red-900/20 hover:bg-red-900/40' : 'text-slate-500 hover:text-slate-300'}`}>{step.skipped ? <Icons.X size={14} strokeWidth={3} /> : <Icons.Trash2 size={14} />}</button>
+                </div>
+            );
+        }, (prev, next) => prev.step === next.step && prev.idx === next.idx && prev.trackId === next.trackId);
+
+        // --- VIRTUAL LIST COMPONENT (Auto-Scroll Capable) ---
+        const VirtualSequencerList = memo(forwardRef(({ track, trackId, updateStepVal, handleStepAction }, ref) => {
+            const containerRef = useRef(null);
+            const [scrollTop, setScrollTop] = useState(0);
+            const [containerHeight, setContainerHeight] = useState(600);
+
+            // Auto-scroll state management
+            const isAutoScrolling = useRef(false);
+            const userIsInteracting = useRef(false);
+            const interactionTimeout = useRef(null);
+
+            // Expose method to parent to trigger scroll
+            useImperativeHandle(ref, () => ({
+                scrollToStep: (index) => {
+                    const el = containerRef.current;
+                    if (!el || userIsInteracting.current) return;
+
+                    const itemTop = index * ROW_HEIGHT;
+                    // Center the item: Item Top - Half Container + Half Item
+                    const targetTop = itemTop - (containerHeight / 2) + (ROW_HEIGHT / 2);
+
+                    // Optimization: ignore micro adjustments
+                    if (Math.abs(el.scrollTop - targetTop) < 2) return;
+
+                    isAutoScrolling.current = true;
+                    el.scrollTop = targetTop; // Direct assignment is fastest for step sequencing
+                }
+            }));
+
+            const onScroll = useCallback((e) => {
+                const currentScrollTop = e.target.scrollTop;
+
+                if (isAutoScrolling.current) {
+                    isAutoScrolling.current = false; // Reset flag
+                    requestAnimationFrame(() => setScrollTop(currentScrollTop));
+                    return;
+                }
+
+                // If we are here, it's a user interaction
+                userIsInteracting.current = true;
+                if (interactionTimeout.current) clearTimeout(interactionTimeout.current);
+
+                // Set "cooldown" for 3 seconds
+                interactionTimeout.current = setTimeout(() => {
+                    userIsInteracting.current = false;
+                }, 3000);
+
+                requestAnimationFrame(() => setScrollTop(currentScrollTop));
+            }, []);
+
+            useEffect(() => {
+                if (!containerRef.current) return;
+                const ro = new ResizeObserver(entries => { for (let entry of entries) setContainerHeight(entry.contentRect.height); });
+                ro.observe(containerRef.current);
+                return () => ro.disconnect();
+            }, []);
+
+            const totalCount = track.length;
+            const totalHeight = totalCount * ROW_HEIGHT;
+            const buffer = 5;
+            const startIndex = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - buffer);
+            const visibleCount = Math.ceil(containerHeight / ROW_HEIGHT) + (2 * buffer);
+            const endIndex = Math.min(totalCount, startIndex + visibleCount);
+
+            const visibleItems = useMemo(() => {
+                const items = [];
+                for (let i = startIndex; i < endIndex; i++) {
+                    const step = track[i];
+                    items.push(
+                        <div key={step.id} style={{ position: 'absolute', top: `${i * ROW_HEIGHT}px`, left: 0, right: 0, height: `${ROW_HEIGHT}px` }}>
+                            <StepRow step={step} idx={i} trackId={trackId} updateStepVal={updateStepVal} handleStepAction={handleStepAction} />
+                        </div>
+                    );
+                }
+                return items;
+            }, [startIndex, endIndex, track, trackId, updateStepVal, handleStepAction]);
+
+            return (
+                <div ref={containerRef} onScroll={onScroll} className="flex-1 overflow-y-auto relative w-full h-full scrollbar-hide will-change-scroll">
+                    {totalCount === 0 && <div className="absolute inset-0 flex flex-col items-center justify-center text-slate-600 opacity-50 pointer-events-none top-0 sticky h-full"><Icons.Plus size={48} /><span className="text-xs mt-2 font-mono">ADD STEPS OR IMPORT MIDI</span></div>}
+                    <div style={{ height: `${totalHeight}px`, position: 'relative' }}>{visibleItems}</div>
+                </div>
+            );
+        }));
+
+        // --- CANVAS TIMELINE COMPONENT ---
+        const TimelineCanvas = memo(({ hints, loopLength }) => {
+            const canvasRef = useRef(null);
+            useEffect(() => {
+                const cvs = canvasRef.current; if (!cvs) return;
+                const ctx = cvs.getContext('2d');
+                const width = cvs.offsetWidth; const height = cvs.offsetHeight;
+                cvs.width = width; cvs.height = height;
+                ctx.clearRect(0, 0, width, height);
+                ctx.fillStyle = "#06b6d4";
+                for (let i = 0; i < hints.length; i++) {
+                    const hint = hints[i];
+                    const x = (hint.time / loopLength) * width;
+                    const w = Math.max(1, (hint.duration / loopLength) * width);
+                    ctx.globalAlpha = 0.6; ctx.fillRect(x, 0, w, height);
+                }
+            }, [hints, loopLength]);
+            return <canvas ref={canvasRef} className="absolute top-0 left-0 w-full h-full pointer-events-none" />;
+        });
+
+        // --- MAIN APP ---
+        function App() {
+            // State
+            const [audioCtx, setAudioCtx] = useState(null);
+            const [isPlaying, setIsPlaying] = useState(false);
+            const [activeTrackIdx, setActiveTrackIdx] = useState(0);
+            const [bpm, setBpm] = useState(140);
+            const [transpose, setTranspose] = useState(0);
+            const [autoPlayHints, setAutoPlayHints] = useState(false);
+            const [hintVolume, setHintVolume] = useState(0.5);
+            const [isGridMode, setIsGridMode] = useState(false);
+            const [loopLengthBeats, setLoopLengthBeats] = useState(32);
+            const [importedMidi, setImportedMidi] = useState(null);
+            const [showImportModal, setShowImportModal] = useState(false);
+            const [waveforms, setWaveforms] = useState(['triangle', 'sine', 'sawtooth']);
+            const [tracks, setTracks] = useState({ 0: Array(16).fill(null).map((_, i) => ({ id: i, val: 0.5, skipped: true })), 1: [] });
+            const [melodyHints, setMelodyHints] = useState([]);
+            const [rangeStart, setRangeStart] = useState(36);
+
+            // Refs
+            const tracksRef = useRef(tracks);
+            const melodyHintsRef = useRef(melodyHints);
+            const isPlayingRef = useRef(false);
+            const bpmRef = useRef(bpm);
+            const autoPlayHintsRef = useRef(autoPlayHints);
+            const hintVolumeRef = useRef(hintVolume);
+            const isGridModeRef = useRef(isGridMode);
+            const rangeStartRef = useRef(rangeStart);
+            const nextNoteTimeRef = useRef([0, 0]);
+            const timerIDRef = useRef(null);
+            const waveformsRef = useRef(waveforms);
+            const transposeRef = useRef(transpose);
+            const playbackStartTimeRef = useRef(0);
+            const loopStartTimeRef = useRef(0);
+            const hintIdxRef = useRef(0);
+            const loopLengthBeatsRef = useRef(32);
+
+            // Interaction Refs
+            const longPressTimerRef = useRef(null);
+            const volumeDragStartRef = useRef(null);
+            const canvasRef = useRef(null);
+            const playheadRef = useRef(null);
+            const padRef = useRef(null);
+            const activePadNodes = useRef(new Map());
+            const touchContainerRef = useRef(null);
+
+            // List Refs for Auto-Scroll
+            const sequencerRefs = useRef({ 0: null, 1: null });
+            const activeTrackRef = useRef(activeTrackIdx);
+
+            useEffect(() => { tracksRef.current = tracks; }, [tracks]);
+            useEffect(() => { waveformsRef.current = waveforms; }, [waveforms]);
+            useEffect(() => { transposeRef.current = transpose; }, [transpose]);
+            useEffect(() => { melodyHintsRef.current = melodyHints; }, [melodyHints]);
+            useEffect(() => { loopLengthBeatsRef.current = loopLengthBeats; }, [loopLengthBeats]);
+            useEffect(() => { isPlayingRef.current = isPlaying; }, [isPlaying]);
+            useEffect(() => { bpmRef.current = bpm; }, [bpm]);
+            useEffect(() => { autoPlayHintsRef.current = autoPlayHints; }, [autoPlayHints]);
+            useEffect(() => { hintVolumeRef.current = hintVolume; }, [hintVolume]);
+            useEffect(() => { isGridModeRef.current = isGridMode; }, [isGridMode]);
+            useEffect(() => { rangeStartRef.current = rangeStart; }, [rangeStart]);
+            useEffect(() => { activeTrackRef.current = activeTrackIdx; }, [activeTrackIdx]);
+
+            const initAudio = useCallback(async () => {
+                if (audioCtx) { if (audioCtx.state === 'suspended') await audioCtx.resume(); return audioCtx; }
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                await ctx.resume(); setAudioCtx(ctx); return ctx;
+            }, [audioCtx]);
+
+            const playOscillator = (freq, time, type, duration = NOTE_DURATION, vol = 0.3) => {
+                if (!audioCtx) return;
+                const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+                osc.type = type; osc.frequency.value = freq;
+                osc.connect(gain); gain.connect(audioCtx.destination);
+                osc.start(time);
+                gain.gain.setValueAtTime(0, time);
+                gain.gain.linearRampToValueAtTime(vol, time + ATTACK_TIME);
+                gain.gain.exponentialRampToValueAtTime(0.001, time + duration);
+                osc.stop(time + duration + 0.1);
+            };
+
+            const startStop = async () => {
+                const ctx = await initAudio();
+                if (isPlaying) {
+                    setIsPlaying(false);
+                    if (timerIDRef.current) clearTimeout(timerIDRef.current);
+                } else {
+                    setIsPlaying(true);
+                    playbackStartTimeRef.current = ctx.currentTime + 0.1;
+                    loopStartTimeRef.current = playbackStartTimeRef.current;
+                    hintIdxRef.current = 0;
+                    nextNoteTimeRef.current = [playbackStartTimeRef.current, playbackStartTimeRef.current];
+                    scheduler();
+                    requestAnimationFrame(animateVisuals);
+                }
+            };
+
+            const stepIndices = useRef([0, 0]);
+
+            const scheduler = () => {
+                const secondsPerBeat = 60.0 / bpmRef.current;
+                [0, 1].forEach(trackId => {
+                    const trackData = tracksRef.current[trackId];
+                    if (trackData.length === 0) return;
+                    while (nextNoteTimeRef.current[trackId] < audioCtx.currentTime + SCHEDULE_AHEAD_TIME) {
+                        scheduleNote(trackId, stepIndices.current[trackId], nextNoteTimeRef.current[trackId]);
+                        nextNoteTimeRef.current[trackId] += (secondsPerBeat / 2);
+                        stepIndices.current[trackId] = (stepIndices.current[trackId] + 1) % trackData.length;
+                    }
+                });
+                if (melodyHintsRef.current.length > 0 && autoPlayHintsRef.current) {
+                    const loopDuration = loopLengthBeatsRef.current * secondsPerBeat;
+                    if (audioCtx.currentTime > loopStartTimeRef.current + loopDuration) {
+                        loopStartTimeRef.current += loopDuration;
+                        hintIdxRef.current = 0;
+                    }
+                    while (hintIdxRef.current < melodyHintsRef.current.length) {
+                        const hint = melodyHintsRef.current[hintIdxRef.current];
+                        const hintTime = loopStartTimeRef.current + (hint.time * secondsPerBeat);
+                        if (hintTime < audioCtx.currentTime + SCHEDULE_AHEAD_TIME) {
+                            if (hintTime >= audioCtx.currentTime - 0.1) {
+                                const freq = hint.rawMidi ? getRawFreq(hint.rawMidi) : getFreq(hint.val, rangeStartRef.current);
+                                playOscillator(freq, hintTime, 'sine', hint.duration * secondsPerBeat, hintVolumeRef.current * MAX_GAIN);
+                            }
+                            hintIdxRef.current++;
+                        } else { break; }
+                    }
+                }
+                timerIDRef.current = setTimeout(scheduler, LOOKAHEAD);
+            };
+
+            const scheduleNote = (trackId, stepIdx, time) => {
+                const trackData = tracksRef.current[trackId];
+                if (!trackData[stepIdx]) return;
+                const step = trackData[stepIdx];
+                if (!step.skipped) {
+                    const val = step.val;
+                    const baseFreq = getFreq(val, rangeStartRef.current);
+                    const transposedFreq = baseFreq * Math.pow(2, transposeRef.current / 12);
+                    playOscillator(transposedFreq, time, waveformsRef.current[trackId], NOTE_DURATION, 0.25);
+                }
+
+                // Visual & Scroll Sync (Calculated for exact playback time)
+                const timeUntilPlay = Math.max(0, (time - audioCtx.currentTime) * 1000);
+                setTimeout(() => {
+                    // 1. Highlight
+                    const el = document.getElementById(`step-${trackId}-${stepIdx}`);
+                    if (el) {
+                        el.classList.add('brightness-200', 'scale-[1.02]');
+                        setTimeout(() => el.classList.remove('brightness-200', 'scale-[1.02]'), 150);
+                    }
+                    // 2. Auto-Scroll (Only for active track)
+                    if (trackId === activeTrackRef.current) {
+                        const listRef = sequencerRefs.current[trackId];
+                        if (listRef) listRef.scrollToStep(stepIdx);
+                    }
+                }, timeUntilPlay);
+            };
+
+            // --- ANIMATION LOOP (CANVAS) ---
+            const animateVisuals = () => {
+                if (!isPlayingRef.current || !audioCtx) return;
+
+                const secondsPerBeat = 60.0 / bpmRef.current;
+                const elapsedTime = audioCtx.currentTime - playbackStartTimeRef.current;
+                const loopBeats = loopLengthBeatsRef.current;
+                const currentBeatTotal = elapsedTime / secondsPerBeat;
+                const currentBeatInLoop = currentBeatTotal % loopBeats;
+
+                if (playheadRef.current) {
+                    playheadRef.current.style.left = `${(currentBeatInLoop / loopBeats) * 100}%`;
+                }
+
+                const cvs = canvasRef.current;
+                if (cvs) {
+                    const ctx = cvs.getContext('2d');
+                    const w = cvs.width; const h = cvs.height;
+                    ctx.clearRect(0, 0, w, h);
+                    ctx.shadowBlur = 15; ctx.shadowColor = 'rgba(34, 211, 238, 0.8)';
+                    const hints = melodyHintsRef.current;
+                    const grid = isGridModeRef.current;
+                    const min = rangeStartRef.current;
+
+                    let startIdx = 0;
+                    let low = 0, high = hints.length - 1;
+                    const targetTime = currentBeatInLoop - 0.5;
+                    while (low <= high) {
+                        const mid = (low + high) >>> 1;
+                        if (hints[mid].time < targetTime) low = mid + 1;
+                        else high = mid - 1;
+                    }
+                    startIdx = Math.max(0, low - 5);
+
+                    const drawHint = (hint, delta) => {
+                        const urgency = Math.max(0, delta);
+                        const opacity = Math.max(0, Math.min(1, 1 - (urgency / 1.5)));
+                        if (opacity <= 0.01) return;
+                        const x = w / 2;
+                        let y;
+                        if (grid) {
+                            const rawMidi = min + (hint.val * RANGE_WIDTH);
+                            const shiftedIdx = rawMidi - min - GRID_OFFSET;
+                            const yPct = shiftedIdx / RANGE_GRID;
+                            y = (1 - yPct) * h;
+                        } else {
+                            y = (1 - hint.val) * h;
+                        }
+                        const rotation = urgency * (Math.PI / 2);
+                        ctx.save();
+                        ctx.translate(x, y); ctx.rotate(rotation);
+                        ctx.beginPath(); ctx.arc(0, 0, 24, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(34, 211, 238, ${opacity * 0.4})`;
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+                        ctx.lineWidth = 2; ctx.fill(); ctx.stroke();
+                        ctx.beginPath(); ctx.moveTo(0, -10); ctx.lineTo(0, -20);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`; ctx.lineWidth = 3; ctx.stroke();
+                        if (urgency <= 0.1) {
+                            ctx.rotate(-rotation); ctx.fillStyle = "rgba(103, 232, 249, 1)";
+                            ctx.font = "bold 10px monospace"; ctx.textAlign = "center"; ctx.fillText("HIT!", 0, 35);
+                        }
+                        ctx.restore();
+                    };
+
+                    for (let i = startIdx; i < hints.length; i++) {
+                        const hint = hints[i];
+                        let delta = hint.time - currentBeatInLoop;
+                        if (delta > 2.0) break;
+                        if (delta > -0.5) drawHint(hint, delta);
+                    }
+
+                    if (currentBeatInLoop > loopBeats - 2.0) {
+                        for (let i = 0; i < hints.length; i++) {
+                            const hint = hints[i];
+                            if (hint.time > 2.0) break;
+                            let delta = (hint.time + loopBeats) - currentBeatInLoop;
+                            if (delta < 2.0) drawHint(hint, delta);
+                        }
+                    }
+                }
+                if (isPlayingRef.current) requestAnimationFrame(animateVisuals);
+            };
+
+            useEffect(() => {
+                const handleResize = () => { if (canvasRef.current) { const rect = canvasRef.current.parentElement.getBoundingClientRect(); canvasRef.current.width = rect.width; canvasRef.current.height = rect.height; } };
+                window.addEventListener('resize', handleResize); handleResize();
+                return () => window.removeEventListener('resize', handleResize);
+            }, []);
+
+            // --- ACTIONS ---
+            const handleTrackSwitch = (newIdx) => { setActiveTrackIdx(newIdx); };
+
+            const handleHintDown = (e) => {
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                volumeDragStartRef.current = { x: clientX, vol: hintVolume };
+                longPressTimerRef.current = setTimeout(() => {
+                    setIsGridMode(prev => !prev);
+                    longPressTimerRef.current = null;
+                    volumeDragStartRef.current = null;
+                }, 600);
+            };
+            const handleHintMove = (e) => {
+                if (!volumeDragStartRef.current) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const delta = clientX - volumeDragStartRef.current.x;
+                if (Math.abs(delta) > 5) {
+                    if (longPressTimerRef.current) clearTimeout(longPressTimerRef.current);
+                    const newVol = Math.min(1, Math.max(0, volumeDragStartRef.current.vol + (delta * 0.005)));
+                    setHintVolume(newVol);
+                }
+            };
+            const handleHintUp = () => {
+                volumeDragStartRef.current = null;
+                if (longPressTimerRef.current) {
+                    clearTimeout(longPressTimerRef.current);
+                    longPressTimerRef.current = null;
+                    setAutoPlayHints(prev => !prev);
+                }
+            };
+
+            const addStep = useCallback(() => {
+                setTracks(prev => ({ ...prev, [activeTrackIdx]: [...prev[activeTrackIdx], { id: Date.now(), val: 0.5, skipped: false }] }));
+            }, [activeTrackIdx]);
+
+            const handleStepAction = useCallback((e, tId, index) => {
+                e.stopPropagation();
+                setTracks(prev => {
+                    const newArr = [...prev[tId]];
+                    const step = newArr[index];
+                    if (!step.skipped) newArr[index] = { ...step, skipped: true };
+                    else newArr.splice(index, 1);
+                    return { ...prev, [tId]: newArr };
+                });
+            }, []);
+
+            const updateStepVal = useCallback((tId, index, newVal) => {
+                setTracks(prev => {
+                    const newArr = [...prev[tId]];
+                    newArr[index] = { ...newArr[index], val: newVal, skipped: false };
+                    return { ...prev, [tId]: newArr };
+                });
+            }, []);
+
+            const clearTrack = useCallback(() => setTracks(prev => ({ ...prev, [activeTrackIdx]: [] })), [activeTrackIdx]);
+            const cycleWaveform = useCallback((targetIndex) => {
+                const types = ['sine', 'triangle', 'sawtooth', 'square'];
+                const next = types[(types.indexOf(waveforms[targetIndex]) + 1) % types.length];
+                const newW = [...waveforms]; newW[targetIndex] = next;
+                setWaveforms(newW);
+            }, [waveforms]);
+
+            const handleFileSelect = (e) => {
+                const file = e.target.files[0]; if (!file) return;
+                const reader = new FileReader();
+                reader.onload = (ev) => {
+                    try { setImportedMidi(new window.Midi(ev.target.result)); setShowImportModal(true); } catch (err) { alert("Error parsing MIDI"); }
+                };
+                reader.readAsArrayBuffer(file);
+            };
+
+            const processMidiSelection = ({ selectedSeq1, selectedSeq2, selectedHints }) => {
+                if (!importedMidi) return;
+                setShowImportModal(false);
+                if (importedMidi.header.tempos.length > 0) setBpm(Math.round(importedMidi.header.tempos[0].bpm));
+                const secondsPerBeat = 60 / (importedMidi.header.tempos[0]?.bpm || 120);
+
+                let maxBeat = 0;
+                [selectedSeq1, selectedSeq2, selectedHints].forEach(set => {
+                    set.forEach(idx => {
+                        importedMidi.tracks[idx].notes.forEach(n => {
+                            if ((n.time + n.duration) / secondsPerBeat > maxBeat) maxBeat = (n.time + n.duration) / secondsPerBeat;
+                        });
+                    });
+                });
+                let loopLen = Math.ceil(maxBeat) || 4;
+                setLoopLengthBeats(loopLen);
+
+                let minMidi = 127; let maxMidi = 0; let noteCount = 0; let allHintNotesRaw = [];
+                selectedHints.forEach(idx => {
+                    const t = importedMidi.tracks[idx];
+                    t.notes.forEach(n => {
+                        if (n.midi < minMidi) minMidi = n.midi;
+                        if (n.midi > maxMidi) maxMidi = n.midi;
+                        noteCount++;
+                        allHintNotesRaw.push(n);
+                    });
+                });
+
+                let newMin = 36;
+                if (noteCount > 0) {
+                    const midpoint = (minMidi + maxMidi) / 2;
+                    newMin = Math.floor(midpoint - (RANGE_WIDTH / 2));
+                    if (newMin < 0) newMin = 0; if (newMin > 127 - RANGE_WIDTH) newMin = 127 - RANGE_WIDTH;
+                }
+                setRangeStart(newMin);
+
+                const processTrackSet = (indices) => {
+                    if (indices.size === 0) return [];
+                    let allNotes = [];
+                    indices.forEach(idx => allNotes = allNotes.concat(importedMidi.tracks[idx].notes));
+                    const stepsCount = Math.ceil(loopLen * 2);
+                    const newSteps = [];
+                    for (let i = 0; i < stepsCount; i++) {
+                        const stepTime = i * (secondsPerBeat / 2);
+                        const found = allNotes.find(n => n.time >= stepTime - 0.05 && n.time < stepTime + (secondsPerBeat / 2) - 0.05);
+                        newSteps.push({
+                            id: Date.now() + i, // Ensure unique ID
+                            val: found ? midiNoteToVal(found.midi, newMin) : 0.5,
+                            skipped: !found
+                        });
+                    }
+                    return newSteps;
+                };
+
+                setTracks(prev => ({ 0: processTrackSet(selectedSeq1).length ? processTrackSet(selectedSeq1) : prev[0], 1: processTrackSet(selectedSeq2).length ? processTrackSet(selectedSeq2) : prev[1] }));
+                setMelodyHints(allHintNotesRaw.map(n => ({
+                    time: n.time / secondsPerBeat,
+                    val: midiNoteToVal(n.midi, newMin),
+                    rawMidi: n.midi,
+                    duration: Math.max(0.1, n.duration / secondsPerBeat)
+                })).sort((a, b) => a.time - b.time));
+                setImportedMidi(null);
+            };
+
+            const updateTouchDOM = () => {
+                if (!touchContainerRef.current) return;
+                touchContainerRef.current.innerHTML = '';
+                activePadNodes.current.forEach((node) => {
+                    const el = document.createElement('div');
+                    el.className = "absolute w-12 h-12 -ml-6 -mt-6 rounded-full border-2 border-white pointer-events-none mix-blend-screen z-10 flex items-center justify-center";
+                    el.style.left = `${node.x}px`; el.style.top = `${node.y}px`;
+                    el.style.backgroundColor = `rgba(250, 204, 21, ${Math.min(node.x / 400, 0.8)})`;
+                    el.style.boxShadow = `0 0 ${node.x / 5}px rgba(250, 204, 21, 0.8)`;
+                    const dot = document.createElement('div'); dot.className = "w-1 h-1 bg-white rounded-full"; el.appendChild(dot);
+                    touchContainerRef.current.appendChild(el);
+                });
+            };
+
+            useEffect(() => {
+                const pad = padRef.current; if (!pad) return;
+                const handleStart = async (e) => {
+                    e.preventDefault();
+                    const ctx = await initAudio();
+                    const rect = pad.getBoundingClientRect();
+                    const touches = e.changedTouches;
+                    for (let i = 0; i < touches.length; i++) {
+                        const t = touches[i];
+                        const x = t.clientX - rect.left; const y = t.clientY - rect.top;
+                        const freq = getPitchFromY(y / rect.height, isGridModeRef.current, rangeStartRef.current);
+                        const gainVal = Math.min((x / rect.width) * 0.5, MAX_GAIN);
+                        const osc = ctx.createOscillator(); const gain = ctx.createGain();
+                        osc.type = waveformsRef.current[2]; osc.frequency.setValueAtTime(freq, ctx.currentTime);
+                        gain.gain.setValueAtTime(0, ctx.currentTime); gain.gain.linearRampToValueAtTime(gainVal, ctx.currentTime + ATTACK_TIME);
+                        osc.connect(gain); gain.connect(ctx.destination); osc.start();
+                        activePadNodes.current.set(t.identifier, { osc, gain, x, y });
+                    }
+                    updateTouchDOM();
+                };
+                const handleMove = (e) => {
+                    e.preventDefault(); if (!audioCtx) return;
+                    const rect = pad.getBoundingClientRect(); const touches = e.changedTouches;
+                    for (let i = 0; i < touches.length; i++) {
+                        const t = touches[i];
+                        const node = activePadNodes.current.get(t.identifier);
+                        if (node) {
+                            const x = t.clientX - rect.left; const y = t.clientY - rect.top;
+                            const freq = getPitchFromY(y / rect.height, isGridModeRef.current, rangeStartRef.current);
+                            const gainVal = Math.min((x / rect.width) * 0.5, MAX_GAIN);
+                            node.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+                            node.osc.frequency.setTargetAtTime(freq, audioCtx.currentTime, 0.05);
+                            node.gain.gain.setTargetAtTime(gainVal, audioCtx.currentTime, 0.05);
+                            node.x = x; node.y = y;
+                        }
+                    }
+                    updateTouchDOM();
+                };
+                const handleEnd = (e) => {
+                    e.preventDefault(); if (!audioCtx) return;
+                    const touches = e.changedTouches;
+                    for (let i = 0; i < touches.length; i++) {
+                        const id = touches[i].identifier; const node = activePadNodes.current.get(id);
+                        if (node) {
+                            try {
+                                const curr = node.gain.gain.value;
+                                node.gain.gain.cancelScheduledValues(audioCtx.currentTime);
+                                node.gain.gain.setValueAtTime(curr, audioCtx.currentTime);
+                                node.gain.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 0.15);
+                                node.osc.stop(audioCtx.currentTime + 0.2);
+                            } catch (e) { }
+                            activePadNodes.current.delete(id);
+                        }
+                    }
+                    if (e.touches.length === 0) { activePadNodes.current.forEach(n => { try { n.osc.stop() } catch (e) { } }); activePadNodes.current.clear(); }
+                    updateTouchDOM();
+                };
+
+                pad.addEventListener('touchstart', handleStart, { passive: false });
+                pad.addEventListener('touchmove', handleMove, { passive: false });
+                pad.addEventListener('touchend', handleEnd, { passive: false });
+                pad.addEventListener('touchcancel', handleEnd, { passive: false });
+                const handleMouseDown = (e) => handleStart({ preventDefault: () => { }, changedTouches: [{ identifier: 'm', clientX: e.clientX, clientY: e.clientY }] });
+                const handleMouseMove = (e) => { if (e.buttons === 1) handleMove({ preventDefault: () => { }, changedTouches: [{ identifier: 'm', clientX: e.clientX, clientY: e.clientY }] }); };
+                const handleMouseUp = (e) => handleEnd({ preventDefault: () => { }, changedTouches: [{ identifier: 'm' }], touches: [] });
+                pad.addEventListener('mousedown', handleMouseDown); pad.addEventListener('mousemove', handleMouseMove); pad.addEventListener('mouseup', handleMouseUp); pad.addEventListener('mouseleave', handleMouseUp);
+                return () => {
+                    pad.removeEventListener('touchstart', handleStart); pad.removeEventListener('touchmove', handleMove); pad.removeEventListener('touchend', handleEnd); pad.removeEventListener('touchcancel', handleEnd);
+                    pad.removeEventListener('mousedown', handleMouseDown); pad.removeEventListener('mousemove', handleMouseMove); pad.removeEventListener('mouseup', handleMouseUp); pad.removeEventListener('mouseleave', handleMouseUp);
+                };
+            }, [audioCtx]);
+
+            return (
+                <div className="flex w-full h-screen bg-black overflow-hidden select-none text-white font-sans relative">
+                    {/* TOP TIMELINE - CANVAS */}
+                    {melodyHints.length > 0 && (
+                        <div className="absolute top-0 left-0 w-full h-[2px] bg-slate-900 z-50 pointer-events-none">
+                            <TimelineCanvas hints={melodyHints} loopLength={loopLengthBeats} />
+                            <div ref={playheadRef} className="absolute top-0 bottom-0 w-[2px] bg-white shadow-[0_0_5px_white] z-10" />
+                        </div>
+                    )}
+
+                    {showImportModal && <ImportModal midiData={importedMidi} onClose={() => setShowImportModal(false)} onConfirm={processMidiSelection} getAudioCtx={initAudio} />}
+
+                    {/* LEFT SEQUENCER */}
+                    <div className="w-1/2 h-full flex flex-col border-r border-slate-800 bg-slate-950">
+                        <div className="flex flex-col gap-2 p-3 bg-slate-900 border-b border-slate-800 shrink-0">
+                            <div className="w-full relative group">
+                                <input type="file" accept=".mid,.midi" onChange={handleFileSelect} onClick={(e) => e.target.value = null} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                                <div className="flex items-center justify-center gap-2 w-full py-2 bg-indigo-600 hover:bg-indigo-500 rounded text-sm font-bold shadow-lg transition-colors group-active:scale-95"><Icons.Upload size={16} /> IMPORT MIDI FILE</div>
+                            </div>
+                            <div className="flex items-center justify-between mt-2">
+                                <button onClick={() => handleTrackSwitch(activeTrackIdx === 0 ? 1 : 0)} className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-800 text-xs font-bold border border-slate-700 active:scale-95 transition-transform">
+                                    <div className={`w-2 h-2 rounded-full ${activeTrackIdx === 0 ? 'bg-cyan-400 shadow-[0_0_8px_cyan]' : 'bg-pink-500 shadow-[0_0_8px_magenta]'}`} /> {activeTrackIdx === 0 ? 'TRACK 1' : 'TRACK 2'}
+                                </button>
+                                <button onClick={clearTrack} className="p-1.5 rounded bg-slate-800 text-slate-500 hover:text-red-400 border border-slate-700"><Icons.Trash2 size={14} /></button>
+                            </div>
+                            <button onClick={() => cycleWaveform(activeTrackIdx)} className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-slate-800 text-xs border border-slate-700 w-full justify-center hover:bg-slate-700"><Icons.Activity size={12} /><span className="uppercase">{waveforms[activeTrackIdx]}</span></button>
+                        </div>
+                        {/* VIRTUALIZED LIST */}
+                        <div className="flex-1 overflow-hidden relative">
+                            {[0, 1].map(trackId => (
+                                <div key={trackId} className={`absolute inset-0 ${activeTrackIdx === trackId ? 'block' : 'hidden'}`}>
+                                    <VirtualSequencerList
+                                        ref={(el) => sequencerRefs.current[trackId] = el}
+                                        track={tracks[trackId]}
+                                        trackId={trackId}
+                                        updateStepVal={updateStepVal}
+                                        handleStepAction={handleStepAction}
+                                    />
+                                </div>
+                            ))}
+                        </div>
+                        <div className="absolute bottom-0 left-0 w-1/2 bg-slate-900/95 backdrop-blur border-t border-slate-800 p-3 flex flex-col gap-3 z-20">
+                            <div className="flex items-center gap-3"><Icons.Music size={16} className="text-slate-500" /><div className="flex-1 flex flex-col"><input type="range" min="60" max="600" step="5" value={bpm} onChange={(e) => setBpm(Number(e.target.value))} className="w-full h-1 bg-slate-700 rounded-lg appearance-none cursor-pointer" /></div><span className="text-xs font-mono text-slate-400 w-8 text-right">{bpm}</span></div>
+                            <button onClick={addStep} className={`w-full py-2 rounded-md flex items-center justify-center text-white font-bold text-sm shadow-lg active:scale-95 transition-all ${activeTrackIdx === 0 ? 'bg-cyan-600 hover:bg-cyan-500' : 'bg-pink-600 hover:bg-pink-500'}`}><Icons.Plus size={16} className="mr-1" /> ADD STEP</button>
+                            <div className="relative w-full h-10 bg-slate-800 rounded-md overflow-hidden border border-slate-700 group">
+                                <div className="absolute left-1/2 top-0 bottom-0 w-0.5 bg-white/20 -translate-x-1/2 pointer-events-none" />
+                                <div className={`absolute top-0 bottom-0 transition-all duration-100 opacity-30 pointer-events-none ${transpose > 0 ? 'bg-pink-500 left-1/2' : 'bg-cyan-500 right-1/2'}`} style={{ width: `${(Math.abs(transpose) / 12) * 50}%` }} />
+                                <input type="range" min="-12" max="12" step="1" value={transpose} onChange={(e) => setTranspose(Number(e.target.value))} className="absolute inset-0 w-full h-full opacity-0 cursor-ew-resize z-10" />
+                                <div className="absolute inset-0 flex items-center justify-center pointer-events-none gap-2"><Icons.MoveHorizontal size={12} className="text-slate-400" /><span className="text-xs font-mono text-slate-200">{transpose > 0 ? `+${transpose}` : transpose}</span><span className="text-[9px] text-slate-500 uppercase tracking-widest">SEQ PITCH</span></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* RIGHT VISUALIZER & PAD */}
+                    <div className="w-1/2 h-full flex flex-col relative bg-indigo-950">
+                        <div className="absolute top-0 right-0 p-3 z-30 flex flex-col items-end gap-2 pointer-events-none">
+                            {melodyHints.length > 0 && (
+                                <button
+                                    onMouseDown={handleHintDown} onMouseMove={handleHintMove} onMouseUp={handleHintUp} onMouseLeave={handleHintUp}
+                                    onTouchStart={handleHintDown} onTouchMove={handleHintMove} onTouchEnd={handleHintUp}
+                                    className={`relative overflow-hidden pointer-events-auto px-3 py-1 rounded-full border text-[10px] font-bold flex items-center gap-2 transition-all ${isGridMode ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-black' : ''} ${autoPlayHints ? 'text-yellow-300 border-yellow-500' : 'text-yellow-500/50 border-yellow-500/30'}`} style={{ backgroundColor: 'rgba(0,0,0,0.6)' }}
+                                >
+                                    <div className="absolute inset-0 bg-yellow-500/20 pointer-events-none" style={{ width: `${hintVolume * 100}%`, transition: 'width 0.1s' }} />
+                                    <div className="relative z-10 flex items-center gap-2">
+                                        {isGridMode ? <Icons.Grid size={12} /> : (autoPlayHints ? <Icons.Volume2 size={12} /> : <Icons.VolumeX size={12} />)} {isGridMode ? 'GRID MODE' : (autoPlayHints ? 'HINTS ON' : 'HINTS OFF')}
+                                    </div>
+                                </button>
+                            )}
+                            <button onClick={() => cycleWaveform(2)} className="pointer-events-auto flex items-center gap-2 px-3 py-1 rounded-full bg-black/40 text-[10px] text-yellow-400 border border-yellow-500/30 hover:bg-black/60 active:scale-95"><Icons.Activity size={10} />{waveforms[2].toUpperCase()}</button>
+                        </div>
+
+                        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full pointer-events-none z-0" />
+                        <div ref={padRef} className="absolute inset-0 w-full h-full cursor-crosshair touch-none z-10" style={{ touchAction: 'none' }}>
+                            <div className="absolute inset-0 pointer-events-none opacity-20 flex"><div className="flex-1 border-r border-white/20"></div><div className="flex-1 border-r border-white/20"></div><div className="flex-1 border-r border-white/20"></div><div className="flex-1"></div></div>
+                            <div className="absolute inset-0 pointer-events-none opacity-20 flex flex-col"><div className="flex-1 border-b border-white/20"></div><div className="flex-1 border-b border-white/20"></div><div className="flex-1 border-b border-white/20"></div><div className="flex-1 border-b border-white/20"></div><div className="flex-1 border-b border-white/20"></div><div className="flex-1"></div></div>
+                            <div className="absolute inset-0 pointer-events-none opacity-40 flex flex-col justify-between p-4 z-0">
+                                <div className="w-full text-[9px] text-right pt-1 font-mono text-white/70">{getNoteName(rangeStart + RANGE_WIDTH + (isGridMode ? GRID_OFFSET : 0))} ({rangeStart + RANGE_WIDTH + (isGridMode ? GRID_OFFSET : 0)})</div>
+                                <div className="w-full text-[9px] text-right pb-1 font-mono text-white/70">{getNoteName(rangeStart + (isGridMode ? GRID_OFFSET : 0))} ({rangeStart + (isGridMode ? GRID_OFFSET : 0)})</div>
+                            </div>
+                            <div className="absolute bottom-4 left-4 text-[9px] text-white/30 font-mono z-0">QUIET</div><div className="absolute bottom-4 right-4 text-[9px] text-white/30 font-mono z-0">LOUD</div>
+                            <div ref={touchContainerRef} className="absolute inset-0 w-full h-full pointer-events-none" />
+                        </div>
+                        <div className="absolute bottom-8 left-0 -translate-x-1/2 z-50">
+                            <button onClick={startStop} className={`w-16 h-16 rounded-full flex items-center justify-center text-white shadow-xl transition-all border-4 border-black active:scale-95 ${isPlaying ? 'bg-amber-500 hover:bg-amber-400 shadow-amber-900/50' : 'bg-green-600 hover:bg-green-500 shadow-green-900/50'}`}>{isPlaying ? <Icons.Pause size={28} fill="currentColor" /> : <Icons.Play size={28} fill="currentColor" className="ml-1" />}</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+
+</html>

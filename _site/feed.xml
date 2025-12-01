@@ -5,9 +5,192 @@
     <description>An overview of some of the things i've done!</description>
     <link>http://localhost:4000/</link>
     <atom:link href="http://localhost:4000/feed.xml" rel="self" type="application/rss+xml"/>
-    <pubDate>Fri, 10 Jan 2025 18:29:16 -0500</pubDate>
-    <lastBuildDate>Fri, 10 Jan 2025 18:29:16 -0500</lastBuildDate>
+    <pubDate>Mon, 01 Dec 2025 00:51:28 -0500</pubDate>
+    <lastBuildDate>Mon, 01 Dec 2025 00:51:28 -0500</lastBuildDate>
     <generator>Jekyll v3.8.5</generator>
+    
+      <item>
+        <title>Game Storyizer</title>
+        <description>&lt;p&gt;I’ve built a new tool called &lt;strong&gt;Game Storyizer&lt;/strong&gt;. It’s a node-based narrative builder designed to help game developers and writers create complex, branching storylines.&lt;/p&gt;
+
+&lt;p&gt;The tool features a visual graph editor where you can create nodes representing story events and connect them to define the flow. It supports logic gates (AND/OR) for prerequisites, making it easy to design puzzles or multi-path narratives.&lt;/p&gt;
+
+&lt;p&gt;I wanted to try to see how good Gemini Canvas Mode was at building games, but i also needed a way to present the game story to the AI. Just writing it out in plain text wasn’t good enough because stories have branches, and if you need to change or modify things, that gets complicated.&lt;/p&gt;
+
+&lt;p&gt;The idea of using a directed graph story editor isn’t new, but i couldn’t find any free easy to use tools, that most importantly, just outputted the story in a format good for AI. This tool is the beginnings of that. I already have some plans to make this better. I belief one-shot creation of a game from story to 3D world is entirely possible!&lt;/p&gt;
+
+&lt;p&gt;Check it out below!&lt;/p&gt;
+
+&lt;div style=&quot;margin-bottom: 10px; text-align: right;&quot;&gt;
+&lt;a href=&quot;/assets/apps/game-storyizer/dist/index.html&quot; target=&quot;_blank&quot; style=&quot;display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;&quot;&gt;OPEN IN NEW WINDOW&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;iframe src=&quot;/assets/apps/game-storyizer/dist/index.html&quot; style=&quot;width:100%; height:800px; border:none; background: #020617;&quot;&gt;&lt;/iframe&gt;
+</description>
+        <pubDate>Mon, 01 Dec 2025 00:00:00 -0500</pubDate>
+        <link>http://localhost:4000/game-storyizer/</link>
+        <guid isPermaLink="true">http://localhost:4000/game-storyizer/</guid>
+        
+        
+        <category>gamedev</category>
+        
+        <category>writing</category>
+        
+        <category>tool</category>
+        
+      </item>
+    
+      <item>
+        <title>Find Your Jacket: A Winter Puzzle</title>
+        <description>&lt;p&gt;I’m excited to share a new mini-game: &lt;strong&gt;Find Your Jacket&lt;/strong&gt;. It’s a short, atmospheric puzzle game set in a frozen cabin.&lt;/p&gt;
+
+&lt;p&gt;This game was actually built using my new narrative tool, &lt;a href=&quot;/game-storyizer/&quot;&gt;Game Storyizer&lt;/a&gt;. I used the tool to map out the puzzle logic and item interactions, then exported the data to drive the game’s state machine. It was a great way to test the tool in a real-world scenario!&lt;/p&gt;
+
+&lt;p&gt;Most amazingly, i built this all on my phone, lounging on my couch, just talking to an AI. In my 35 years of programming, writing code since i was in 4th grade, this was the most blissful programming experience i’ve ever had. We’re truly in a new era of AI driven creativity!!&lt;/p&gt;
+
+&lt;p&gt;Explore the cabin, find items, and see if you can escape the cold. It works great on mobile. You can use WASD keys on desktop, and click and drag to move the camera and interact.&lt;/p&gt;
+
+&lt;div style=&quot;margin-bottom: 10px; text-align: right;&quot;&gt;
+&lt;a href=&quot;/assets/apps/game-puzzle-jacket/index.html&quot; target=&quot;_blank&quot; style=&quot;display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;&quot;&gt;OPEN IN NEW WINDOW&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;iframe src=&quot;/assets/apps/game-puzzle-jacket/index.html&quot; style=&quot;width:100%; height:800px; border:none; background: #000;&quot;&gt;&lt;/iframe&gt;
+</description>
+        <pubDate>Mon, 01 Dec 2025 00:00:00 -0500</pubDate>
+        <link>http://localhost:4000/find-your-jacket/</link>
+        <guid isPermaLink="true">http://localhost:4000/find-your-jacket/</guid>
+        
+        
+        <category>gamedev</category>
+        
+        <category>puzzle</category>
+        
+        <category>webgl</category>
+        
+      </item>
+    
+      <item>
+        <title>MIDI Poly-Sequencer Synth</title>
+        <description>&lt;p&gt;Inspired by instagram videos of a user playing a “stylophone” i wanted to see if i could replicate this on an iPhone. There are many tools that could possibly be used to do this, but i decided to try out Google Gemini’s mobile iOS app. It has a “Canvas” mode where the AI will generate react-based apps and other types of content, that you an view directly in your browser. The results were incredible. The AI did exactly what i asked, and even when I thought it wouldn’t be able to parse a MIDI file, it did it without any issues.&lt;/p&gt;
+
+&lt;p&gt;I continued to use the AI to iterate the app, all while lounging on the couch, and because of the features of modern day browser, the app runs great and feels like a native app. It scratched the musical itch i was having.&lt;/p&gt;
+
+&lt;p&gt;Check it out below!&lt;/p&gt;
+
+&lt;div style=&quot;margin-bottom: 10px; text-align: right;&quot;&gt;
+&lt;a href=&quot;/assets/apps/midi-sequencer/index.html&quot; target=&quot;_blank&quot; style=&quot;display: inline-block; padding: 8px 16px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;&quot;&gt;OPEN IN NEW WINDOW&lt;/a&gt;
+&lt;/div&gt;
+
+&lt;iframe src=&quot;/assets/apps/midi-sequencer/index.html&quot; style=&quot;width:100%; height:800px; border:none; background: #000;&quot;&gt;&lt;/iframe&gt;
+
+&lt;h3 id=&quot;features&quot;&gt;Features&lt;/h3&gt;
+&lt;ul&gt;
+  &lt;li&gt;&lt;strong&gt;Auto-Scroll&lt;/strong&gt;: The sequencer automatically scrolls to follow the playback.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;MIDI Import&lt;/strong&gt;: Import your own MIDI files to visualize and play them.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Touch Support&lt;/strong&gt;: Includes a touch pad for interactive play.&lt;/li&gt;
+  &lt;li&gt;&lt;strong&gt;Synthesizer&lt;/strong&gt;: Built-in oscillator-based synthesizer.&lt;/li&gt;
+&lt;/ul&gt;
+
+</description>
+        <pubDate>Sun, 30 Nov 2025 00:00:00 -0500</pubDate>
+        <link>http://localhost:4000/midi-sequencer/</link>
+        <guid isPermaLink="true">http://localhost:4000/midi-sequencer/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>music</category>
+        
+        <category>react</category>
+        
+        <category>interactive</category>
+        
+      </item>
+    
+      <item>
+        <title>Cerebras OS - OpenRouter Hackathon Project</title>
+        <description>&lt;p&gt;When AI becomes fast enough, computing itself changes. Cerebras OS is a hackathon project exploring what happens when inference speed crosses a threshold—when AI stops being something you wait for and becomes something you interact with.&lt;/p&gt;
+
+&lt;h2 id=&quot;a-new-threshold&quot;&gt;A New Threshold&lt;/h2&gt;
+
+&lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/JLiflqAjGQg&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
+
+&lt;p&gt;We’re used to designing around AI latency. You build your UI, add a loading spinner, send a request to the AI, and eventually get back a response. This pattern has shaped how we think about AI-powered applications: the AI is always somewhere else, always asynchronous, always a step removed from the interaction.&lt;/p&gt;
+
+&lt;p&gt;But what if it wasn’t? What if AI inference was so fast that it could live &lt;em&gt;inside&lt;/em&gt; the interaction loop itself?&lt;/p&gt;
+
+&lt;p&gt;That’s the question I set out to explore with Cerebras OS. Using Cerebras’ ultra-fast inference through OpenRouter, I built an interface where every interaction—every click, every widget request, every UI update—flows through an LLM in real-time. Not as a background process. Not with loading states. Just immediate, responsive, and always there.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-demo-widgets-as-a-proof-of-concept&quot;&gt;The Demo: Widgets as a Proof of Concept&lt;/h2&gt;
+
+&lt;p&gt;The interface I built uses widgets—small, dynamic components that can display anything from weather to task lists. But the widgets themselves aren’t the point. They’re just a way to demonstrate something more fundamental: when AI is fast enough, you can stop pre-programming your interface and start &lt;em&gt;generating&lt;/em&gt; it on demand.&lt;/p&gt;
+
+&lt;p&gt;Ask for a weather widget, and the AI creates one instantly. It generates the HTML, decides on the styling, pulls in live data, and updates it in real-time. Want something different? Just ask. The AI adapts, evolves, and responds without you ever feeling like you’re waiting for a machine to think.&lt;/p&gt;
+
+&lt;p&gt;This isn’t about making better widgets. It’s about what becomes possible when you can put an LLM directly in the decision-making path of your UI. Every interaction becomes an opportunity for the software to be smarter, more contextual, more adaptive—not because you pre-programmed those paths, but because the AI can make those decisions in the moment.&lt;/p&gt;
+
+&lt;h2 id=&quot;why-speed-matters-a-paradigm-shift&quot;&gt;Why Speed Matters: A Paradigm Shift&lt;/h2&gt;
+
+&lt;p&gt;We spend a lot of time talking about AI capabilities—what models can do, what tasks they can solve, what benchmarks they can pass. But speed is different. Speed isn’t just about doing the same things faster; it unlocks entirely new ways of building software.&lt;/p&gt;
+
+&lt;p&gt;When Cerebras can return responses in under a second, consistently, something shifts. The AI stops being a tool you call and becomes something more fundamental—a layer of intelligence woven into the fabric of your application. You stop designing around it and start designing &lt;em&gt;with&lt;/em&gt; it.&lt;/p&gt;
+
+&lt;p&gt;In traditional software, you anticipate user needs and pre-build flows for every scenario. With fast AI, you can generate those flows on demand. The interface becomes fluid, adaptive, personal—not because you wrote a thousand if-statements, but because the AI can understand context and respond in real-time.&lt;/p&gt;
+
+&lt;p&gt;This is the real promise of Cerebras OS, and projects like it. They’re not about widgets or chat interfaces or any specific feature. They’re about exploring what computing looks like when intelligence is synchronous with interaction.&lt;/p&gt;
+
+&lt;h2 id=&quot;building-it&quot;&gt;Building It&lt;/h2&gt;
+
+&lt;p&gt;I built this using Blazor Server and .NET 8 for real-time WebSocket connections, with qwen3-32b running on Cerebras hardware through OpenRouter. The model was chosen for its speed and ability to output structured JSON—critical for generating consistent, usable HTML.&lt;/p&gt;
+
+&lt;p&gt;The architecture is deliberately simple: route everything through the AI. In most systems, this would be a terrible idea. But when your inference is fast enough, simplicity becomes viable. You don’t need complex caching strategies or pre-computation. You just ask the AI what to do next.&lt;/p&gt;
+
+&lt;p&gt;There’s also a background processing system that pulls in context from the web using OpenRouter’s search capabilities, enriching the AI’s responses without impacting the interaction speed. But the core insight remains: when AI is fast, your architecture can be fundamentally different.&lt;/p&gt;
+
+&lt;h2 id=&quot;the-bigger-picture&quot;&gt;The Bigger Picture&lt;/h2&gt;
+
+&lt;p&gt;This project is aspirational. It’s not a production system; it’s a sketch of what could be. Just like early flight demonstrations weren’t about the specific aircraft but about proving that flight was possible, Cerebras OS is about proving that synchronous AI-powered interfaces are possible.&lt;/p&gt;
+
+&lt;p&gt;We’re at the beginning of a shift. As inference speeds continue to improve, we’ll see new categories of software that simply couldn’t exist before:&lt;/p&gt;
+
+&lt;ul&gt;
+  &lt;li&gt;Interfaces that adapt in real-time to user intent without explicit programming&lt;/li&gt;
+  &lt;li&gt;Applications that generate their own UI based on context and conversation&lt;/li&gt;
+  &lt;li&gt;Systems where the boundary between “the application” and “the AI” dissolves entirely&lt;/li&gt;
+&lt;/ul&gt;
+
+&lt;p&gt;The widgets in this demo are just placeholders. Tomorrow it might be entire application flows generated on demand. The day after, interfaces that evolve as you use them. The underlying principle remains: when AI is fast enough to be synchronous, computing enters a new paradigm.&lt;/p&gt;
+
+&lt;p&gt;We’re still years away from seeing this widely deployed. Infrastructure needs to be built. Patterns need to be discovered. Costs need to come down. But the threshold has been crossed. Fast AI isn’t just faster AI—it’s a different kind of tool entirely.&lt;/p&gt;
+
+&lt;h2 id=&quot;try-it-yourself&quot;&gt;Try It Yourself&lt;/h2&gt;
+
+&lt;p&gt;The code is on GitHub if you want to explore. You’ll need an OpenRouter API key:&lt;/p&gt;
+
+&lt;div class=&quot;language-bash highlighter-rouge&quot;&gt;&lt;div class=&quot;highlight&quot;&gt;&lt;pre class=&quot;highlight&quot;&gt;&lt;code&gt;&lt;table class=&quot;rouge-table&quot;&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td class=&quot;rouge-gutter gl&quot;&gt;&lt;pre class=&quot;lineno&quot;&gt;1
+2
+&lt;/pre&gt;&lt;/td&gt;&lt;td class=&quot;rouge-code&quot;&gt;&lt;pre&gt;&lt;span class=&quot;nb&quot;&gt;export &lt;/span&gt;&lt;span class=&quot;nv&quot;&gt;OPENROUTER_API_KEY&lt;/span&gt;&lt;span class=&quot;o&quot;&gt;=&lt;/span&gt;your_key_here
+dotnet run
+&lt;/pre&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/tbody&gt;&lt;/table&gt;&lt;/code&gt;&lt;/pre&gt;&lt;/div&gt;&lt;/div&gt;
+
+&lt;p&gt;Play with it. Break it. Imagine what else could be built if AI was always this fast. That’s the real point of projects like this—not what they are, but what they help us imagine.&lt;/p&gt;
+</description>
+        <pubDate>Sat, 24 May 2025 00:00:00 -0400</pubDate>
+        <link>http://localhost:4000/cerebrasos/</link>
+        <guid isPermaLink="true">http://localhost:4000/cerebrasos/</guid>
+        
+        
+        <category>hobby</category>
+        
+        <category>hackathon</category>
+        
+        <category>AI</category>
+        
+        <category>youtube</category>
+        
+        <category>github</category>
+        
+      </item>
     
       <item>
         <title>Apple Intelligence features for any iPhone</title>
@@ -225,101 +408,6 @@
         <category>research</category>
         
         <category>AI</category>
-        
-      </item>
-    
-      <item>
-        <title>LessWrong: ChatGPT is our Wright Brothers Moment</title>
-        <description>&lt;p&gt;There’s a lot of discussions, often derisively, that many AI apps are “just” ChatGPT wrappers. I wrote a short article that was promoted to the &lt;a href=&quot;https://www.lesswrong.com/posts/3TjfowjTcHEL56Nyp/chatgpt-is-our-wright-brothers-moment&quot;&gt;front page of LessWrong&lt;/a&gt; about this, trying to convey that just because a tool is an AI wrapper doesn’t mean it’s not significant.&lt;/p&gt;
-
-&lt;p&gt;AI is opening up a whole new spectrum of possible experiences, but just like how it took decades for air travel to be commercialized due to a huge amount of infrastructure needing to be built, we are years away from seeing the impact of AI on our daily lives due to a multitude of new software infrastructure needing to be built.&lt;/p&gt;
-</description>
-        <pubDate>Sat, 24 Dec 2022 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/wrightbrochatgpt/</link>
-        <guid isPermaLink="true">http://localhost:4000/wrightbrochatgpt/</guid>
-        
-        
-        <category>hobby</category>
-        
-        <category>AI</category>
-        
-        <category>writing</category>
-        
-      </item>
-    
-      <item>
-        <title>Cohere AI: LLM Hackathon #3 3rd place winner</title>
-        <description>&lt;p&gt;I participated practically solo in the CoHere AI Hackathon to use an early version of the Cohere LLM to make an app. The project came in third out of thousands of participants and dozens of valid submissions. The project used real-time live voice transcription that was entirely browser based, HTML Canvas compositing for live webcam video input, and a fully custom RAG (retrieval augmented generation) code written in C# before RAG was even a known terminology. Information was retrieved from Wikipedia to help ground the AI’s responses.&lt;/p&gt;
-
-&lt;p&gt;I setup hosting for the app in AWS using the Lambda serverless architecture, which for C# is able to serve both the UI and process backend commands. The app was a fully functional prototype that could be used to record a screenshare and see AI responses in real-time.&lt;/p&gt;
-
-&lt;p&gt;&lt;iframe style=&quot;width:100%;&quot; height=&quot;515&quot; src=&quot;https://www.youtube.com/embed/8DcO6GYUF_0?si=T1IR99vX1GIRZZ0i&quot; frameborder=&quot;0&quot; allowfullscreen=&quot;&quot;&gt;&lt;/iframe&gt;&lt;/p&gt;
-</description>
-        <pubDate>Sat, 12 Nov 2022 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/hackathon/</link>
-        <guid isPermaLink="true">http://localhost:4000/hackathon/</guid>
-        
-        
-        <category>hobby</category>
-        
-        <category>hackathon</category>
-        
-        <category>AI</category>
-        
-        <category>youtube</category>
-        
-        <category>AWS</category>
-        
-        <category>serverless</category>
-        
-        <category>github</category>
-        
-      </item>
-    
-      <item>
-        <title>EleutherAI: Tool Use Idea</title>
-        <description>&lt;p&gt;I created a &lt;a href=&quot;https://github.com/EleutherAI/project-menu/issues/22#issuecomment-1073167091&quot;&gt;working diagram&lt;/a&gt; of how a set of agent AI models could be used to answer math questions using tools. At the time I wrote this post, tool use wasn’t commonly understood, nor was agent AI based processes.&lt;/p&gt;
-
-</description>
-        <pubDate>Sun, 20 Mar 2022 00:00:00 -0400</pubDate>
-        <link>http://localhost:4000/eleuther/</link>
-        <guid isPermaLink="true">http://localhost:4000/eleuther/</guid>
-        
-        
-        <category>AI</category>
-        
-        <category>hobby</category>
-        
-        <category>research</category>
-        
-      </item>
-    
-      <item>
-        <title>SwiftUI Mars App</title>
-        <description>&lt;p&gt;As an aficionado of the Mars Rover missions, I decided to create a simple app that would allow me to view the latest images from the Mars Rover missions. I used SwiftUI and Xcode to create the app, and I’m quite happy with the results. The app is simple, but it does what I want it to do: show me the latest images from Mars in an easy to use UI.&lt;/p&gt;
-
-&lt;p&gt;The other component of the app is a custom image processing routine. Mars Rover images are encoded in bitmaps that combine color and luminance information in a single image due to the sensor array being Bayer Filtered. This is to allow for a higher resolution grayscale image, but also allow for color information to be transmitted at a lower resolution. Using a deep neural network informed by the Bayer filtering, you can preserve the resolution, while allowing the AI image processing to very accurately guess the color information. This app would allow for the highest resolution images to be viewed in color, with minimal “guessing” by an AI upscaler from other methods.&lt;/p&gt;
-
-&lt;p&gt;Dare mighty things!&lt;/p&gt;
-</description>
-        <pubDate>Mon, 08 Mar 2021 00:00:00 -0500</pubDate>
-        <link>http://localhost:4000/marsapp/</link>
-        <guid isPermaLink="true">http://localhost:4000/marsapp/</guid>
-        
-        
-        <category>hobby</category>
-        
-        <category>mars</category>
-        
-        <category>swift</category>
-        
-        <category>xcode</category>
-        
-        <category>AI</category>
-        
-        <category>research</category>
-        
-        <category>imageprocessing</category>
         
       </item>
     
