@@ -643,7 +643,13 @@ void main() {
                 dMesh.mesh.userData.isOpen = false; dGroup.add(dMesh.mesh); dGroup.userData = { isDrawer: true };
 
                 itemsInside.forEach(item => {
-                    const iMesh = new Interactable(item.geo, item.mat, item.def.name, (o) => { takeItem(item.def, o); });
+                    const iMesh = new Interactable(item.geo, item.mat, item.def.name, (o) => {
+                        if (item.onInteract) {
+                            item.onInteract(o);
+                        } else {
+                            takeItem(item.def, o);
+                        }
+                    });
                     iMesh.mesh.position.copy(item.pos); iMesh.mesh.rotation.set(item.rot.x, item.rot.y, item.rot.z);
                     dGroup.add(iMesh.mesh);
                 });
@@ -656,8 +662,27 @@ void main() {
             ]);
             makeDrawer(0.75, []);
             makeDrawer(0.25, [
-                { def: ITEMS.socks_clean, geo: new THREE.PlaneGeometry(0.6, 0.6), mat: new THREE.MeshBasicMaterial({ map: cleanSockAsset.tex, transparent: true }), pos: new THREE.Vector3(0.2, -0.15, 0), rot: { x: -Math.PI / 2, y: 0, z: 0 } },
-                { def: ITEMS.vial, geo: new THREE.CylinderGeometry(0.1, 0.1, 0.4), mat: new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xaa4400 }), pos: new THREE.Vector3(-0.3, -0.10, 0), rot: { x: 0, y: 0, z: Math.PI / 2 } }
+                {
+                    def: ITEMS.socks_clean,
+                    geo: new THREE.PlaneGeometry(0.6, 0.6),
+                    mat: new THREE.MeshBasicMaterial({ map: cleanSockAsset.tex, transparent: true }),
+                    pos: new THREE.Vector3(0.2, -0.10, 0), // Moved UP (was -0.15)
+                    rot: { x: -Math.PI / 2, y: 0, z: 0 },
+                    onInteract: (o) => {
+                        if (hasItem('socks_dirty')) {
+                            showMessage("You are already wearing socks.");
+                        } else {
+                            takeItem(ITEMS.socks_clean, o);
+                        }
+                    }
+                },
+                {
+                    def: ITEMS.vial,
+                    geo: new THREE.CylinderGeometry(0.1, 0.1, 0.4),
+                    mat: new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xaa4400 }),
+                    pos: new THREE.Vector3(-0.3, -0.15, 0), // Moved DOWN (was -0.10)
+                    rot: { x: 0, y: 0, z: Math.PI / 2 }
+                }
             ]);
 
             const dirtySocks = new Interactable(new THREE.PlaneGeometry(0.6, 0.6), new THREE.MeshBasicMaterial({ map: dirtySockAsset.tex, transparent: true, side: THREE.DoubleSide }), "Dirty Socks", (o) => {
