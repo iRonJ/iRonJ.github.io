@@ -12,7 +12,9 @@ featured: true
 When AI becomes fast enough, computing itself changes. Cerebras OS is a hackathon project exploring what happens when inference speed crosses a threshold—when AI stops being something you wait for and becomes something you interact with.
 
 ## A New Threshold
+
 <p><iframe style="width:100%;" height="515" src="https://www.youtube.com/embed/JLiflqAjGQg" frameborder="0" allowfullscreen></iframe></p>
+
 We're used to designing around AI latency. You build your UI, add a loading spinner, send a request to the AI, and eventually get back a response. This pattern has shaped how we think about AI-powered applications: the AI is always somewhere else, always asynchronous, always a step removed from the interaction.
 
 But what if it wasn't? What if AI inference was so fast that it could live *inside* the interaction loop itself?
