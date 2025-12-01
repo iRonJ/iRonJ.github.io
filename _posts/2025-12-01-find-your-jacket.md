@@ -14,7 +14,7 @@ This game was actually built using my new narrative tool, [Game Storyizer](/game
 
 Most amazingly, i built this all on my phone, lounging on my couch, just talking to an AI. In my 35 years of programming, writing code since i was in 4th grade, this was the most blissful programming experience i've ever had. We're truly in a new era of AI driven creativity!!
 
-Explore the cabin, find items, and see if you can escape the cold.
+Explore the cabin, find items, and see if you can escape the cold. It works great on mobile. You can use WASD keys on desktop, and click and drag to move the camera and interact.
 
 <div style="margin-bottom: 10px; text-align: right;">
 <a href="/assets/apps/game-puzzle-jacket/index.html" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;">OPEN IN NEW WINDOW</a>
