@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Find Your Jacket</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: 'Courier New', Courier, monospace;
+            user-select: none;
+            background: #111;
+            color: #eee;
+            touch-action: none;
+        }
+
+        #hud {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 140px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-end;
+            padding-bottom: 20px;
+            pointer-events: none;
+            z-index: 20;
+        }
+
+        #inventory-container {
+            display: flex;
+            gap: 10px;
+            pointer-events: auto;
+            width: 95%;
+            justify-content: center;
+        }
+
+        .inv-section {
+            background: rgba(30, 30, 30, 0.9);
+            border: 2px solid #555;
+            padding: 5px;
+            border-radius: 8px;
+            display: flex;
+            gap: 5px;
+            align-items: center;
+            position: relative;
+        }
+
+        .inv-title {
+            position: absolute;
+            top: -20px;
+            left: 5px;
+            font-size: 10px;
+            color: #aaa;
+            text-transform: uppercase;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 2px 4px;
+            border-radius: 4px;
+        }
+
+        .item-slot {
+            width: 55px;
+            height: 55px;
+            background: #444;
+            border: 1px solid #666;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border-radius: 6px;
+            overflow: hidden;
+        }
+
+        .item-slot img {
+            width: 80%;
+            height: 80%;
+            object-fit: contain;
+        }
+
+        .item-slot:active {
+            background: #666;
+        }
+
+        .item-slot.active {
+            border-color: #ffaa00;
+            background: #664400;
+            box-shadow: 0 0 10px #ffaa00;
+        }
+
+        #message-log {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            width: 90%;
+            text-shadow: 1px 1px 2px black;
+            font-size: 16px;
+            pointer-events: none;
+            z-index: 30;
+        }
+
+        .msg {
+            opacity: 1;
+            transition: opacity 2s;
+            margin-bottom: 5px;
+            background: rgba(0, 0, 0, 0.6);
+            padding: 8px 12px;
+            border-radius: 6px;
+            border: 1px solid #444;
+        }
+
+        .msg.fade {
+            opacity: 0;
+        }
+
+        #start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+        }
+
+        button {
+            padding: 20px 40px;
+            font-size: 24px;
+            cursor: pointer;
+            background: #eee;
+            border: none;
+            font-family: inherit;
+            border-radius: 8px;
+            margin-top: 20px;
+            color: #000;
+        }
+
+        button:active {
+            background: #ccc;
+            transform: scale(0.98);
+        }
+
+        #joystick-zone {
+            position: absolute;
+            bottom: 150px;
+            left: 20px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            z-index: 50;
+            touch-action: none;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+        }
+
+        #joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 50px;
+            height: 50px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+        }
+
+        #touch-look-zone {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+        }
+
+        #modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #modal-box {
+            background: #222;
+            border: 2px solid #6d5446;
+            padding: 25px;
+            max-width: 80%;
+            width: 400px;
+            text-align: center;
+            border-radius: 8px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8);
+        }
+
+        #modal-text {
+            font-size: 18px;
+            line-height: 1.5;
+            margin-bottom: 30px;
+        }
+
+        .modal-btn-group {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        .modal-btn {
+            background: #444;
+            color: #fff;
+            border: 1px solid #888;
+            padding: 10px 30px;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-family: inherit;
+        }
+
+        .modal-btn:hover {
+            background: #666;
+        }
+
+        .modal-btn.yes {
+            border-color: #4a6;
+            color: #afa;
+        }
+
+        .modal-btn.no {
+            border-color: #a44;
+            color: #faa;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="start-screen">
+        <h1>FIND YOUR JACKET</h1>
+        <p>The hearth is cold. The winter howls outside...</p>
+        <div
+            style="font-size: 14px; color: #ccc; max-width: 500px; text-align: left; margin: 20px 0; line-height: 1.6;">
+            <b>MOBILE CONTROLS:</b><br>
+            • <b>Left Stick:</b> Move<br>
+            • <b>Right Screen:</b> Drag to Look<br>
+            • <b>Tap Objects:</b> Interact<br>
+        </div>
+        <button id="start-btn">WAKE UP</button>
+    </div>
+
+    <div id="modal-overlay">
+        <div id="modal-box">
+            <div id="modal-text">Message</div>
+            <div class="modal-btn-group">
+                <button class="modal-btn yes" id="btn-modal-yes">Yes</button>
+                <button class="modal-btn no" id="btn-modal-no">No</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="message-log"></div>
+    <div id="touch-look-zone"></div>
+    <div id="joystick-zone">
+        <div id="joystick-knob"></div>
+    </div>
+    <div id="hud">
+        <div id="inventory-container">
+            <div class="inv-section" id="inv-perm"><span class="inv-title">Worn</span></div>
+            <div class="inv-section" id="inv-work"><span class="inv-title">Hand</span></div>
+        </div>
+    </div>
+
+    <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js"
+    }
+  }
+</script>
+
+    <script type="module">
+        import * as THREE from 'three';
+
+        const modalOverlay = document.getElementById('modal-overlay');
+
+        // --- AUDIO ---
+        let audioCtx = null;
+        const sfx = {
+            init: () => {
+                try {
+                    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    if (audioCtx.state === 'suspended') audioCtx.resume();
+                } catch (e) { console.log('Audio error', e); }
+            },
+            play: (f, t, d, v) => {
+                if (!audioCtx) return;
+                const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                o.type = t; o.frequency.setValueAtTime(f, audioCtx.currentTime);
+                g.gain.setValueAtTime(v, audioCtx.currentTime); g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + d);
+                o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + d);
+            },
+            blip: () => sfx.play(800, 'sine', 0.1, 0.05),
+            interact: () => sfx.play(400, 'triangle', 0.1, 0.1),
+            close: () => sfx.play(200, 'sawtooth', 0.2, 0.05),
+            success: () => { if (audioCtx) { sfx.play(600, 'sine', 0.1, 0.1); setTimeout(() => sfx.play(800, 'sine', 0.1, 0.1), 100); setTimeout(() => sfx.play(1200, 'sine', 0.2, 0.4), 200); } },
+            grow: () => {
+                if (!audioCtx) return;
+                const o = audioCtx.createOscillator(); const g = audioCtx.createGain();
+                o.frequency.setValueAtTime(100, audioCtx.currentTime); o.frequency.linearRampToValueAtTime(300, audioCtx.currentTime + 2);
+                g.gain.setValueAtTime(0.2, audioCtx.currentTime); g.gain.linearRampToValueAtTime(0, audioCtx.currentTime + 2);
+                o.connect(g); g.connect(audioCtx.destination); o.start(); o.stop(audioCtx.currentTime + 2);
+            }
+        };
+
+        // --- SHADERS ---
+        const snowVS = `varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
+        const snowFS = `uniform float u_time; varying vec2 vUv;
+float r(vec2 c){return fract(sin(dot(c,vec2(12.9898,78.233)))*43758.5453);}
+float s(vec2 uv,float sc,float sp){uv.y+=u_time*sp;uv.x+=sin(uv.y*2.+u_time)*0.03;uv*=sc;vec2 i=floor(uv);vec2 f=fract(uv)-0.5;if(r(i)>0.95)return smoothstep(0.4,0.0,length(f));return 0.0;}
+void main(){vec3 sky=vec3(0.53,0.81,0.92);float f=s(vUv,15.,0.3)+s(vUv+vec2(0.3,0.4),25.,0.2)+s(vUv+vec2(-0.2,0.1),10.,0.4);gl_FragColor=vec4(mix(sky,vec3(1.),clamp(f,0.,1.)),1.);}`;
+
+        const waterVS = `varying vec2 vUv; void main(){vUv=uv; gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}`;
+        const waterFS = `uniform float u_time; uniform vec3 u_color; varying vec2 vUv;
+void main(){vec2 uv=vUv*4.;float w=(sin(uv.x*2.+u_time*0.5)+sin(uv.y*3.+u_time*0.4)+sin((uv.x+uv.y)*4.+u_time*0.6))/3.;vec3 c=mix(u_color*0.5,u_color*1.5,w*0.5+0.5);if(w>0.8)c=mix(c,vec3(0.9,0.95,1.),(w-0.8)*5.);gl_FragColor=vec4(c,0.9);}`;
+
+        // --- FRACTAL VINE SHADER ---
+        const treeVS = `varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+        const treeFS = `
+uniform float u_time;
+uniform float u_growth;
+varying vec2 vUv;
+
+mat2 rot(float a) { float c = cos(a), s = sin(a); return mat2(c, -s, s, c); }
+float sdBox(vec2 p, vec2 b) { vec2 d = abs(p) - b; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
+
+void main() {
+    vec2 uv = vUv * 2.0 - 1.0;
+    uv.y += 1.0; 
+    float d = 1000.0;
+    vec2 p = uv;
+    float scale = 1.0;
+    
+    for(int i=0; i<9; i++) {
+        float len = 0.25 * scale * u_growth;
+        float seg = sdBox(p - vec2(0.0, len), vec2(0.015 * scale, len));
+        d = min(d, seg);
+        p.y -= 2.0 * len;
+        p.x = abs(p.x);
+        float angle = 0.95 + 0.15 * sin(u_time * 1.5 + float(i));
+        p *= rot(angle);
+        scale *= 0.75;
+    }
+    
+    vec3 col = vec3(0.0);
+    if(d < 0.0) { col = vec3(0.2, 1.0, 0.5); } else { col = vec3(0.1, 0.8, 0.3) * (0.005 / d); }
+    float alpha = smoothstep(0.05, 0.0, d);
+    if(alpha < 0.01) discard;
+    gl_FragColor = vec4(col, alpha);
+}
+`;
+
+        // --- GAME STATE ---
+        const STATE = {
+            startTime: 0,
+            inventory: { permanent: [], working: [] },
+            activeItem: null, isBeach: false, wakingUp: false, ready: false,
+            flags: {
+                pantsTaken: false, socksCleanTaken: false, socksFloorTaken: false,
+                seedsAdded: false, waterAdded: false, plainWaterAdded: false, // NEW FLAG
+                plantPlaced: false, portalOpen: false, gameEnded: false
+            }
+        };
+
+        // --- ASSET GENERATION ---
+        function makeTex(w, h, fn) {
+            const c = document.createElement('canvas'); c.width = w; c.height = h; const ctx = c.getContext('2d'); fn(ctx, w, h);
+            const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+        }
+
+        function createSockAssets(isClean) {
+            const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+            const ctx = c.getContext('2d');
+            ctx.translate(64, 64); ctx.rotate(-Math.PI / 4); ctx.translate(-64, -64);
+            ctx.fillStyle = isClean ? "#dddddd" : "#8a7f70";
+            ctx.beginPath(); ctx.moveTo(40, 20); ctx.lineTo(80, 20); ctx.lineTo(80, 80);
+            ctx.quadraticCurveTo(80, 100, 60, 100); ctx.lineTo(30, 100);
+            ctx.quadraticCurveTo(10, 100, 10, 80); ctx.lineTo(10, 70); ctx.lineTo(40, 70);
+            ctx.lineTo(40, 20); ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = "#333"; ctx.stroke();
+            if (isClean) {
+                ctx.strokeStyle = "#ff0000"; ctx.lineWidth = 3;
+                ctx.beginPath(); ctx.moveTo(40, 30); ctx.lineTo(80, 30); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(40, 40); ctx.lineTo(80, 40); ctx.stroke();
+            } else {
+                ctx.fillStyle = "#554433"; ctx.globalAlpha = 0.5;
+                ctx.beginPath(); ctx.arc(30, 90, 5, 0, Math.PI * 2); ctx.fill();
+                ctx.beginPath(); ctx.arc(60, 50, 4, 0, Math.PI * 2); ctx.fill();
+                ctx.globalAlpha = 1.0;
+            }
+            return { tex: new THREE.CanvasTexture(c), imgUrl: c.toDataURL() };
+        }
+
+        function createSeedAssets(count) {
+            const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+            const ctx = c.getContext('2d');
+            const drawSeed = (x, y) => {
+                ctx.fillStyle = "#5d4037"; ctx.beginPath(); ctx.ellipse(x, y, 15, 25, Math.PI / 6, 0, Math.PI * 2); ctx.fill();
+                ctx.fillStyle = "#8d6e63"; ctx.beginPath(); ctx.ellipse(x - 3, y - 3, 5, 10, Math.PI / 6, 0, Math.PI * 2); ctx.fill();
+            };
+            if (count === 1) drawSeed(64, 64); else { drawSeed(50, 64); drawSeed(80, 70); }
+            return { tex: new THREE.CanvasTexture(c), imgUrl: c.toDataURL() };
+        }
+
+        function createHolyWaterAsset() {
+            const c = document.createElement('canvas'); c.width = 128; c.height = 128;
+            const ctx = c.getContext('2d');
+            ctx.fillStyle = "#4fc3f7";
+            ctx.beginPath(); ctx.moveTo(64, 20); ctx.quadraticCurveTo(20, 80, 64, 110);
+            ctx.quadraticCurveTo(108, 80, 64, 20); ctx.fill();
+            ctx.fillStyle = "#ffd700";
+            const drawStar = (x, y, r) => {
+                ctx.beginPath();
+                for (let i = 0; i < 5; i++) {
+                    ctx.lineTo(Math.cos((18 + i * 72) / 180 * Math.PI) * r + x, -Math.sin((18 + i * 72) / 180 * Math.PI) * r + y);
+                    ctx.lineTo(Math.cos((54 + i * 72) / 180 * Math.PI) * (r / 2) + x, -Math.sin((54 + i * 72) / 180 * Math.PI) * (r / 2) + y);
+                }
+                ctx.closePath(); ctx.fill();
+            };
+            drawStar(64, 64, 15); drawStar(90, 40, 8); drawStar(38, 90, 8);
+            return { tex: new THREE.CanvasTexture(c), imgUrl: c.toDataURL() };
+        }
+
+        const dirtySockAsset = createSockAssets(false);
+        const cleanSockAsset = createSockAssets(true);
+        const singleSeedAsset = createSeedAssets(1);
+        const packetSeedAsset = createSeedAssets(2);
+        const holyWaterAsset = createHolyWaterAsset();
+
+        const texLogs = makeTex(512, 512, (ctx, w, h) => {
+            ctx.fillStyle = "#4a3c31"; ctx.fillRect(0, 0, w, h);
+            for (let y = 0; y < h; y += 64) {
+                const g = ctx.createLinearGradient(0, y, 0, y + 64); g.addColorStop(0, "#2a1d15"); g.addColorStop(0.5, "#6d5446"); g.addColorStop(1, "#2a1d15");
+                ctx.fillStyle = g; ctx.fillRect(0, y, w, 64); ctx.fillStyle = "#110b08"; ctx.fillRect(0, y + 62, w, 2);
+            }
+        });
+
+        const texDrawer = makeTex(256, 128, (ctx, w, h) => {
+            const g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, "#3e2723"); g.addColorStop(0.5, "#5d4037"); g.addColorStop(1, "#3e2723");
+            ctx.fillStyle = g; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = "rgba(0,0,0,0.2)"; ctx.lineWidth = 2;
+            for (let i = 0; i < 10; i++) { const y = Math.random() * h; ctx.beginPath(); ctx.moveTo(0, y); ctx.bezierCurveTo(w / 3, y + 10, w * 0.6, y - 10, w, y); ctx.stroke(); }
+            ctx.strokeStyle = "#2a1d15"; ctx.lineWidth = 6; ctx.strokeRect(0, 0, w, h);
+            ctx.shadowColor = "rgba(0,0,0,0.5)"; ctx.shadowBlur = 5; ctx.shadowOffsetX = 2; ctx.shadowOffsetY = 2;
+            ctx.fillStyle = "#8d6e63"; ctx.fillRect(w / 2 - 25, h / 2 - 5, 50, 10);
+            ctx.fillStyle = "#d7ccc8"; ctx.fillRect(w / 2 - 25, h / 2 - 5, 50, 8);
+            ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(w / 2 - 20, h / 2, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath(); ctx.arc(w / 2 + 20, h / 2, 3, 0, Math.PI * 2); ctx.fill();
+            ctx.shadowColor = "transparent";
+        });
+
+        const texDoor = makeTex(256, 512, (ctx, w, h) => {
+            ctx.fillStyle = "#2d1e15"; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = "#1a100a"; ctx.lineWidth = 4;
+            for (let x = 0; x < w; x += 64) { ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, h); ctx.stroke(); }
+            ctx.strokeStyle = "#4a3525"; ctx.lineWidth = 10; ctx.strokeRect(0, 0, w, h);
+            ctx.fillStyle = "#111"; ctx.beginPath(); ctx.arc(w - 40, h / 2, 10, 0, Math.PI * 2); ctx.fill();
+        });
+
+        const texBasket = makeTex(256, 256, (ctx, w, h) => {
+            ctx.fillStyle = "#deb887"; ctx.fillRect(0, 0, w, h);
+            ctx.strokeStyle = "#a0522d"; ctx.lineWidth = 8; const s = 32;
+            for (let y = 0; y < h; y += s) {
+                for (let x = 0; x < w; x += s) {
+                    ctx.beginPath(); ctx.moveTo(x, y + s / 2); ctx.lineTo(x + s, y + s / 2); ctx.stroke();
+                    ctx.beginPath(); ctx.moveTo(x + s / 2, y); ctx.lineTo(x + s / 2, y + s); ctx.stroke();
+                }
+            }
+            ctx.fillStyle = "rgba(0,0,0,0.1)"; for (let i = 0; i < 200; i++) ctx.fillRect(Math.random() * w, Math.random() * h, 4, 4);
+        });
+
+        const texEmoji = (e) => makeTex(128, 128, (ctx, w, h) => { ctx.font = "100px serif"; ctx.textAlign = "center"; ctx.textBaseline = "middle"; ctx.fillText(e, w / 2, h / 2); });
+        const texPants = texEmoji("👖");
+        const texWood = makeTex(64, 64, (ctx, w, h) => { ctx.fillStyle = "#5d4037"; ctx.fillRect(0, 0, w, h); });
+        const texFloor = makeTex(64, 64, (ctx, w, h) => { ctx.fillStyle = "#3e2723"; ctx.fillRect(0, 0, w, h); });
+
+        const ITEMS = {
+            socks_dirty: { id: 'socks_dirty', icon: "🧦", img: dirtySockAsset.imgUrl, type: 'perm', name: "Dirty Socks" },
+            socks_clean: { id: 'socks_clean', icon: "✨🧦", img: cleanSockAsset.imgUrl, type: 'perm', name: "Clean Socks" },
+            pants: { id: 'pants', icon: "👖", type: 'perm', name: "Pants" },
+            seed_corner: { id: 'seed_corner', icon: "🌰", img: singleSeedAsset.imgUrl, type: 'work', name: "Stray Seed" },
+            seed_drawer: { id: 'seed_drawer', icon: "🌰", img: packetSeedAsset.imgUrl, type: 'work', name: "Seed Packet" },
+            book: { id: 'book', icon: "📖", type: 'work', name: "Enchanted Book" },
+            glass_empty: { id: 'glass_empty', icon: "🥃", type: 'work', name: "Empty Glass" },
+            glass_water: { id: 'glass_water', icon: "💧", type: 'work', name: "Water Glass" },
+            glass_holy: { id: 'glass_holy', icon: "✨💧", img: holyWaterAsset.imgUrl, type: 'work', name: "Holy Water" },
+            pot: { id: 'pot', icon: "🪴", type: 'work', name: "Pot" },
+            vial: { id: 'vial', icon: "🧪", type: 'work', name: "Holy Vial" },
+            jacket: { id: 'jacket', icon: "🧥", type: 'perm', name: "Jacket" }
+        };
+
+        // --- SCENE ---
+        const scene = new THREE.Scene(); scene.fog = new THREE.FogExp2(0x111111, 0.05);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight); renderer.shadowMap.enabled = true;
+        document.body.appendChild(renderer.domElement);
+
+        scene.add(new THREE.AmbientLight(0x404040, 1.5));
+        const pl = new THREE.PointLight(0xffaa00, 1, 20); pl.position.set(2, 3, 2); pl.castShadow = true; scene.add(pl);
+        const winLight = new THREE.PointLight(0xddeeff, 2, 8); winLight.position.set(0, 2.2, -4.5); scene.add(winLight);
+
+        const cameraGroup = new THREE.Group(); cameraGroup.position.set(0, 1.0, 3); cameraGroup.add(camera); scene.add(cameraGroup);
+        const raycaster = new THREE.Raycaster();
+        const interactables = []; const obstacles = []; const drawers = [];
+        const globalUniforms = { u_time: { value: 0.0 } };
+
+        function noise(x, z) { return Math.sin(x) * Math.cos(z) + Math.sin(x * 2.1 + z * 1.8) * 0.5; }
+
+        // --- HELPERS ---
+        class Interactable {
+            constructor(geo, mat, name, cb) {
+                this.mesh = new THREE.Mesh(geo, mat); this.name = name; this.onInteract = cb;
+                this.mesh.userData = { parent: this }; interactables.push(this.mesh);
+            }
+        }
+        function addObstacle(x, z, w, d) { obstacles.push({ minX: x - w / 2, maxX: x + w / 2, minZ: z - d / 2, maxZ: z + d / 2 }); }
+        function showMessage(t, d = 3000) {
+            const el = document.getElementById('message-log'); const div = document.createElement('div');
+            div.className = 'msg'; div.innerText = t; el.innerHTML = ''; el.appendChild(div); setTimeout(() => div.classList.add('fade'), d);
+        }
+        function showModal(t, y, n) {
+            const mt = document.getElementById('modal-text'), by = document.getElementById('btn-modal-yes'), bn = document.getElementById('btn-modal-no');
+            mt.innerText = t; modalOverlay.style.display = 'flex';
+            const ny = by.cloneNode(true), nn = bn.cloneNode(true); by.parentNode.replaceChild(ny, by); bn.parentNode.replaceChild(nn, bn);
+            ny.onclick = () => { modalOverlay.style.display = 'none'; sfx.interact(); if (y) y(); }; nn.onclick = () => { modalOverlay.style.display = 'none'; sfx.blip(); if (n) n(); };
+        }
+
+        // --- WORLD ---
+        function buildRoom() {
+            const g = new THREE.Group();
+            addObstacle(-3, 0, 3.2, 6.2); addObstacle(-3, -4, 1.6, 1.6); addObstacle(3, -4, 1.6, 1.6); addObstacle(4, 0, 2.2, 1.6);
+            const fl = new THREE.Mesh(new THREE.PlaneGeometry(10, 10), new THREE.MeshStandardMaterial({ map: texFloor })); fl.rotation.x = -Math.PI / 2; g.add(fl);
+            const cl = fl.clone(); cl.position.y = 4; cl.rotation.x = Math.PI / 2; g.add(cl);
+            const wMat = new THREE.MeshStandardMaterial({ map: texLogs, side: THREE.DoubleSide });
+            const wall = (x, y, z, ry, w, h) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), wMat); m.position.set(x, y, z); m.rotation.y = ry; g.add(m); };
+            wall(0, 2, -5, 0, 10, 4); wall(-5, 2, 0, Math.PI / 2, 10, 4); wall(5, 2, 0, -Math.PI / 2, 10, 4); wall(0, 2, 5, Math.PI, 10, 4);
+
+            // Window (Interactive)
+            const win = new Interactable(new THREE.PlaneGeometry(2.8, 1.8), new THREE.ShaderMaterial({ uniforms: globalUniforms, vertexShader: snowVS, fragmentShader: snowFS }), "Window", () => {
+                if (STATE.flags.portalOpen) { teleportToBeach(); return; }
+                showMessage("The glass is thick with frost. Outside, the white void seems endless.");
+            });
+            win.mesh.position.set(0, 2.5, -4.9); g.add(win.mesh);
+
+            const sill = new THREE.Mesh(new THREE.BoxGeometry(3, 0.1, 0.6), new THREE.MeshStandardMaterial({ map: texWood }));
+            sill.position.set(0, 1.6, -4.7); g.add(sill);
+
+            const zone = new Interactable(new THREE.BoxGeometry(3, 0.5, 1), new THREE.MeshBasicMaterial({ visible: false }), "Windowsill", (o) => {
+                if (STATE.flags.portalOpen) { teleportToBeach(); return; }
+                if (STATE.activeItem && STATE.activeItem.id === 'pot') {
+                    useItem('pot'); o.mesh.visible = false; spawnPlacedPot(new THREE.Vector3(0, 1.7, -4.7));
+                    showMessage("The pot rests in the light, waiting for potential."); STATE.flags.plantPlaced = true; checkGrowth();
+                } else showMessage("A sunbeam pierces the gloom, warm but lonely.");
+            });
+            zone.mesh.position.set(0, 1.6, -4.5); g.add(zone.mesh);
+
+            // Door
+            const door = new Interactable(new THREE.PlaneGeometry(2, 3.5), new THREE.MeshStandardMaterial({ map: texDoor }), "Cabin Door", () => showMessage("It's frozen shut. Snow is piled high against it outside. No escape this way."));
+            door.mesh.rotation.y = Math.PI; door.mesh.position.set(0, 1.75, 4.95); g.add(door.mesh);
+
+            scene.add(g);
+        }
+
+        function spawnItems() {
+            const bed = new THREE.Mesh(new THREE.BoxGeometry(3, 1, 6), new THREE.MeshStandardMaterial({ color: 0x880000 })); bed.position.set(-3, 0.5, 0); scene.add(bed);
+            const table = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({ map: texWood })); table.position.set(-3, 0.75, -4); scene.add(table);
+
+            const note = new Interactable(new THREE.PlaneGeometry(0.8, 0.6), new THREE.MeshBasicMaterial({ color: 0xffffff }), "Note", () => showMessage("A hurried scrawl: 'The wilderness is unforgiving. Don't forget your jacket.'", 4000));
+            note.mesh.rotation.x = -Math.PI / 2; note.mesh.position.set(-2, 1.01, -1); scene.add(note.mesh);
+
+            const matCover = new THREE.MeshStandardMaterial({ color: 0x111144, emissive: 0x050522, roughness: 0.6 });
+            const matPages = new THREE.MeshStandardMaterial({ color: 0xf5deb3, roughness: 0.9 });
+            const bookMats = [matPages, matCover, matCover, matCover, matPages, matPages];
+            const book = new Interactable(new THREE.BoxGeometry(0.6, 0.2, 0.8), bookMats, "Enchanted Book", (o) => takeItem(ITEMS.book, o));
+            book.mesh.position.set(-3, 1.6, -4); scene.add(book.mesh);
+
+            const glass = new Interactable(new THREE.CylinderGeometry(0.15, 0.15, 0.4, 16), new THREE.MeshStandardMaterial({ color: 0x88ccff, transparent: true, opacity: 0.6 }), "Glass", (o) => takeItem(ITEMS.glass_empty, o));
+            glass.mesh.position.set(-2.5, 1.7, -4.2); scene.add(glass.mesh);
+
+            // DRESSER
+            const dresserFrame = new THREE.Mesh(new THREE.BoxGeometry(1.5, 1.5, 1.5), new THREE.MeshStandardMaterial({ map: texWood }));
+            dresserFrame.position.set(3, 0.75, -4); scene.add(dresserFrame);
+
+            const makeDrawer = (y, itemsInside) => {
+                const dGroup = new THREE.Group();
+                const matInvisible = new THREE.MeshBasicMaterial({ visible: false });
+                const matBrown = new THREE.MeshStandardMaterial({ color: 0x5d4037, side: THREE.DoubleSide });
+                const matFace = new THREE.MeshStandardMaterial({ map: texDrawer, side: THREE.DoubleSide });
+                const matWoodSide = new THREE.MeshStandardMaterial({ map: texWood, side: THREE.DoubleSide });
+                const drawerMats = [matWoodSide, matWoodSide, matInvisible, matBrown, matFace, matWoodSide];
+
+                const dMesh = new Interactable(new THREE.BoxGeometry(1.4, 0.4, 1.4), drawerMats, "Drawer", (drawerInteractable, hit) => {
+                    const dMesh = drawerInteractable.mesh;
+                    const dGroup = dMesh.parent;
+
+                    // Check Hit Face. Face 4 is the Front (with handle).
+                    const isFront = hit.face.materialIndex === 4;
+
+                    if (!dMesh.userData.isOpen) {
+                        dMesh.userData.isOpen = true; sfx.interact();
+                    } else {
+                        if (isFront) {
+                            // Tapped front face while open -> Close drawer
+                            dMesh.userData.isOpen = false; sfx.close();
+                        } else {
+                            // Tapped inside/top -> Try to take items
+                            const items = dGroup.children.filter(c => c !== dMesh && c.userData.parent && c.userData.parent.onInteract);
+                            if (items.length > 0) {
+                                items.sort((a, b) => b.position.y - a.position.y);
+                                items[0].userData.parent.onInteract(items[0].userData.parent);
+                            } else {
+                                dMesh.userData.isOpen = false; sfx.close();
+                            }
+                        }
+                    }
+                });
+                dMesh.mesh.userData.isOpen = false; dGroup.add(dMesh.mesh); dGroup.userData = { isDrawer: true };
+
+                itemsInside.forEach(item => {
+                    const iMesh = new Interactable(item.geo, item.mat, item.def.name, (o) => { takeItem(item.def, o); });
+                    iMesh.mesh.position.copy(item.pos); iMesh.mesh.rotation.set(item.rot.x, item.rot.y, item.rot.z);
+                    dGroup.add(iMesh.mesh);
+                });
+                dGroup.position.set(3, y, -3.9); scene.add(dGroup); drawers.push(dGroup);
+            };
+
+            makeDrawer(1.25, [
+                { def: ITEMS.pants, geo: new THREE.PlaneGeometry(0.8, 0.8), mat: new THREE.MeshBasicMaterial({ map: texPants, transparent: true }), pos: new THREE.Vector3(0, -0.14, 0), rot: { x: -Math.PI / 2, y: 0, z: 0 } },
+                { def: ITEMS.seed_drawer, geo: new THREE.PlaneGeometry(0.4, 0.4), mat: new THREE.MeshBasicMaterial({ map: packetSeedAsset.tex, transparent: true }), pos: new THREE.Vector3(0, -0.15, 0), rot: { x: -Math.PI / 2, y: 0, z: 0 } }
+            ]);
+            makeDrawer(0.75, []);
+            makeDrawer(0.25, [
+                { def: ITEMS.socks_clean, geo: new THREE.PlaneGeometry(0.6, 0.6), mat: new THREE.MeshBasicMaterial({ map: cleanSockAsset.tex, transparent: true }), pos: new THREE.Vector3(0.2, -0.15, 0), rot: { x: -Math.PI / 2, y: 0, z: 0 } },
+                { def: ITEMS.vial, geo: new THREE.CylinderGeometry(0.1, 0.1, 0.4), mat: new THREE.MeshStandardMaterial({ color: 0xffd700, emissive: 0xaa4400 }), pos: new THREE.Vector3(-0.3, -0.10, 0), rot: { x: 0, y: 0, z: Math.PI / 2 } }
+            ]);
+
+            const dirtySocks = new Interactable(new THREE.PlaneGeometry(0.6, 0.6), new THREE.MeshBasicMaterial({ map: dirtySockAsset.tex, transparent: true, side: THREE.DoubleSide }), "Dirty Socks", (o) => {
+                if (hasItem('socks_clean')) { showMessage("You are already wearing fresh, clean socks."); return; }
+                showModal("You pick up the dirty socks, they don’t seem too dirty but obviously not clean. Do you want to put them on? They might warm your feet a tiny bit.", () => { takeItem(ITEMS.socks_dirty, o); STATE.flags.socksFloorTaken = true; showMessage("You put on the dusty socks."); }, () => showMessage("You leave them."));
+            });
+            dirtySocks.mesh.rotation.x = -Math.PI / 2; dirtySocks.mesh.position.set(0, 0.02, -2.5); scene.add(dirtySocks.mesh);
+
+            const cornerSeed = new Interactable(new THREE.PlaneGeometry(0.4, 0.4), new THREE.MeshBasicMaterial({ map: singleSeedAsset.tex, transparent: true, side: THREE.DoubleSide }), "Stray Seed", (o) => takeItem(ITEMS.seed_corner, o));
+            cornerSeed.mesh.rotation.x = -Math.PI / 2;
+            cornerSeed.mesh.position.set(4.7, 0.02, -4.8);
+            scene.add(cornerSeed.mesh);
+
+            const pot = new Interactable(new THREE.CylinderGeometry(0.3, 0.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x8b4513 }), "Pot", (o) => takeItem(ITEMS.pot, o));
+            pot.mesh.position.set(-4, 0.2, 4); scene.add(pot.mesh);
+
+            // SINK
+            const sinkGroup = new THREE.Group();
+            const cabinet = new THREE.Mesh(new THREE.BoxGeometry(2, 1, 1.5), new THREE.MeshStandardMaterial({ map: texWood }));
+            cabinet.position.y = 0.5; sinkGroup.add(cabinet);
+            const basinMat = new THREE.MeshStandardMaterial({ color: 0xeeeeee });
+            const bBot = new THREE.Mesh(new THREE.BoxGeometry(1.8, 0.1, 1.3), basinMat); bBot.position.y = 1.0; sinkGroup.add(bBot);
+            const bL = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.3, 1.3), basinMat); bL.position.set(-0.85, 1.15, 0); sinkGroup.add(bL);
+            const bR = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.3, 1.3), basinMat); bR.position.set(0.85, 1.15, 0); sinkGroup.add(bR);
+            const bF = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 0.1), basinMat); bF.position.set(0, 1.15, 0.6); sinkGroup.add(bF);
+            const bB = new THREE.Mesh(new THREE.BoxGeometry(1.6, 0.3, 0.1), basinMat); bB.position.set(0, 1.15, -0.6); sinkGroup.add(bB);
+            const drain = new THREE.Mesh(new THREE.CircleGeometry(0.1), new THREE.MeshStandardMaterial({ color: 0x222222 }));
+            drain.rotation.x = -Math.PI / 2; drain.position.set(0, 1.06, 0); sinkGroup.add(drain);
+            const f1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.5), new THREE.MeshStandardMaterial({ color: 0x888888 }));
+            f1.position.set(0, 1.25, -0.6); sinkGroup.add(f1);
+            const f2 = new THREE.Mesh(new THREE.BoxGeometry(0.05, 0.05, 0.4), new THREE.MeshStandardMaterial({ color: 0x888888 }));
+            f2.position.set(0, 1.5, -0.4); sinkGroup.add(f2);
+            const sinkTap = new Interactable(new THREE.BoxGeometry(1.5, 0.5, 1), new THREE.MeshBasicMaterial({ visible: false }), "Sink", () => {
+                if (STATE.activeItem) {
+                    if (STATE.activeItem.id === 'glass_empty') { useItem('glass_empty'); giveItem(ITEMS.glass_water); showMessage("The glass fills with the pure, freezing liquid."); }
+                    else if (STATE.activeItem.id === 'glass_holy' || STATE.activeItem.id === 'glass_water') { showMessage("The water rushes over it, but nothing mystical occurs."); }
+                    else { showMessage("It’s not useful to rinse this item."); }
+                } else showMessage("The faucet creaks, spitting out a stream of icy water.");
+            });
+            sinkTap.mesh.position.set(0, 1.5, 0); sinkGroup.add(sinkTap.mesh);
+            sinkGroup.position.set(4, 0, 0); scene.add(sinkGroup);
+        }
+
+        let growingPlantMesh = null;
+        function spawnPlacedPot(pos) {
+            const g = new THREE.Group(); g.add(new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.2, 0.4), new THREE.MeshStandardMaterial({ color: 0x8b4513 })));
+            const z = new Interactable(new THREE.BoxGeometry(1.5, 2, 1.5), new THREE.MeshBasicMaterial({ visible: false }), "Plant Pot", () => {
+                if (STATE.flags.portalOpen) { teleportToBeach(); return; }
+
+                // NO ITEM SELECTED - INSPECT
+                if (!STATE.activeItem) {
+                    if (STATE.flags.seedsAdded && STATE.flags.waterAdded) {
+                        showMessage("It's growing...");
+                    } else if (STATE.flags.seedsAdded) {
+                        showMessage("The seed rests in the dirt, thirsting for a blessing.");
+                    } else if (STATE.flags.waterAdded) {
+                        showMessage("The soil is perfectly damp with holy essence, but needs life.");
+                    } else if (STATE.flags.plainWaterAdded) {
+                        showMessage("The soil is wet and muddy, but feels lifeless.");
+                    } else {
+                        showMessage("The soil is dry and barren.");
+                    }
+                    return;
+                }
+
+                // ITEM SELECTED - INTERACT
+                if (STATE.activeItem.id.includes('seed')) {
+                    useItem(STATE.activeItem.id);
+                    STATE.flags.seedsAdded = true;
+                    showMessage("You bury the seed in the dark earth.");
+                    checkGrowth();
+                }
+                else if (STATE.activeItem.id === 'glass_holy' || STATE.activeItem.id === 'vial') {
+                    useItem(STATE.activeItem.id);
+                    STATE.flags.waterAdded = true;
+                    STATE.flags.plainWaterAdded = false;
+                    showMessage("You pour the blessed water. It shimmers.");
+                    checkGrowth();
+                }
+                else if (STATE.activeItem.id === 'glass_water') {
+                    if (STATE.flags.waterAdded) {
+                        showMessage("The soil is already damp with holy essence. No need for more.");
+                    } else {
+                        showMessage("You water the earth. Now it is just wet, boring soil.");
+                        useItem('glass_water');
+                        giveItem(ITEMS.glass_empty, true);
+                        STATE.flags.plainWaterAdded = true;
+                    }
+                }
+            });
+            z.mesh.position.y = 1.0; g.add(z.mesh);
+
+            // Shader Plant (Fractal Vine - Large Plane)
+            const treeMat = new THREE.ShaderMaterial({
+                uniforms: { u_time: globalUniforms.u_time, u_growth: { value: 0.0 } },
+                vertexShader: treeVS,
+                fragmentShader: treeFS,
+                transparent: true,
+                side: THREE.DoubleSide
+            });
+            const treeMesh = new THREE.Mesh(new THREE.PlaneGeometry(6, 6), treeMat);
+            treeMesh.position.set(0, 2.5, -0.2);
+            g.add(treeMesh);
+            growingPlantMesh = treeMesh;
+
+            g.position.copy(pos); scene.add(g);
+        }
+
+        function checkGrowth() {
+            if (STATE.flags.plantPlaced && STATE.flags.seedsAdded && STATE.flags.waterAdded) {
+                showMessage("The seed cracks! A glowing vine erupts, spreading across the frozen glass!", 4000); sfx.grow();
+                let s = 0;
+                const i = setInterval(() => {
+                    s += 0.05;
+                    if (growingPlantMesh) growingPlantMesh.material.uniforms.u_growth.value = s;
+                    if (s > 5) { clearInterval(i); openPortal(); }
+                }, 200);
+            }
+        }
+
+        function openPortal() {
+            showMessage("The air tears open! A PORTAL!", 4000); sfx.success(); STATE.flags.portalOpen = true;
+            const p = new Interactable(new THREE.CircleGeometry(2, 32), new THREE.ShaderMaterial({ uniforms: { u_time: globalUniforms.u_time, u_color: { value: new THREE.Color(0x00ffff) } }, vertexShader: waterVS, fragmentShader: waterFS, transparent: true, side: THREE.DoubleSide }), "Portal", () => teleportToBeach());
+            p.mesh.position.set(0, 2.5, -4.8); scene.add(p.mesh);
+        }
+
+        function teleportToBeach() {
+            STATE.isBeach = true; interactables.length = 0; obstacles.length = 0; drawers.length = 0;
+            while (scene.children.length > 0) { scene.remove(scene.children[0]); }
+            scene.add(cameraGroup);
+
+            scene.fog = new THREE.FogExp2(0xffffff, 0.002); scene.background = new THREE.Color(0x87CEEB);
+
+            const sun = new THREE.Mesh(new THREE.SphereGeometry(5, 32, 32), new THREE.MeshBasicMaterial({ color: 0xffff00 })); sun.position.set(50, 100, -100); scene.add(sun);
+
+            const geo = new THREE.PlaneGeometry(200, 200, 64, 64); geo.rotateX(-Math.PI / 2);
+            const pos = geo.attributes.position;
+            for (let i = 0; i < pos.count; i++) {
+                const x = pos.getX(i); const z = pos.getZ(i);
+                pos.setY(i, noise(x * 0.05, z * 0.05) * 2 + noise(x * 0.1, z * 0.1) * 0.5);
+            }
+            geo.computeVertexNormals();
+            scene.add(new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ color: 0xf4a460, roughness: 0.9 })));
+
+            const w = new THREE.Mesh(new THREE.PlaneGeometry(200, 50), new THREE.ShaderMaterial({ uniforms: { u_time: globalUniforms.u_time, u_color: { value: new THREE.Color(0x0077be) } }, vertexShader: waterVS, fragmentShader: waterFS, transparent: true }));
+            w.rotation.x = -Math.PI / 2; w.position.set(0, 0.5, -20); scene.add(w);
+
+            const b = new Interactable(new THREE.BoxGeometry(1.5, 1, 1.5), new THREE.MeshStandardMaterial({ map: texBasket }), "Picnic Basket", () => {
+                if (!STATE.flags.gameEnded) {
+                    giveItem(ITEMS.jacket);
+                    sfx.success();
+                    const endTime = Date.now();
+                    const duration = endTime - STATE.startTime;
+                    const seconds = Math.floor((duration / 1000) % 60);
+                    const minutes = Math.floor((duration / (1000 * 60)) % 60);
+                    const timeString = `${minutes}m ${seconds}s`;
+                    showMessage(`FOUND YOUR JACKET! WIN! Time: ${timeString}`);
+                    STATE.flags.gameEnded = true;
+                }
+            });
+            b.mesh.position.set(5, 1.5, 2); scene.add(b.mesh);
+
+            const t = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.4, 4), new THREE.MeshStandardMaterial({ color: 0x5d4037 })); t.position.set(8, 2, 2); scene.add(t);
+            const l = new THREE.Mesh(new THREE.ConeGeometry(2, 1, 8), new THREE.MeshStandardMaterial({ color: 0x00aa00 })); l.position.set(8, 4, 2); scene.add(l);
+
+            scene.add(new THREE.AmbientLight(0xffffff, 1.0));
+            cameraGroup.position.set(0, 3, 10);
+        }
+
+        // --- LOGIC ---
+        function hasItem(id) { return STATE.inventory.permanent.find(i => i.id === id) || STATE.inventory.working.find(i => i.id === id); }
+        function takeItem(d, o) {
+            if (o) {
+                const parent = o.mesh.parent;
+                o.mesh.removeFromParent();
+                const i = interactables.indexOf(o.mesh); if (i > -1) interactables.splice(i, 1);
+
+                if (parent && parent.userData.isDrawer) {
+                    const remainingItems = parent.children.filter(c => c.userData.parent && c.userData.parent.onInteract);
+                    if (remainingItems.length <= 1) {
+                        const drawerMesh = parent.children.find(c => c.userData.isOpen !== undefined);
+                        if (drawerMesh) { setTimeout(() => { drawerMesh.userData.isOpen = false; sfx.close(); }, 200); }
+                    }
+                }
+            }
+            giveItem(d);
+        }
+        function giveItem(d, silent = false) {
+            sfx.blip();
+            (d.type === 'perm' ? STATE.inventory.permanent : STATE.inventory.working).push(d);
+            updateInv();
+            if (!silent) showMessage(`Got: ${d.name}`);
+        }
+        function useItem(id) { sfx.interact(); const i = STATE.inventory.working.findIndex(x => x.id === id); if (i > -1) { STATE.inventory.working.splice(i, 1); STATE.activeItem = null; updateInv(); } }
+        function updateInv() {
+            const p = document.getElementById('inv-perm'), w = document.getElementById('inv-work'); p.innerHTML = '<span class="inv-title">Worn</span>'; w.innerHTML = '<span class="inv-title">Hand</span>';
+            STATE.inventory.permanent.forEach(i => p.appendChild(createSlot(i, false))); STATE.inventory.working.forEach(i => w.appendChild(createSlot(i, true)));
+        }
+        function createSlot(i, w) {
+            const d = document.createElement('div'); d.className = 'item-slot'; if (STATE.activeItem === i) d.classList.add('active');
+            if (i.img) { d.innerHTML = `<img src="${i.img}" alt="${i.name}">`; } else { d.innerText = i.icon; }
+            d.onclick = (e) => { e.stopPropagation(); sfx.blip(); if (w) { if (STATE.activeItem === i) { STATE.activeItem = null; triggerAction(i); } else { STATE.activeItem = i; showMessage("Selected: " + i.name); } } else showMessage("Worn: " + i.name); updateInv(); };
+            d.ontouchstart = d.onclick; return d;
+        }
+        function triggerAction(i) {
+            if (i.id === 'book') {
+                if (hasItem('glass_water')) {
+                    const idx = STATE.inventory.working.findIndex(x => x.id === 'glass_water');
+                    STATE.inventory.working[idx] = ITEMS.glass_holy; sfx.success(); showMessage("The ancient words resonate with the water, infusing it with a shimmering, holy light.", 4000); updateInv();
+                } else {
+                    showMessage("You flip through the enchanted book with written characters you sort of recognize. You see pictures of waterfalls and rivers and thunderstorms. You recite out loud all the syllables you recognize. You're intrigued but otherwise nothing notable happens. You shiver in the cold.", 8000);
+                }
+            } else if (i.id === 'glass_water') {
+                sfx.interact();
+                useItem(i.id);
+                giveItem(ITEMS.glass_empty, true);
+                showMessage("You feel hydrated but that’s about it. Got: Empty Glass.");
+            } else if (i.id === 'glass_holy' || i.id === 'vial') { sfx.interact(); showMessage("You drink the glowing water. A warmth spreads through your chest, chasing away the chill.", 4000); useItem(i.id); if (i.id === 'glass_holy') giveItem(ITEMS.glass_empty); }
+        }
+
+        // --- INIT & LOOP ---
+        document.getElementById('start-btn').addEventListener('click', () => {
+            try {
+                sfx.init();
+                document.getElementById('start-screen').style.display = 'none';
+                STATE.startTime = Date.now();
+                buildRoom(); spawnItems();
+                STATE.wakingUp = true; STATE.ready = true;
+            } catch (e) { alert('Error: ' + e.message); }
+        });
+
+        const clock = new THREE.Clock(); const keys = { w: false, a: false, s: false, d: false };
+        document.addEventListener('keydown', e => { if (keys[e.key] !== undefined) keys[e.key] = true; }); document.addEventListener('keyup', e => { if (keys[e.key] !== undefined) keys[e.key] = false; });
+        const input = { moveVector: new THREE.Vector2(0, 0), looking: false };
+        const jz = document.getElementById('joystick-zone'), jk = document.getElementById('joystick-knob'); let jId = null, jc = { x: 0, y: 0 };
+        jz.addEventListener('touchstart', e => { if (modalOverlay.style.display === 'flex') return; e.preventDefault(); const t = e.changedTouches[0]; jId = t.identifier; const r = jz.getBoundingClientRect(); jc = { x: r.left + r.width / 2, y: r.top + r.height / 2 }; upJ(t.clientX, t.clientY); }, { passive: false });
+        jz.addEventListener('touchmove', e => { if (modalOverlay.style.display === 'flex') return; e.preventDefault(); for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === jId) { upJ(e.changedTouches[i].clientX, e.changedTouches[i].clientY); break; } } }, { passive: false });
+        const endJ = e => { e.preventDefault(); for (let i = 0; i < e.changedTouches.length; i++) { if (e.changedTouches[i].identifier === jId) { jId = null; input.moveVector.set(0, 0); jk.style.transform = 'translate(-50%,-50%)'; break; } } };
+        jz.addEventListener('touchend', endJ); jz.addEventListener('touchcancel', endJ);
+        function upJ(x, y) { const R = 40; let dx = x - jc.x, dy = y - jc.y; const d = Math.sqrt(dx * dx + dy * dy); if (d > R) { const r = R / d; dx *= r; dy *= r; } jk.style.transform = `translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px))`; input.moveVector.set(dx / R, -(dy / R)); }
+
+        const lz = document.getElementById('touch-look-zone'); let lx = 0, ly = 0;
+        let lId = null;
+        lz.addEventListener('touchstart', e => {
+            if (modalOverlay.style.display === 'flex') return;
+            // Find a touch that isn't the joystick
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier !== jId) {
+                    lId = e.changedTouches[i].identifier;
+                    lx = e.changedTouches[i].clientX;
+                    ly = e.changedTouches[i].clientY;
+                    input.looking = true;
+                    break;
+                }
+            }
+        }, { passive: false });
+        lz.addEventListener('touchmove', e => {
+            if (!input.looking || modalOverlay.style.display === 'flex') return;
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === lId) {
+                    const t = e.changedTouches[i];
+                    const dx = t.clientX - lx, dy = t.clientY - ly;
+                    cameraGroup.rotation.y -= dx * 0.005;
+                    camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x - dy * 0.005));
+                    lx = t.clientX; ly = t.clientY;
+                    break;
+                }
+            }
+        }, { passive: false });
+        const endL = e => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                if (e.changedTouches[i].identifier === lId) {
+                    input.looking = false; lId = null; break;
+                }
+            }
+        };
+        lz.addEventListener('touchend', endL);
+        lz.addEventListener('touchcancel', endL);
+
+        lz.addEventListener('click', e => {
+            if (modalOverlay.style.display === 'flex') return;
+            const r = renderer.domElement.getBoundingClientRect(); raycaster.setFromCamera(new THREE.Vector2(((e.clientX - r.left) / r.width) * 2 - 1, -((e.clientY - r.top) / r.height) * 2 + 1), camera);
+            const hits = raycaster.intersectObjects(interactables);
+            if (hits.length > 0 && hits[0].distance < 6) { const t = hits[0].object.userData.parent; if (t) t.onInteract(t, hits[0]); }
+        });
+
+        function chkCol(p) {
+            if (!STATE.isBeach) { if (Math.abs(p.x) > 4.5 || Math.abs(p.z) > 4.5) return true; for (let o of obstacles) if (p.x + 0.2 > o.minX && p.x - 0.2 < o.maxX && p.z + 0.2 > o.minZ && p.z - 0.2 < o.maxZ) return true; }
+            else if (p.z < -40 || p.z > 20 || Math.abs(p.x) > 50) return true;
+            return false;
+        }
+
+        let md = false; document.addEventListener('mousedown', () => md = true); document.addEventListener('mouseup', () => md = false);
+        document.addEventListener('mousemove', e => { if (md && document.getElementById('start-screen').style.display === 'none' && modalOverlay.style.display !== 'flex') { cameraGroup.rotation.y -= e.movementX * 0.003; camera.rotation.x = Math.max(-1.5, Math.min(1.5, camera.rotation.x - e.movementY * 0.003)); } });
+
+        renderer.setAnimationLoop(() => {
+            if (!STATE.ready) return;
+            const dt = clock.getDelta(); globalUniforms.u_time.value += dt;
+            if (STATE.wakingUp) { cameraGroup.position.y += dt * 0.6; if (cameraGroup.position.y >= 2.2) { cameraGroup.position.y = 2.2; STATE.wakingUp = false; } }
+            if (modalOverlay.style.display === 'flex') { renderer.render(scene, camera); return; }
+
+            // Animate Drawers
+            drawers.forEach(d => {
+                if (!d || d.children.length === 0) return;
+                const dMesh = d.children[0];
+                const isOpen = dMesh.userData.isOpen;
+                const baseZ = -3.9;
+                const targetZ = isOpen ? (baseZ + 1.2) : baseZ;
+                d.position.z += (targetZ - d.position.z) * 0.1;
+            });
+
+            const y = cameraGroup.rotation.y, f = input.moveVector.y + (keys.w ? 1 : 0) - (keys.s ? 1 : 0), s = input.moveVector.x - (keys.a ? 1 : 0) + (keys.d ? 1 : 0);
+            if (f || s) {
+                const dx = Math.sin(y) * -f + Math.cos(y) * s, dz = Math.cos(y) * -f + Math.sin(y) * -s;
+                const px = cameraGroup.position.x + dx * 0.08, pz = cameraGroup.position.z + dz * 0.08;
+                if (!chkCol({ x: px, z: cameraGroup.position.z })) cameraGroup.position.x = px;
+                if (!chkCol({ x: cameraGroup.position.x, z: pz })) cameraGroup.position.z = pz;
+            }
+            renderer.render(scene, camera);
+        });
+        window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+    </script>
+</body>
+
+</html>
