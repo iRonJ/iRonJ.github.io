@@ -17,7 +17,7 @@ Most amazingly, i built this all on my phone, lounging on my couch, just talking
 Explore the cabin, find items, and see if you can escape the cold. It works great on mobile. You can use WASD keys on desktop, and click and drag to move the camera and interact.
 
 <div style="margin-bottom: 10px; text-align: right;">
-<a href="/assets/apps/game-puzzle-jacket/index.html" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;">OPEN IN NEW WINDOW</a>
+<a href="/assets/apps/game-puzzle-jacket/dist/index.html" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;">OPEN IN NEW WINDOW</a>
 </div>
 
-<iframe src="/assets/apps/game-puzzle-jacket/index.html" style="width:100%; height:800px; border:none; background: #000;"></iframe>
+<iframe src="/assets/apps/game-puzzle-jacket/dist/index.html" style="width:100%; height:800px; border:none; background: #000;"></iframe>
