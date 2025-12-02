@@ -141,7 +141,13 @@ export function teleportToBeach(scene) {
             const seconds = Math.floor((duration / 1000) % 60);
             const minutes = Math.floor((duration / (1000 * 60)) % 60);
             const timeString = `${minutes}m ${seconds}s`;
-            showMessage(`FOUND YOUR JACKET! WIN! Time: ${timeString}`);
+            let msg = `FOUND YOUR JACKET! WIN! Time: ${timeString}`;
+            if (hasItem('socks_dirty')) {
+                msg += " You chose to wear the dirty socks...";
+            } else {
+                msg += " You chose the clean socks!";
+            }
+            showMessage(msg);
             STATE.flags.gameEnded = true;
         }
     });
