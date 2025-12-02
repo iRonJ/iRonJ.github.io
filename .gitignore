@@ -4,3 +4,5 @@ vendor/
 .bundle/
 Gemfile.lock
 assets/apps/game-storyizer/node_modules/*
+assets/apps/game-puzzle-jacket/node_modules/*
+**/node_modules/*
