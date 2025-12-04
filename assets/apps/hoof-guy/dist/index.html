@@ -1,0 +1,909 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Hoof Trim Simulator - Final Logic</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #87CEEB;
+            font-family: 'Segoe UI', sans-serif;
+            user-select: none;
+        }
+
+        #canvas-container {
+            width: 100vw;
+            height: 100vh;
+            touch-action: none;
+            cursor: crosshair;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            z-index: 10;
+        }
+
+        .header {
+            padding: 15px 20px;
+            background: linear-gradient(to bottom, rgba(20, 25, 30, 0.95), transparent);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: auto;
+        }
+
+        .panel {
+            background: rgba(30, 35, 40, 0.9);
+            border: 1px solid #556;
+            padding: 10px 15px;
+            border-radius: 8px;
+            backdrop-filter: blur(6px);
+            color: #eee;
+            min-width: 200px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        h1 {
+            margin: 0 0 3px 0;
+            font-size: 12px;
+            color: #89CFF0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .msg {
+            font-size: 14px;
+            font-weight: 700;
+        }
+
+        .sub {
+            font-size: 11px;
+            color: #aab;
+            margin-top: 2px;
+        }
+
+        .right-group {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        .gauge-box {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            background: rgba(30, 35, 40, 0.7);
+            padding: 6px 12px;
+            border-radius: 8px;
+        }
+
+        .gauge-label {
+            font-size: 10px;
+            color: #ccc;
+            text-align: right;
+            font-weight: 700;
+            line-height: 1.1;
+        }
+
+        .gauge-bar {
+            width: 12px;
+            height: 50px;
+            background: #223;
+            border: 1px solid #556;
+            border-radius: 3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .gauge-fill {
+            width: 100%;
+            height: 0%;
+            background: linear-gradient(to top, #c0392b 20%, #f1c40f 50%, #ecf0f1 100%);
+            position: absolute;
+            bottom: 0;
+            transition: height 0.1s;
+        }
+
+        .mute-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: rgba(30, 35, 40, 0.8);
+            border: 1px solid #556;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+        }
+
+        /* Gyro Request Button (iOS specific) */
+        #btn-gyro {
+            display: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #e67e22;
+            border: 1px solid #d35400;
+            color: #fff;
+            font-size: 16px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(230, 126, 34, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 10px rgba(230, 126, 34, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(230, 126, 34, 0);
+            }
+        }
+
+
+        .controls {
+            padding: 25px;
+            background: linear-gradient(to top, rgba(20, 25, 30, 0.95), transparent);
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            pointer-events: auto;
+        }
+
+        .btn {
+            width: 75px;
+            height: 75px;
+            border-radius: 18px;
+            background: #2b3b4b;
+            border: 2px solid #456;
+            color: #ccc;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            transition: all 0.1s ease;
+        }
+
+        .btn span {
+            font-size: 10px;
+            margin-top: 5px;
+            font-weight: 700;
+            text-transform: uppercase;
+        }
+
+        .btn.active {
+            background: #102a40;
+            border-color: #00AAFF;
+            color: #fff;
+            transform: translateY(-4px);
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.4);
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        /* Modal */
+        #modal-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            z-index: 20;
+            padding-top: 60px;
+        }
+
+        .modal-box {
+            background: rgba(20, 20, 20, 0.95);
+            border: 1px solid #555;
+            border-radius: 12px;
+            padding: 15px 20px;
+            text-align: center;
+            color: white;
+            width: 260px;
+            max-width: 85%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .grade-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+
+        .grade-big {
+            font-size: 40px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .grade-title {
+            font-size: 16px;
+            font-weight: bold;
+            text-align: left;
+        }
+
+        .grade-A {
+            color: #2ecc71;
+            text-shadow: 0 0 15px rgba(46, 204, 113, 0.4);
+        }
+
+        .grade-B {
+            color: #f1c40f;
+        }
+
+        .grade-F {
+            color: #e74c3c;
+        }
+
+        .stat-bar {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #aaa;
+            border-top: 1px solid #333;
+            padding-top: 8px;
+            margin-bottom: 5px;
+        }
+
+        .modal-btn {
+            background: #00AAFF;
+            color: white;
+            border: none;
+            padding: 8px 0;
+            font-size: 14px;
+            font-weight: bold;
+            border-radius: 20px;
+            cursor: pointer;
+            margin-top: 15px;
+            width: 100%;
+        }
+
+        .st-ok {
+            color: #2ecc71;
+        }
+
+        .st-warn {
+            color: #f1c40f;
+        }
+
+        .st-err {
+            color: #e74c3c;
+        }
+
+        #intro-modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+        }
+
+        #intro-modal h1 {
+            margin-top: 0;
+            font-size: 24px;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        .sub-text {
+            font-size: 11px;
+            color: #888;
+            margin-top: 15px;
+            line-height: 1.4;
+        }
+
+        .sub-text a {
+            color: #aab;
+            text-decoration: none;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+
+<body>
+    <div id="intro-modal">
+        <div class="modal-box">
+            <h1>Welcome back</h1>
+            <button class="modal-btn" onclick="closeIntro()">I'm Nate the hoof guy</button>
+            <div class="sub-text">
+                this is a fan made game with zero affiliation with actual Nate the Hoof Guy.<br>
+                See <a href="https://ironj.github.io" target="_blank">https://ironj.github.io</a> for more info
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-overlay">
+        <div class="modal-box">
+            <div class="grade-row">
+                <div id="grade-display" class="grade-big grade-A">A</div>
+                <div id="grade-title" class="grade-title">Excellent<br>Trimming</div>
+            </div>
+            <div class="stat-bar">
+                <span>Defect Exposed</span><span id="stat-cov" style="color:white;font-weight:bold">100%</span>
+            </div>
+            <div class="stat-bar" style="border:none; padding-top:0;">
+                <span>Healthy Tissue Cut</span><span id="stat-dam" style="color:#e74c3c;font-weight:bold">0%</span>
+            </div>
+            <button class="modal-btn" onclick="nextCow()">Next Cow 🐄</button>
+        </div>
+    </div>
+
+    <div id="ui-layer">
+        <div class="header">
+            <div class="panel">
+                <h1>Status Log</h1>
+                <div id="msg-main" class="msg">System Ready</div>
+                <div id="msg-sub" class="sub">2 Fingers: Cut. 1 Finger: Spray.</div>
+            </div>
+            <div class="right-group">
+                <div class="mute-btn" id="btn-gyro" onclick="requestGyro()">📱</div>
+                <div class="mute-btn" id="btn-mute" onclick="toggleMute()">🔊</div>
+                <div class="gauge-box">
+                    <div class="gauge-label">HORN<br>DEPTH</div>
+                    <div class="gauge-bar">
+                        <div class="gauge-fill" id="depth-ui"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="btn active" id="btn-knife" onclick="setTool('knife')">🔪<span>Knife</span></div>
+            <div class="btn" id="btn-spray" onclick="setTool('spray')">🧴<span>Spray</span></div>
+            <div class="btn" onclick="calcScore()">➡️<span>Next Cow</span></div>
+        </div>
+    </div>
+
+    <div id="canvas-container"></div>
+
+    <script type="x-shader/x-vertex" id="vShader">
+        varying vec2 vUv; varying vec3 vNormal; varying vec3 vPos; varying vec3 vViewPosition;
+        uniform sampler2D depthMap; uniform float displacementScale;
+        void main() {
+            vUv = uv; vNormal = normalize(normalMatrix * normal);
+            float d = texture2D(depthMap, uv).r;
+            float cutDepth = (1.0 - d) * displacementScale;
+            vec3 newPos = position + normal * (-cutDepth);
+            vec4 mvPosition = modelViewMatrix * vec4(newPos, 1.0);
+            vPos = (modelMatrix * vec4(newPos, 1.0)).xyz; vViewPosition = -mvPosition.xyz;
+            gl_Position = projectionMatrix * mvPosition;
+        }
+    </script>
+
+    <script type="x-shader/x-fragment" id="fShader">
+        varying vec2 vUv; varying vec3 vNormal; varying vec3 vPos; varying vec3 vViewPosition;
+        uniform sampler2D depthMap; uniform sampler2D defectMap; uniform sampler2D noiseMap;
+        uniform vec3 colorHorn; uniform vec3 colorDirt;
+        uniform vec2 defectCenter; uniform bool hasDefect;
+        uniform bool showOverlay; 
+
+        float random(vec3 scale, float seed) { return fract(sin(dot(gl_FragCoord.xyz + seed, scale)) * 43758.5453 + seed); }
+
+        void main() {
+            float depth = texture2D(depthMap, vUv).r;
+            vec4 defectData = texture2D(defectMap, vUv);
+            vec3 noise = texture2D(noiseMap, vUv * 6.0).rgb;
+            float d = clamp(depth + (random(vec3(12.9, 78.2, 151.7), 0.0) * 0.02), 0.0, 1.0);
+
+            float dirtAlpha = smoothstep(0.90, 0.98, d); 
+            float hornAlpha = smoothstep(0.05, 0.25, d); 
+
+            vec3 cDirt = colorDirt * (0.6 + 0.4 * noise.r);
+            vec3 cFlesh = defectData.rgb;
+            vec3 cHorn = colorHorn;
+
+            vec3 finalColor = cFlesh;
+            finalColor = mix(finalColor, cHorn, hornAlpha * 0.98);
+            finalColor = mix(finalColor, cDirt, dirtAlpha);
+
+            if (hasDefect && !showOverlay) {
+                float distToCenter = distance(vUv, defectCenter);
+                if (distToCenter < 0.004 && d < 0.92 && d > 0.30) { finalColor = vec3(1.0, 0.0, 0.8); }
+            }
+
+            if (showOverlay) {
+                 float isDefect = smoothstep(0.05, 0.1, distance(defectData.rgb, vec3(0.815, 0.564, 0.564)));
+                 finalColor = mix(finalColor, defectData.rgb, isDefect * 0.6);
+            }
+
+            vec3 N = normalize(vNormal); vec3 L = normalize(vec3(0.4, 0.8, 1.0)); vec3 V = normalize(vViewPosition); vec3 H = normalize(L + V);
+            float NdotL = max(dot(N, L), 0.0);
+            float wetness = 1.0 - (hornAlpha * 0.5); 
+            float spec = pow(max(dot(N, H), 0.0), 32.0) * wetness * 0.6;
+            vec3 ambient = vec3(0.5);
+            gl_FragColor = vec4(finalColor * (ambient + vec3(0.8)*NdotL) + vec3(spec), 1.0);
+        }
+    </script>
+
+    <script>
+        const CFG = {
+            texSize: 1024,
+            colors: {
+                horn: new THREE.Color(0xFFFFEE), dirt: new THREE.Color(0x3E2B20),
+                pus: 0xCCBB00, blood: 0x990000, spray: 0x00FFFF, pusBrown: 0x8B4513
+            },
+            cutStrength: 0.012, cutWidth: 65, displacement: 0.3, liftOffset: 0.12
+        };
+
+        let scene, camera, renderer, raycaster;
+        let knifeGroup, sprayGroup, hoofGroup;
+        let claws = [], particles = [], chips = [], bleedSources = [], fluidStreams = [];
+        let activeTool = 'knife';
+        let mouse = new THREE.Vector2(), isDragging = false, isCutting = false;
+        let knifeAngle = -Math.PI / 2, lastCutUV = null, touchStartDist = 0;
+        let cam = { r: 6.5, theta: 0, phi: 0.55 };
+
+        let audioCtx;
+        let isMuted = false;
+        let gyro = { x: 0, y: 0 };
+
+        function closeIntro() {
+            document.getElementById('intro-modal').style.display = 'none';
+        }
+
+        function init() {
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene(); scene.background = new THREE.Color(0x87CEEB); scene.fog = new THREE.Fog(0x87CEEB, 8, 40);
+            camera = new THREE.PerspectiveCamera(50, window.innerWidth / window.innerHeight, 0.1, 100); updateCamera();
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.shadowMap.enabled = true; renderer.outputEncoding = THREE.sRGBEncoding; renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            container.appendChild(renderer.domElement);
+            raycaster = new THREE.Raycaster();
+
+            createBackground();
+
+            const hemi = new THREE.HemisphereLight(0xffffff, 0x444444, 0.8); scene.add(hemi);
+            const dir = new THREE.DirectionalLight(0xffffff, 1.2); dir.position.set(5, 10, 5);
+            dir.castShadow = true; dir.shadow.mapSize.width = 2048; dir.shadow.mapSize.height = 2048; scene.add(dir);
+
+            createTools(); createHoofAssembly();
+
+            window.addEventListener('resize', onResize);
+            container.addEventListener('touchstart', onTouchStart, { passive: false });
+            container.addEventListener('touchmove', onTouchMove, { passive: false });
+            container.addEventListener('touchend', onEnd);
+            container.addEventListener('mousedown', onMouseDown);
+            container.addEventListener('mousemove', onMouseMove);
+            container.addEventListener('mouseup', onEnd);
+            container.addEventListener('wheel', onWheel);
+
+            if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
+                document.getElementById('btn-gyro').style.display = 'flex';
+            } else {
+                window.addEventListener("deviceorientation", handleGyro, true);
+            }
+
+            animate();
+        }
+
+        function createBackground() {
+            const ground = new THREE.Mesh(new THREE.PlaneGeometry(100, 100), new THREE.MeshStandardMaterial({ color: 0x3b7d3b, roughness: 0.8, side: 2 }));
+            ground.rotation.x = -Math.PI / 2; ground.position.y = -4; ground.receiveShadow = true; scene.add(ground);
+
+            const svgString = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="512" height="256" viewBox="0 0 512 256">
+                <path d="M0,200 Q128,150 256,200 T512,200 V256 H0 Z" fill="#4CAF50" />
+                <path d="M0,256 Q200,220 512,256" fill="#388E3C" />
+                <rect x="300" y="120" width="120" height="100" fill="#B71C1C" />
+                <polygon points="300,120 360,70 420,120" fill="#B71C1C" />
+                <polygon points="290,120 360,60 430,120" fill="#5D4037" />
+                <rect x="340" y="160" width="40" height="60" fill="white" />
+                <line x1="340" y1="160" x2="380" y2="220" stroke="black" stroke-width="1" />
+                <line x1="380" y1="160" x2="340" y2="220" stroke="black" stroke-width="1" />
+                <rect x="425" y="100" width="30" height="120" fill="#90A4AE" />
+                <path d="M425,100 A15,15 0 0,1 455,100" fill="#546E7A" />
+            </svg>`;
+
+            const img = new Image();
+            img.src = 'data:image/svg+xml;base64,' + btoa(svgString);
+            const tex = new THREE.Texture(img);
+            img.onload = () => { tex.needsUpdate = true; };
+
+            const bgGeo = new THREE.PlaneGeometry(60, 30);
+            const bgMat = new THREE.MeshBasicMaterial({ map: tex, transparent: true, side: THREE.DoubleSide });
+            const bgMesh = new THREE.Mesh(bgGeo, bgMat);
+            bgMesh.position.set(0, 5, -20);
+            scene.add(bgMesh);
+        }
+
+        // --- AUDIO ---
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function playPop() {
+            if (isMuted || !audioCtx) return;
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain();
+            osc.connect(gain); gain.connect(audioCtx.destination);
+            osc.type = 'triangle'; osc.frequency.setValueAtTime(150, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(40, audioCtx.currentTime + 0.1);
+            gain.gain.setValueAtTime(0.4, audioCtx.currentTime); gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.1);
+            osc.start(); osc.stop(audioCtx.currentTime + 0.1);
+        }
+
+        function toggleMute() { isMuted = !isMuted; document.getElementById('btn-mute').innerText = isMuted ? '🔇' : '🔊'; }
+
+        // --- GYRO ---
+        function requestGyro() {
+            if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+                DeviceOrientationEvent.requestPermission().then(response => {
+                    if (response === 'granted') {
+                        window.addEventListener('deviceorientation', handleGyro, true);
+                        document.getElementById('btn-gyro').style.display = 'none';
+                    } else { alert("Gyroscope permission denied."); }
+                }).catch(console.error);
+            }
+        }
+
+        function handleGyro(e) {
+            if (e.beta && e.gamma) {
+                const x = Math.min(Math.max(e.gamma, -20), 20) / 20;
+                const y = Math.min(Math.max(e.beta - 45, -20), 20) / 20;
+                gyro.x = x * 1.5; gyro.y = y * 1.0;
+                updateCamera();
+            }
+        }
+
+        function updateCamera() {
+            const y = cam.r * Math.sin(cam.phi), h = cam.r * Math.cos(cam.phi);
+            const bx = h * Math.sin(cam.theta), bz = h * Math.cos(cam.theta);
+            camera.position.set(bx + gyro.x, (y - 2) + gyro.y, bz + 3); camera.lookAt(0, 0, 0);
+        }
+
+        function createHoofAssembly() {
+            hoofGroup = new THREE.Group();
+            const legGeo = new THREE.CylinderGeometry(1.5, 1.2, 5, 32);
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x5C4033, roughness: 0.9 });
+            const leg = new THREE.Mesh(legGeo, legMat); leg.rotation.x = Math.PI / 2; leg.scale.set(1.0, 1.0, 0.7); leg.position.set(0, 0, -4.2); leg.castShadow = true; hoofGroup.add(leg);
+
+            const bulbGeo = new THREE.SphereGeometry(1.0, 24, 24);
+            const lb = new THREE.Mesh(bulbGeo, legMat); lb.scale.set(1.2, 0.8, 1.5); lb.position.set(-0.6, 1.0, -1.8); hoofGroup.add(lb);
+            const rb = new THREE.Mesh(bulbGeo, legMat); rb.scale.set(1.2, 0.8, 1.5); rb.position.set(0.6, 1.0, -1.8); hoofGroup.add(rb);
+
+            createClaw(hoofGroup, -0.8, false); createClaw(hoofGroup, 0.8, true);
+            scene.add(hoofGroup);
+        }
+
+        function createClaw(group, offsetX, isMirrored) {
+            const size = CFG.texSize;
+            const dCanvas = document.createElement('canvas'); dCanvas.width = size; dCanvas.height = size;
+            const dCtx = dCanvas.getContext('2d'); dCtx.fillStyle = '#fff'; dCtx.fillRect(0, 0, size, size);
+            const dTex = new THREE.CanvasTexture(dCanvas); dTex.minFilter = THREE.LinearFilter;
+
+            const defCanvas = document.createElement('canvas'); defCanvas.width = size; defCanvas.height = size;
+            const defCtx = defCanvas.getContext('2d');
+            defCtx.fillStyle = '#D09090'; defCtx.fillRect(0, 0, size, size);
+
+            const defects = [];
+            let defectCenterUV = new THREE.Vector2(-1, -1);
+            let hasDefectUniform = false;
+
+            if (Math.random() > 0.2) {
+                const r = size * (0.1 + Math.random() * 0.2);
+                const cx = size * (0.3 + Math.random() * 0.4);
+                const cy = size * (0.4 + Math.random() * 0.4);
+
+                const gr = defCtx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
+                gr.addColorStop(0, '#DDFF00'); gr.addColorStop(0.35, '#990000'); gr.addColorStop(1, '#D09090');
+                defCtx.fillStyle = gr; defCtx.beginPath(); defCtx.arc(cx, cy, r, 0, Math.PI * 2); defCtx.fill();
+
+                defects.push({ x: cx, y: cy, r: r, state: 'active' });
+                defectCenterUV.set(cx / size, 1.0 - (cy / size)); hasDefectUniform = true;
+            }
+            const defTex = new THREE.CanvasTexture(defCanvas);
+
+            const nCanvas = document.createElement('canvas'); nCanvas.width = 256; nCanvas.height = 256;
+            const nCtx = nCanvas.getContext('2d');
+            for (let i = 0; i < 8000; i++) { nCtx.fillStyle = Math.random() > 0.5 ? '#4a3a2a' : '#5a4a3a'; nCtx.fillRect(Math.random() * 256, Math.random() * 256, 2, 2); }
+            const nTex = new THREE.CanvasTexture(nCanvas); nTex.wrapS = nTex.wrapT = THREE.RepeatWrapping;
+
+            const shape = new THREE.Shape();
+            if (!isMirrored) {
+                shape.moveTo(0.1, -1.8); shape.bezierCurveTo(-1.2, -1.0, -1.4, 0.5, -0.6, 1.2); shape.bezierCurveTo(-0.3, 1.4, -0.1, 1.4, 0.1, 1.0); shape.bezierCurveTo(0.2, 0.0, 0.2, -1.0, 0.1, -1.8);
+            } else {
+                shape.moveTo(-0.1, -1.8); shape.bezierCurveTo(1.2, -1.0, 1.4, 0.5, 0.6, 1.2); shape.bezierCurveTo(0.3, 1.4, 0.1, 1.4, -0.1, 1.0); shape.bezierCurveTo(-0.2, 0.0, -0.2, -1.0, -0.1, -1.8);
+            }
+
+            const geo = new THREE.ExtrudeGeometry(shape, { depth: 0.6, bevelEnabled: true, bevelThickness: 0.1, bevelSize: 0.1, segments: 64 });
+            geo.computeBoundingBox(); const bMin = geo.boundingBox.min; const bMax = geo.boundingBox.max;
+            const uv = geo.attributes.uv; const pos = geo.attributes.position;
+            for (let i = 0; i < uv.count; i++) { uv.setXY(i, (pos.getX(i) - bMin.x) / (bMax.x - bMin.x), (pos.getY(i) - bMin.y) / (bMax.y - bMin.y)); }
+            geo.center();
+
+            const mat = new THREE.ShaderMaterial({
+                uniforms: {
+                    depthMap: { value: dTex }, defectMap: { value: defTex }, noiseMap: { value: nTex },
+                    displacementScale: { value: CFG.displacement }, colorHorn: { value: CFG.colors.horn }, colorDirt: { value: CFG.colors.dirt },
+                    defectCenter: { value: defectCenterUV }, hasDefect: { value: hasDefectUniform },
+                    showOverlay: { value: false }
+                },
+                vertexShader: document.getElementById('vShader').textContent, fragmentShader: document.getElementById('fShader').textContent
+            });
+
+            const mesh = new THREE.Mesh(geo, mat); mesh.position.set(offsetX, 0, 0); mesh.castShadow = true; mesh.receiveShadow = true; group.add(mesh);
+            claws.push({ mesh, dCtx, dTex, defCtx, defTex, defects });
+        }
+
+        function createTools() {
+            knifeGroup = new THREE.Group();
+            const s = new THREE.Shape(); s.moveTo(-0.04, -0.4); s.lineTo(0.04, -0.4); s.lineTo(0.04, 0.4); s.absarc(0, 0.4, 0.04, 0, Math.PI, true); s.lineTo(-0.04, 0.4);
+            const b = new THREE.Mesh(new THREE.ExtrudeGeometry(s, { depth: 0.01, bevelEnabled: false }), new THREE.MeshStandardMaterial({ color: 0xcccccc, roughness: 0.2, metalness: 0.8 }));
+            const h = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.1, 0.6, 16), new THREE.MeshStandardMaterial({ color: 0x5c3a21 }));
+            h.position.y = -0.75; knifeGroup.add(b); knifeGroup.add(h); knifeGroup.rotation.x = -0.2; scene.add(knifeGroup);
+
+            sprayGroup = new THREE.Group();
+            const can = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.6), new THREE.MeshStandardMaterial({ color: 0xffffff, transparent: true, opacity: 0.8 }));
+            sprayGroup.add(can); sprayGroup.visible = false; scene.add(sprayGroup);
+        }
+
+        function setTool(t) {
+            activeTool = t; knifeGroup.visible = (t === 'knife'); sprayGroup.visible = (t === 'spray');
+            document.querySelectorAll('.btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('btn-' + t).classList.add('active');
+            updateUI(t === 'knife' ? "Trimming Mode" : "Sterilization Mode", t === 'knife' ? "Slice thin layers." : "Spray infection.", "");
+        }
+
+        function showScore() {
+            let totalDefectPixels = 0; let exposedPixels = 0; let hasInfection = false;
+            let damagedHealthyPixels = 0; const skip = 8;
+            claws.forEach(c => {
+                c.mesh.material.uniforms.showOverlay.value = true;
+                const size = 1024;
+                const imgData = c.dCtx.getImageData(0, 0, size, size).data;
+                c.defects.forEach(d => { hasInfection = true; });
+
+                for (let y = 0; y < size; y += skip) {
+                    for (let x = 0; x < size; x += skip) {
+                        const i = (y * size + x) * 4;
+                        const dVal = imgData[i];
+                        let insideDefect = false;
+                        c.defects.forEach(d => { if (Math.hypot(x - d.x, y - d.y) <= d.r) insideDefect = true; });
+                        if (insideDefect) {
+                            totalDefectPixels++; if (dVal < 100) exposedPixels++;
+                        } else {
+                            if (dVal < 250 && dVal < 40) damagedHealthyPixels++;
+                        }
+                    }
+                }
+            });
+            if (!hasInfection) { displayModal("100%", "0%", "A+", "Perfect Health", "grade-A"); return; }
+            const coverage = (totalDefectPixels > 0) ? (exposedPixels / totalDefectPixels) * 100 : 100;
+            const damagePct = Math.min(100, (damagedHealthyPixels / 100) * 100);
+            let grade = "F"; let cls = "grade-F"; let title = "Incomplete";
+            if (coverage >= 98 && damagePct < 5) { grade = "A+"; cls = "grade-A"; title = "Masterful Trim"; }
+            else if (coverage >= 90 && damagePct < 15) { grade = "A"; cls = "grade-A"; title = "Excellent"; }
+            else if (coverage >= 70 && damagePct < 25) { grade = "B"; cls = "grade-B"; title = "Good Job"; }
+            else if (damagePct > 30) { grade = "D"; cls = "grade-F"; title = "Excessive Damage"; }
+            else { grade = "F"; cls = "grade-F"; title = "Infection Missed"; }
+            displayModal(Math.round(coverage) + "%", Math.round(damagePct) + "%", grade, title, cls);
+        }
+
+        function displayModal(pct, dam, grade, title, cls) {
+            document.getElementById('modal-overlay').style.display = 'flex';
+            document.getElementById('grade-display').innerText = grade;
+            document.getElementById('grade-display').className = "grade-big " + cls;
+            document.getElementById('grade-title').innerText = title;
+            document.getElementById('stat-cov').innerText = pct;
+            document.getElementById('stat-dam').innerText = dam;
+        }
+        function nextCow() { document.getElementById('modal-overlay').style.display = 'none'; resetSim(); }
+        function calcScore() { showScore(); }
+
+        function resetSim() {
+            scene.remove(hoofGroup); bleedSources = []; fluidStreams = [];
+            claws = []; chips.forEach(c => scene.remove(c.m)); particles.forEach(p => scene.remove(p.m)); chips = []; particles = [];
+            createHoofAssembly();
+        }
+
+        // --- INPUT ---
+        function onTouchStart(e) {
+            initAudio(); e.preventDefault(); isDragging = true; const t = e.touches;
+            if (activeTool === 'spray') { isCutting = true; updateInput(t[0].clientX, t[0].clientY); }
+            else if (t.length === 2) { isCutting = true; updateInput((t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2); knifeAngle = Math.atan2(-(t[1].clientY - t[0].clientY), t[1].clientX - t[0].clientX) - Math.PI / 2; }
+            else { isCutting = false; updateInput(t[0].clientX, t[0].clientY); }
+        }
+        function onTouchMove(e) {
+            e.preventDefault(); if (!isDragging) return; const t = e.touches;
+            if (activeTool === 'spray') { updateInput(t[0].clientX, t[0].clientY); }
+            else if (t.length === 2) { isCutting = true; updateInput((t[0].clientX + t[1].clientX) / 2, (t[0].clientY + t[1].clientY) / 2); knifeAngle = Math.atan2(-(t[1].clientY - t[0].clientY), t[1].clientX - t[0].clientX) - Math.PI / 2; }
+            else { isCutting = false; updateInput(t[0].clientX, t[0].clientY); }
+            processTool();
+        }
+        function onEnd() { isDragging = false; lastCutUV = null; isCutting = false; }
+        function onMouseDown(e) { initAudio(); isDragging = true; isCutting = true; lastMouse = { x: e.clientX, y: e.clientY }; updateInput(e.clientX, e.clientY); processTool(); }
+        function onMouseMove(e) {
+            if (!isDragging) {
+                gyro.x = (e.clientX / window.innerWidth - 0.5) * 2.0; gyro.y = (e.clientY / window.innerHeight - 0.5) * 2.0; updateCamera(); return;
+            }
+            updateInput(e.clientX, e.clientY); processTool();
+        }
+        function onWheel(e) {
+            knifeAngle += e.deltaY * 0.002;
+        }
+        function updateInput(x, y) { mouse.x = (x / window.innerWidth) * 2 - 1; mouse.y = -(y / window.innerHeight) * 2 + 1; }
+
+        // --- FX ---
+        function spawnStream(pos) { fluidStreams.push({ pos: pos.clone(), life: 240 }); playPop(); }
+        function spawnChip(pos, rot) {
+            const g = new THREE.PlaneGeometry(0.12, 0.25, 2, 2); const a = g.attributes.position; for (let i = 0; i < a.count; i++) a.setZ(i, a.getZ(i) + Math.abs(a.getX(i)) * 0.6);
+            const m = new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: CFG.colors.horn, side: 2, roughness: 0.8 }));
+            m.position.copy(pos); m.position.z += 0.15; m.rotation.z = rot; scene.add(m); chips.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * 0.1, (Math.random() - 0.5) * 0.1, 0.1), l: 60, g: 0.005 });
+        }
+        function spawnPusDrip(pos) {
+            const c = Math.random() > 0.5 ? CFG.colors.pus : CFG.colors.pusBrown;
+            const g = new THREE.BoxGeometry(0.06, 0.06, 0.06); const m = new THREE.Mesh(g, new THREE.MeshBasicMaterial({ color: c }));
+            m.position.copy(pos); m.position.z += 0.2; m.position.x += (Math.random() - 0.5) * 0.05; m.position.y += (Math.random() - 0.5) * 0.05;
+            scene.add(m); particles.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * 0.01, 0, 0.02), l: 80, g: 0.002 });
+        }
+        function spawnPart(pos, c, n, grav = 0.005, scale = 1.0) {
+            const s = 0.025 * scale;
+            const g = new THREE.BoxGeometry(s, s, s); const mat = new THREE.MeshBasicMaterial({ color: c });
+            for (let i = 0; i < n; i++) {
+                const m = new THREE.Mesh(g, mat);
+                m.position.copy(pos); m.position.z += 0.2; m.position.x += (Math.random() - 0.5) * 0.1; m.position.y += (Math.random() - 0.5) * 0.1;
+                scene.add(m); particles.push({ m, v: new THREE.Vector3((Math.random() - 0.5) * 0.06, (Math.random() - 0.5) * 0.06, 0.06), l: 40, g: grav });
+            }
+        }
+
+        function processTool() {
+            raycaster.setFromCamera(mouse, camera);
+            const plane = new THREE.Plane(new THREE.Vector3(0, 0, 1), 0.2); const target = new THREE.Vector3();
+            let hitClaw = null, hitUV = null, hitData = null;
+            const intersects = raycaster.intersectObjects(claws.map(c => c.mesh));
+
+            if (intersects.length > 0) {
+                hitData = intersects[0];
+                const normal = hitData.face.normal.clone().transformDirection(hitData.object.matrixWorld);
+                if (normal.z > 0.5) {
+                    target.copy(hitData.point); hitClaw = claws.find(c => c.mesh === hitData.object); hitUV = hitData.uv;
+                    target.add(normal.multiplyScalar(CFG.liftOffset));
+                } else { raycaster.ray.intersectPlane(plane, target); lastCutUV = null; }
+            } else { raycaster.ray.intersectPlane(plane, target); lastCutUV = null; }
+
+            const tool = activeTool === 'knife' ? knifeGroup : sprayGroup; tool.position.copy(target);
+            if (activeTool === 'knife') { tool.rotation.z = knifeAngle; if (hitUV && isCutting) cut(hitClaw, hitUV, target); }
+            else if (activeTool === 'spray' && hitUV && isCutting) { spray(hitClaw, target); }
+        }
+
+        function cut(claw, uv, pos) {
+            const ctx = claw.dCtx, size = CFG.texSize;
+            let x0, y0; if (lastCutUV) { x0 = lastCutUV.x * size; y0 = (1.0 - lastCutUV.y) * size; } else { x0 = uv.x * size; y0 = (1.0 - uv.y) * size; }
+            const x1 = uv.x * size, y1 = (1.0 - uv.y) * size; const d = Math.hypot(x1 - x0, y1 - y0);
+
+            if (d > 0 || !lastCutUV) {
+                const p = ctx.getImageData(x1, y1, 1, 1).data;
+                const strength = p[0] > 230 ? 0.05 : CFG.cutStrength;
+
+                ctx.globalCompositeOperation = 'source-over';
+                const steps = Math.max(1, Math.ceil(d / 4));
+                for (let i = 0; i <= steps; i++) {
+                    const t = i / steps, cx = x0 + (x1 - x0) * t, cy = y0 + (y1 - y0) * t;
+                    const grad = ctx.createRadialGradient(cx, cy, CFG.cutWidth * 0.2, cx, cy, CFG.cutWidth);
+                    grad.addColorStop(0, `rgba(0,0,0,${strength})`); grad.addColorStop(1, `rgba(0,0,0,0)`);
+                    ctx.fillStyle = grad; ctx.beginPath(); ctx.arc(cx, cy, CFG.cutWidth, 0, Math.PI * 2); ctx.fill();
+                }
+                if (Math.random() > 0.8) { ctx.filter = 'blur(1px)'; ctx.drawImage(ctx.canvas, 0, 0); ctx.filter = 'none'; }
+
+                claw.dTex.needsUpdate = true;
+                if (d > 15) spawnChip(pos, knifeAngle);
+                check(claw, x1, y1, pos);
+                lastCutUV = uv;
+            }
+        }
+
+        function check(claw, x, y, pos) {
+            const depth = claw.dCtx.getImageData(x, y, 1, 1).data[0];
+            document.getElementById('depth-ui').style.height = (100 - (depth / 255) * 100) + '%';
+
+            claw.defects.forEach(d => {
+                if (Math.hypot(x - d.x, y - d.y) < d.r) {
+                    if (depth < 50 && depth > 40) { // TUNED RELEASE WINDOW 50-40 (approx 20%-15% white)
+                        if (d.state === 'active') {
+                            d.state = 'drained';
+                            spawnStream(pos);
+                            updateUI("PUS DRAINED", "Switch to Spray.", "st-warn");
+                        }
+                    } else if (depth < 40) { // BLEED @ 40
+                        if (!bleedSources.find(b => b.claw === claw && Math.hypot(b.x - x, b.y - y) < 50)) {
+                            bleedSources.push({ claw: claw, x: x, y: y, pos: pos.clone() });
+                            updateUI("BLEEDING!", "Stop flow with Spray.", "st-err");
+                        }
+                    }
+                }
+            });
+        }
+
+        function spray(claw, pos) {
+            spawnPart(pos, CFG.colors.spray, 4, 0.01, 1.0);
+            let h = false;
+            claw.defects.forEach(d => {
+                if (d.state === 'drained') { d.state = 'healed'; h = true; healVisuals(claw, d); }
+            });
+            for (let i = bleedSources.length - 1; i >= 0; i--) {
+                const b = bleedSources[i];
+                if (b.pos.distanceTo(pos) < 0.6) { bleedSources.splice(i, 1); h = true; }
+            }
+            for (let i = fluidStreams.length - 1; i >= 0; i--) {
+                if (fluidStreams[i].pos.distanceTo(pos) < 0.6) { fluidStreams.splice(i, 1); h = true; }
+            }
+            if (h) updateUI("TREATED", "Healed successfully.", "st-ok");
+        }
+
+        function healVisuals(claw, d) {
+            const ctx = claw.defCtx;
+            const gr = ctx.createRadialGradient(d.x, d.y, d.r * 0.1, d.x, d.y, d.r);
+            gr.addColorStop(0, '#D09090'); gr.addColorStop(0.2, '#990000'); gr.addColorStop(1, '#D09090');
+            ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(d.x, d.y, d.r, 0, Math.PI * 2); ctx.fill();
+            claw.defTex.needsUpdate = true;
+        }
+
+        function updateUI(msg, sub, cls) {
+            const m = document.getElementById('msg-main'); m.innerText = msg; m.className = "msg " + cls;
+            document.getElementById('msg-sub').innerText = sub;
+        }
+
+        function animate() {
+            requestAnimationFrame(animate);
+            bleedSources.forEach(b => { if (Math.random() > 0.85) spawnPart(b.pos, CFG.colors.blood, 1, 0.02, 2.5); });
+            for (let i = fluidStreams.length - 1; i >= 0; i--) {
+                const s = fluidStreams[i]; if (Math.random() > 0.8) spawnPusDrip(s.pos);
+                s.life--; if (s.life <= 0) fluidStreams.splice(i, 1);
+            }
+            for (let i = chips.length - 1; i >= 0; i--) {
+                const p = chips[i]; p.l--; p.m.position.add(p.v); p.v.y -= p.g; p.m.rotation.x += 0.1; p.m.rotation.y += 0.1;
+                if (p.l <= 0) { scene.remove(p.m); chips.splice(i, 1); }
+            }
+            for (let i = particles.length - 1; i >= 0; i--) {
+                const p = particles[i]; p.l--; p.m.position.add(p.v); p.v.y -= p.g;
+                if (p.l <= 0) { scene.remove(p.m); particles.splice(i, 1); }
+            }
+            renderer.render(scene, camera);
+        }
+        function onResize() { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); }
+
+        init();
+    </script>
+</body>
+
+</html>
