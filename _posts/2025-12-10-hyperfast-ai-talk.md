@@ -1,33 +1,122 @@
 ---
 layout: post
-title:  "Upcoming Talk: When AI Gets Hyperfast - Rethinking Design for 1000 tokens/s"
+title:  "Hyperfast AI: Rethinking Design for 1000 tokens/s"
 author: ron
 categories: [ AI, talk, research, UX ]
 image: assets/images/hyperfast-ai-talk.png
 featured: true
 ---
 
-I'll be speaking at [AI Tinkerers Raleigh](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4) about what happens when AI inference becomes fast enough to fundamentally change how we think about application design.
+I spoke today at [AI Tinkerers Raleigh](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4) about what happens when AI inference becomes fast enough to fundamentally change how we think about application design.
 
-## The Talk
 
-When inference engines like Cerebras AI can generate up to 1000 tokens per second, we're not just talking about faster responses—we're witnessing a paradigm shift in how we design and interact with AI-powered tools.
+## Cerebras OS v3 - Agentic Desktop Environment
 
-I'll be expanding on a project I started a few months ago using the Cerebras inference engine to demonstrate how AI models running at this rate require new ways of thinking about AI app design and UX. The demo will show how an OS might work where AI tools are generated on demand.
+This isn't just a demo; it's a next-generation AI-powered desktop environment where applications are generated, run, and repaired in real-time by a sovereign agentic system. And it's all powered by Cerebras' ultra-fast inference.
 
-## Why This Matters
+### Overview
 
-Think about it: when AI can generate entire tools on a button click, the traditional boundaries of software design dissolve. You stop pre-programming every interaction and start generating interfaces in real-time. The AI becomes synchronous with the interaction itself.
+<p><iframe style="width:100%;" height="515" src="https://www.youtube.com/embed/eFMeGK16u8U" frameborder="0" allowfullscreen></iframe></p>
+This project represents a massive shift from static applications to a **dynamic, agentic OS**. Instead of pre-compiled binaries, the "OS" is a living conversation with a high-speed LLM that can:
+1.  **Generate Apps**: Create full HTML/JS/WebGL applications on the fly.
+2.  **Execute Tools**: Bridge the gap between the web frontend and the host system using Python tools.
+3.  **Self-Repair**: Detect errors in both app code and system tools, and autonomously rewrite them to fix the issue.
 
-This isn't about making existing apps faster. It's about what becomes possible when speed crosses a threshold—when AI stops being something you wait for and becomes something woven into the fabric of the interaction loop.
+### Architecture
 
-## A Glimpse of the Future
+The system is built on a modern Node.js stack with a unique **Agentic State Machine** core.
 
-The demo explores what computing looks like when:
-- Tools and interfaces are generated on demand rather than pre-built
-- AI lives inside the interaction loop, not as an async background process
-- Every click can invoke an AI that responds faster than you can perceive the delay
+```mermaid
+graph TD
+    User[User Request] --> Monolith[Mono API Server]
+    Monolith --> StateMachine[Agentic State Machine]
+    
+    subgraph "Loop 1: Tool Preparation"
+        StateMachine --> AIPlanner
+        AIPlanner --> ToolManager
+        ToolManager -->|Check/Update| PythonTools[Python Tools]
+        PythonTools -->|Self-Repair| AIPlanner
+    end
+    
+    subgraph "Loop 2: App Generation"
+        StateMachine --> AppGen[App Generator]
+        AppGen --> AppReview[Code Reviewer]
+        AppReview --> AppVerify[Requirements Validator]
+    end
+    
+    AppVerify -->|Success| Frontend[Vite Frontend]
+    Frontend -->|Render| Widget[Live Widget]
+```
 
-We're at the beginning of a shift. As inference speeds continue to improve, we'll see entirely new categories of software that simply couldn't exist before. This talk is about imagining—and demonstrating—what that future looks like.
+#### Key Components
 
-[Register for the talk here](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4)
+1.  **Server (`cerebrasv3/server`)**: A robust Express/TypeScript backend that hosts the State Machine.
+    *   **Intent Classification**: Determines if you want a new app, a tool execution, or a "virtual response" (raw content).
+    *   **Tool Manager**: Manages a library of Python scripts that grant system access (Filesystem, Hardware, Audio).
+    *   **Self-Healing**: If a tool fails (e.g., syntax error, missing dependency), the system captures the error, feeds it back to the LLM, and **rewrites the Python code** automatically.
+
+2.  **Frontend (`cerebrasv3/client`)**: A Vite/React-based desktop interface.
+    *   **Window Manager**: Draggable, resizable windows for generated apps.
+    *   **Live Injection**: Receives HTML/JS payloads from the server and injects them into sandboxed containers.
+
+3.  **Cerebras Engine**: The brain of the operation.
+    *   Utilizes `llama3.1-70b` or `qwen` models via Cerebras API for sub-second inference.
+
+### Features
+
+#### Dynamic Tool System
+The system doesn't just call APIs—it **writes** them. If you ask for "a tool to check my CPU temp", and it doesn't exist:
+1.  The Planner designs the tool.
+2.  The State Machine generates the Python script (`server/tools/cpu_temp.py`).
+3.  The Tool Manager registers it.
+4.  The App uses it immediately.
+
+#### Agentic State Machine
+A sophisticated 2-loop architecture ensures reliability:
+*   **Tool Prep Loop**: Ensures all necessary system access tools exist and are functional *before* writing any UI code.
+*   **App Gen Loop**: Generates the UI, reviews the code for security/syntax issues, and verifies it meets the user's prompt.
+
+#### Virtual API Responses
+For requests that don't need a UI (e.g., "Generate a CSV report of my files"), the system bypasses the App Generator and streams the raw content directly to the client, acting as a virtual file server.
+
+### Getting Started
+
+If you want to try it out, the stack is surprisingly simple:
+
+#### Prerequisites
+*   Node.js v18+
+*   Python 3.9+ (for tool execution)
+*   Cerebras API Key
+
+#### Installation
+
+1.  Navigate to the project directory:
+    ```bash
+    cd cerebrasv3
+    ```
+
+2.  Install dependencies:
+    ```bash
+    npm install
+    ```
+
+3.  Set up environment:
+    ```bash
+    export CEREBRAS_API_KEY=your_key_here
+    export DESKTOP_AI_PROVIDER=cerebras
+    ```
+
+#### Running
+
+To launch both the backend server and the frontend client:
+
+```bash
+npm run dev
+```
+
+*   **Frontend**: http://localhost:5173
+*   **Backend**: http://localhost:4000
+
+---
+
+This is just the beginning. As inference speeds continue to improve, we'll see entirely new categories of software that simply couldn't exist before.
