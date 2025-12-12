@@ -544,36 +544,6 @@
         let joyStart = {x:0, y:0};
         const maxRad = 40; 
 
-        const startDrag = (x, y) => {
-            dragging = true;
-            const rect = joyZone.getBoundingClientRect();
-            joyStart = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
-            updateDrag(x, y);
-        };
-        const updateDrag = (x, y) => {
-            if(!dragging) return;
-            let dx = x - joyStart.x;
-            let dy = y - joyStart.y;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            if(dist > maxRad) { dx = (dx/dist)*maxRad; dy = (dy/dist)*maxRad; }
-            joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
-            window.INPUT.x = dx / maxRad; 
-            window.INPUT.y = -(dy / maxRad); 
-        };
-        const endDrag = () => {
-            dragging = false;
-            joyKnob.style.transform = `translate(-50%, -50%)`;
-            window.INPUT.x = 0;
-            window.INPUT.y = 0;
-        };
-
-        joyZone.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
-        window.addEventListener('mousemove', e => updateDrag(e.clientX, e.clientY));
-        window.addEventListener('mouseup', endDrag);
-        joyZone.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
-        window.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); updateDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
-        window.addEventListener('touchend', endDrag);
-
         // --- KEYBOARD CONTROLS (WASD) ---
         const keys = { w: false, a: false, s: false, d: false };
         
@@ -595,6 +565,38 @@
                 window.INPUT.y = kbY;
             }
         };
+
+        const startDrag = (x, y) => {
+            dragging = true;
+            const rect = joyZone.getBoundingClientRect();
+            joyStart = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+            updateDrag(x, y);
+        };
+        const updateDrag = (x, y) => {
+            if(!dragging) return;
+            let dx = x - joyStart.x;
+            let dy = y - joyStart.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if(dist > maxRad) { dx = (dx/dist)*maxRad; dy = (dy/dist)*maxRad; }
+            joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            window.INPUT.x = dx / maxRad; 
+            window.INPUT.y = -(dy / maxRad); 
+        };
+        const endDrag = () => {
+            dragging = false;
+            joyKnob.style.transform = `translate(-50%, -50%)`;
+            window.INPUT.x = 0;
+            window.INPUT.y = 0;
+            // Resume keyboard input if keys are held
+            updateKeyboardInput();
+        };
+
+        joyZone.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => updateDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', endDrag);
+        joyZone.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+        window.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); updateDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+        window.addEventListener('touchend', endDrag);
         
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
