@@ -598,7 +598,7 @@
         
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (keys.hasOwnProperty(key)) {
+            if (key in keys) {
                 e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
                 keys[key] = true;
                 updateKeyboardInput();
@@ -607,7 +607,7 @@
         
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
-            if (keys.hasOwnProperty(key)) {
+            if (key in keys) {
                 e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
                 keys[key] = false;
                 updateKeyboardInput();
