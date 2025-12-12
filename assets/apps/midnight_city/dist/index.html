@@ -598,18 +598,26 @@
         
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 'w') { keys.w = true; updateKeyboardInput(); }
-            if (key === 'a') { keys.a = true; updateKeyboardInput(); }
-            if (key === 's') { keys.s = true; updateKeyboardInput(); }
-            if (key === 'd') { keys.d = true; updateKeyboardInput(); }
+            if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                if (key === 'w') keys.w = true;
+                if (key === 'a') keys.a = true;
+                if (key === 's') keys.s = true;
+                if (key === 'd') keys.d = true;
+                updateKeyboardInput();
+            }
         });
         
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 'w') { keys.w = false; updateKeyboardInput(); }
-            if (key === 'a') { keys.a = false; updateKeyboardInput(); }
-            if (key === 's') { keys.s = false; updateKeyboardInput(); }
-            if (key === 'd') { keys.d = false; updateKeyboardInput(); }
+            if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                if (key === 'w') keys.w = false;
+                if (key === 'a') keys.a = false;
+                if (key === 's') keys.s = false;
+                if (key === 'd') keys.d = false;
+                updateKeyboardInput();
+            }
         });
 
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
