@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Neo-Gothic Sailing V9</title>
+    <title>Neo-Gothic Sailing V10</title>
     <style>
         body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; user-select: none; -webkit-user-select: none; }
         canvas { display: block; width: 100vw; height: 100vh; }
@@ -12,7 +12,7 @@
             position: absolute;
             top: 20px;
             left: 20px;
-            color: rgba(200, 230, 255, 0.7);
+            color: rgba(200, 230, 255, 0.8);
             font-family: 'Courier New', Courier, monospace;
             font-size: 14px;
             pointer-events: none;
@@ -65,7 +65,7 @@
 <body>
     <div id="error-log"></div>
     <div id="ui">
-        <div>NEO-GOTHIC SAIL V9</div>
+        <div>NEO-GOTHIC SAIL V10</div>
         <div id="debug">System Online</div>
         <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE TO SAIL</div>
     </div>
@@ -96,13 +96,31 @@
             pitchSurgeMax: 0.5,    
             turnSpeed: 1.0,
             damping: 0.03,
-            waveScale: 1.0 
+            waveScale: 1.0,
+            gridSpacing: 20.0, // Matches shader
+            collisionRadius: 2.0
         };
 
         // --- PHYSICS HELPERS (CPU) ---
         function fract(x) { return x - Math.floor(x); }
         function mix(x, y, a) { return x * (1 - a) + y * a; }
         
+        // Pseudo-random hash (Matches shader logic somewhat)
+        function hash12(x, y) {
+            // p = fract(p * vec2(123.34, 456.21));
+            let px = fract(x * 123.34 + y * 456.21); // Simplification for JS
+            let py = fract(x * 456.21 + y * 123.34); // Just ensuring variation
+            // p += dot(p, p + 45.32);
+            let dot = px * px + py * py + 45.32; // Approx dot(p, p+45.32)
+            px += dot; py += dot;
+            // return fract(p.x * p.y);
+            // Need a more stable JS hash to match visual buildings for collision
+            // Using simple sine based hash for reliability across platforms
+            let n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return fract(n);
+        }
+
+        // Better Noise
         function noise(x, z) {
             const pX = Math.floor(x);
             const pZ = Math.floor(z);
@@ -121,11 +139,48 @@
             );
         }
 
+        // Water Height (CPU Physics)
         function getWaterHeightCPU(x, z, time) {
             let y = 0;
             y += noise(x * 0.03 + time * 0.1, z * 0.03) * 4.0;
             y += noise(x * 0.1 - time * 0.2, z * 0.08) * 1.5;
             return y * CONFIG.waveScale;
+        }
+
+        // --- COLLISION DETECTION (CPU) ---
+        function checkCollision(x, z) {
+            // Must match shader modulo logic
+            // Shader: q.xz = mod(p.xz + 1000.0, spacing) - spacing * 0.5
+            const spacing = CONFIG.gridSpacing;
+            const offset = 1000.0;
+            
+            // Grid ID
+            const idX = Math.floor((x + offset) / spacing);
+            const idZ = Math.floor((z + offset) / spacing);
+            
+            // Local Coord (Center of cell is 0,0)
+            const lx = ((x + offset) % spacing) - spacing * 0.5;
+            const lz = ((z + offset) % spacing) - spacing * 0.5;
+            
+            // Building Size (Replicating Shader Hash logic roughly)
+            // Note: Exact synchronization between JS Math.sin and GPU sin is impossible
+            // across all devices, but this is usually close enough for gameplay.
+            const h1 = hash12(idX, idZ);     // Base hash
+            const h2 = hash12(idX, idZ + 1); // Width hash
+            
+            // Shader: float bWidth = 2.0 + hash(id + vec2(0,1)) * 3.0;
+            // Note: We use h2 for width
+            const bWidth = 2.0 + h2 * 3.0; // Half-extent
+            
+            // SDF Box 2D
+            // q = abs(p) - b
+            const dx = Math.abs(lx) - bWidth;
+            const dz = Math.abs(lz) - bWidth;
+            
+            // Distance to building block
+            const dist = Math.sqrt(Math.max(dx, 0)**2 + Math.max(dz, 0)**2) + Math.min(Math.max(dx, dz), 0);
+            
+            return dist;
         }
 
         // --- WEBGL SETUP ---
@@ -149,14 +204,13 @@
             uniform vec3 uCamRight;
 
             #define MAX_STEPS 80
-            #define MAX_DIST 300.0
+            #define MAX_DIST 250.0
             #define SURF_DIST 0.02
             
-            // Random hash
+            // Hash (Matches JS hash12 roughly)
             float hash(vec2 p) {
-                p = fract(p * vec2(123.34, 456.21));
-                p += dot(p, p + 45.32);
-                return fract(p.x * p.y);
+                // Using sin based hash for better sync possibilities with JS
+                return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
             }
 
             // 2D Noise
@@ -171,11 +225,11 @@
                 return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
             }
 
-            // Fractal Brownian Motion (for foam detail)
+            // FBM for foam
             float fbm(vec2 p) {
                 float sum = 0.0;
                 float amp = 0.5;
-                for(int i = 0; i < 4; i++) {
+                for(int i = 0; i < 3; i++) { // Reduced to 3 octaves for perf
                     sum += amp * noise(p);
                     p = p * 2.0;
                     amp *= 0.5;
@@ -183,22 +237,18 @@
                 return sum;
             }
             
-            // Box SDF
+            // SDF Box
             float sdBox(vec3 p, vec3 b) {
                 vec3 q = abs(p) - b;
                 return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
             }
 
             // --- WORLD MAP ---
-            
-            // GPU Water Height (Simplified for Raymarching speed)
-            // We removed the complex noise here to prevent black screens on mobile
-            // and restored the wave scale hardcoded to match CPU approx.
             float getWaterHeight(vec2 p) {
                 float time = iTime * 0.5;
                 float h = sin(p.x * 0.1 + time) * 1.5 + sin(p.y * 0.08 + time * 0.8) * 1.5;
                 h += sin(p.x * 0.3 - time * 1.5) * 0.5;
-                return h * 1.0; // Matches CONFIG.waveScale 1.0
+                return h * 1.0; 
             }
 
             vec2 map(vec3 p) {
@@ -206,30 +256,27 @@
                 float h = getWaterHeight(p.xz);
                 float dWater = p.y - h;
                 
-                // 2. City
-                float spacing = 30.0;
-                // Add offset to avoid origin artifacts
+                // 2. City Grid
+                float spacing = 20.0;
                 vec2 id = floor((p.xz + 1000.0) / spacing);
                 vec3 q = p;
                 q.xz = mod(p.xz + 1000.0, spacing) - spacing * 0.5;
                 
-                float rnd = hash(id);
-                float bHeight = 20.0 + rnd * 40.0;
-                float bWidth = 4.0 + hash(id + 1.0) * 3.0;
+                // Building Logic (From User Snippet)
+                float bRand = hash(id);
+                float bHeight = 10.0 + bRand * 30.0; // Random height 10 to 40
+                if (hash(id + vec2(1.0, 0.0)) > 0.95) bHeight += 40.0; // Rare mega towers
                 
-                // Building Box
-                float bottom = -20.0;
-                float top = bHeight;
-                float centerY = (top + bottom) * 0.5;
-                float extY = (top - bottom) * 0.5;
+                float bWidth = 2.0 + hash(id + vec2(0.0, 1.0)) * 3.0; // Width 2 to 5
                 
-                float dBuilding = sdBox(q - vec3(0, centerY, 0), vec3(bWidth, extY, bWidth));
+                // Main Tower Box
+                // Shift Y so the building sits on the "floor" (-10) and goes up
+                float dBuilding = sdBox(q - vec3(0, bHeight - 10.0, 0), vec3(bWidth, bHeight, bWidth));
                 
-                // Gothic Buttresses
-                vec3 q2 = abs(q);
-                float dPillars = sdBox(vec3(q2.x - bWidth, q.y - centerY, q2.z - bWidth), vec3(1.0, extY, 1.0));
-                
-                dBuilding = min(dBuilding, dPillars);
+                // Add Spire
+                float spireH = bHeight * 0.5;
+                float dSpire = sdBox(q - vec3(0, bHeight * 2.0 - 10.0 + spireH - 1.0, 0), vec3(0.5, spireH, 0.5));
+                dBuilding = min(dBuilding, dSpire);
 
                 if(dWater < dBuilding) return vec2(dWater, 1.0); 
                 return vec2(dBuilding, 2.0); 
@@ -262,74 +309,58 @@
 
                 if(d < MAX_DIST) {
                     vec3 p = ro + rd * d;
-                    
-                    // Normals
                     vec2 e = vec2(0.02, 0); 
                     vec3 n = normalize(vec3(
                         map(p+e.xyy).x - map(p-e.xyy).x,
                         map(p+e.yxy).x - map(p-e.yxy).x,
                         map(p+e.yyx).x - map(p-e.yyx).x
                     ));
-                    
                     vec3 lightDir = normalize(vec3(0.5, 0.8, -0.5));
                     float dif = max(dot(n, lightDir), 0.0);
                     
                     if (m == 1.0) { 
-                        // --- WATER SHADING ---
-                        
-                        // Reflection Vector
+                        // --- WATER ---
                         vec3 ref = reflect(rd, n);
+                        float fresnel = pow(clamp(1.0 + dot(rd, n), 0.0, 1.0), 4.0);
                         
-                        // Fresnel
-                        float fresnel = pow(clamp(1.0 + dot(rd, n), 0.0, 1.0), 5.0);
-                        
-                        // Base Water (Dark Teal/Blue)
+                        // Base colors
                         vec3 waterDeep = vec3(0.002, 0.005, 0.01);
-                        vec3 waterShallow = vec3(0.01, 0.02, 0.03);
+                        vec3 waterShallow = vec3(0.01, 0.03, 0.04);
                         vec3 baseCol = mix(waterDeep, waterShallow, fresnel);
                         
-                        // Reflected Environment (Sky + Flash)
+                        // Reflection
                         vec3 envCol = mix(vec3(0.01), vec3(0.05, 0.1, 0.15), smoothstep(-0.2, 0.4, ref.y));
                         envCol += flash * 0.5;
+                        col = mix(baseCol, envCol, 0.5 + fresnel * 0.4);
                         
-                        col = mix(baseCol, envCol, 0.5 + fresnel * 0.5);
+                        // Specular
+                        float spec = pow(max(dot(ref, lightDir), 0.0), 40.0);
+                        col += spec * (0.8 + flash);
 
-                        // Specular Glints
-                        float spec = pow(max(dot(ref, lightDir), 0.0), 32.0);
-                        col += spec * (0.6 + flash);
-
-                        // --- FOAM / FROTH ---
-                        // We calculate this ONLY once per pixel (here), not in the loop.
-                        // 1. Detect peaks vs valleys
-                        float waveH = getWaterHeight(p.xz);
-                        float heightFactor = smoothstep(-1.0, 1.5, p.y); // More foam at top
-                        
-                        // 2. Detect slope (Flat surfaces get foam)
-                        float slopeFactor = smoothstep(0.7, 1.0, n.y);
-                        
-                        // 3. Noise Texture
-                        float froth = fbm(p.xz * 0.3 + iTime * 0.1); // Organic pattern
-                        
-                        // Combine
-                        float foamMask = froth * heightFactor * slopeFactor;
-                        foamMask = smoothstep(0.4, 0.7, foamMask); // Sharpen
-                        
-                        // Apply Foam Color
-                        vec3 foamCol = vec3(0.6, 0.7, 0.8) * (0.5 + flash * 0.5);
-                        col = mix(col, foamCol, foamMask * 0.8);
+                        // Foam (Frothing Ocean)
+                        // Calculate foam based on slope and noise
+                        float slope = smoothstep(0.7, 1.0, n.y); // Peaks are flatter
+                        float froth = fbm(p.xz * 0.3 + iTime * 0.1); 
+                        float foamMask = froth * slope * smoothstep(-1.0, 2.0, p.y);
+                        vec3 foamCol = vec3(0.7, 0.8, 0.8) * (0.5 + flash * 0.5);
+                        col = mix(col, foamCol, smoothstep(0.4, 0.8, foamMask));
 
                     } else {
-                        // Building
+                        // --- BUILDING (Snippet Logic) ---
                         vec3 stone = vec3(0.04, 0.04, 0.05);
                         
-                        // Windows
-                        float wx = fract(p.x * 0.5);
+                        // Window Logic from Snippet
+                        float wx = fract(p.x * 0.4);
                         float wy = fract(p.y * 0.6);
-                        float win = step(0.7, wx) * step(0.7, wy);
-                        float id = hash(floor((p.xz + 1000.0)/30.0));
-                        if(hash(vec2(id, floor(p.y * 0.5))) > 0.4) win = 0.0;
+                        float win = step(0.6, wx) * step(0.6, wy);
                         
-                        vec3 emit = vec3(1.0, 0.9, 0.5) * win * 3.0;
+                        // Random off
+                        // Using p.xz + 1000.0 to match grid offset
+                        float blockNoise = hash(floor((p.xz + 1000.0)/20.0)); 
+                        float floorNoise = hash(vec2(blockNoise, floor(p.y)));
+                        if(floorNoise > 0.4) win = 0.0;
+                        
+                        vec3 emit = vec3(1.0, 0.8, 0.3) * win * 3.0;
                         col = stone * dif + emit;
                         col += stone * flash * 3.0; 
                     }
@@ -388,7 +419,10 @@
 
             // --- PHYSICS LOOP ---
             const boat = {
-                x: 0, z: 0, yaw: 0, speed: 0,
+                // START POSITION: 0,0 is exactly at the cross-section of 4 grid cells
+                // because buildings are centered in cells.
+                x: 0, z: 0, 
+                yaw: 0, speed: 0,
                 camPos: [0, 5, 0],
                 camFwd: [0, 0, 1],
                 camUp: [0, 1, 0],
@@ -402,6 +436,7 @@
                 const inputX = window.INPUT.x;
                 const inputY = window.INPUT.y;
 
+                // SURGE
                 let pitchFactor = -boat.camFwd[1]; 
                 let surge = Math.max(0, pitchFactor);
                 let speedBoost = Math.min(CONFIG.pitchSurgeMax, surge * 2.0);
@@ -411,9 +446,29 @@
 
                 boat.speed = mix(boat.speed, targetSpeed, 0.05);
                 boat.yaw += inputX * CONFIG.turnSpeed * dt * (Math.abs(boat.speed) * 0.1 + 0.2); 
-                boat.x += Math.sin(boat.yaw) * boat.speed * dt;
-                boat.z += Math.cos(boat.yaw) * boat.speed * dt;
+                
+                // PREDICT NEXT POS
+                let nextX = boat.x + Math.sin(boat.yaw) * boat.speed * dt;
+                let nextZ = boat.z + Math.cos(boat.yaw) * boat.speed * dt;
 
+                // COLLISION CHECK
+                let distToWall = checkCollision(nextX, nextZ);
+                
+                if (distToWall < CONFIG.collisionRadius) {
+                    // Collision!
+                    // Simple bounce/slide: Negate speed (bounce) or just stop.
+                    // We'll reverse speed slightly to bounce off
+                    boat.speed *= -0.5; 
+                    // Don't update X/Z this frame
+                    document.getElementById('debug').style.color = '#ff5555';
+                    document.getElementById('debug').innerText = "COLLISION ALERT";
+                } else {
+                    boat.x = nextX;
+                    boat.z = nextZ;
+                    document.getElementById('debug').style.color = 'rgba(200, 230, 255, 0.8)';
+                }
+
+                // Water Sampling
                 const hC = getWaterHeightCPU(boat.x, boat.z, time);
                 const fX = boat.x + Math.sin(boat.yaw) * CONFIG.boatLength;
                 const fZ = boat.z + Math.cos(boat.yaw) * CONFIG.boatLength;
@@ -457,8 +512,10 @@
                 boat.camUp = lerpV(boat.camUp, tUp, CONFIG.damping);
                 boat.camRight = lerpV(boat.camRight, tRight, CONFIG.damping);
 
-                let surgeText = speedBoost > 0.1 ? " [SURGE]" : "";
-                document.getElementById('debug').innerText = `SPD: ${boat.speed.toFixed(1)} kn${surgeText}`;
+                if (distToWall >= CONFIG.collisionRadius) {
+                    let surgeText = speedBoost > 0.1 ? " [SURGE]" : "";
+                    document.getElementById('debug').innerText = `SPD: ${boat.speed.toFixed(1)} kn${surgeText}`;
+                }
             }
 
             function render(now) {
