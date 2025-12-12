@@ -598,24 +598,18 @@
         
         window.addEventListener('keydown', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+            if (keys.hasOwnProperty(key)) {
                 e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
-                if (key === 'w') keys.w = true;
-                if (key === 'a') keys.a = true;
-                if (key === 's') keys.s = true;
-                if (key === 'd') keys.d = true;
+                keys[key] = true;
                 updateKeyboardInput();
             }
         });
         
         window.addEventListener('keyup', (e) => {
             const key = e.key.toLowerCase();
-            if (key === 'w' || key === 'a' || key === 's' || key === 'd') {
+            if (keys.hasOwnProperty(key)) {
                 e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
-                if (key === 'w') keys.w = false;
-                if (key === 'a') keys.a = false;
-                if (key === 's') keys.s = false;
-                if (key === 'd') keys.d = false;
+                keys[key] = false;
                 updateKeyboardInput();
             }
         });
