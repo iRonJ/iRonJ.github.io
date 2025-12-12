@@ -67,7 +67,7 @@
     <div id="ui">
         <div>NEO-GOTHIC SAIL V10</div>
         <div id="debug">System Online</div>
-        <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE TO SAIL</div>
+        <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE OR USE WASD TO SAIL</div>
     </div>
 
     <div id="joystick-zone">
@@ -573,6 +573,45 @@
         joyZone.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
         window.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); updateDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
         window.addEventListener('touchend', endDrag);
+
+        // --- KEYBOARD CONTROLS (WASD) ---
+        const keys = { w: false, a: false, s: false, d: false };
+        
+        const updateKeyboardInput = () => {
+            // Only update INPUT if not dragging (joystick has priority)
+            if (!dragging) {
+                let kbX = 0;
+                let kbY = 0;
+                
+                // Forward/Backward (W/S)
+                if (keys.w) kbY += 1;
+                if (keys.s) kbY -= 1;
+                
+                // Left/Right (A/D)
+                if (keys.a) kbX -= 1;
+                if (keys.d) kbX += 1;
+                
+                window.INPUT.x = kbX;
+                window.INPUT.y = kbY;
+            }
+        };
+        
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') { keys.w = true; updateKeyboardInput(); }
+            if (key === 'a') { keys.a = true; updateKeyboardInput(); }
+            if (key === 's') { keys.s = true; updateKeyboardInput(); }
+            if (key === 'd') { keys.d = true; updateKeyboardInput(); }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key === 'w') { keys.w = false; updateKeyboardInput(); }
+            if (key === 'a') { keys.a = false; updateKeyboardInput(); }
+            if (key === 's') { keys.s = false; updateKeyboardInput(); }
+            if (key === 'd') { keys.d = false; updateKeyboardInput(); }
+        });
+
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
