@@ -67,7 +67,7 @@
     <div id="ui">
         <div>NEO-GOTHIC SAIL V10</div>
         <div id="debug">System Online</div>
-        <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE TO SAIL</div>
+        <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE OR USE WASD TO SAIL</div>
     </div>
 
     <div id="joystick-zone">
@@ -544,6 +544,28 @@
         let joyStart = {x:0, y:0};
         const maxRad = 40; 
 
+        // --- KEYBOARD CONTROLS (WASD) ---
+        const keys = { w: false, a: false, s: false, d: false };
+        
+        const updateKeyboardInput = () => {
+            // Only update INPUT if not dragging (joystick has priority)
+            if (!dragging) {
+                let kbX = 0;
+                let kbY = 0;
+                
+                // Forward/Backward (W/S)
+                if (keys.w) kbY += 1;
+                if (keys.s) kbY -= 1;
+                
+                // Left/Right (A/D)
+                if (keys.a) kbX -= 1;
+                if (keys.d) kbX += 1;
+                
+                window.INPUT.x = kbX;
+                window.INPUT.y = kbY;
+            }
+        };
+
         const startDrag = (x, y) => {
             dragging = true;
             const rect = joyZone.getBoundingClientRect();
@@ -565,6 +587,8 @@
             joyKnob.style.transform = `translate(-50%, -50%)`;
             window.INPUT.x = 0;
             window.INPUT.y = 0;
+            // Resume keyboard input if keys are held
+            updateKeyboardInput();
         };
 
         joyZone.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
@@ -573,6 +597,25 @@
         joyZone.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
         window.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); updateDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
         window.addEventListener('touchend', endDrag);
+        
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                keys[key] = true;
+                updateKeyboardInput();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                keys[key] = false;
+                updateKeyboardInput();
+            }
+        });
+
         window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
