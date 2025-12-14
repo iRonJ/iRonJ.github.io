@@ -1,6 +1,6 @@
 ---
 layout: post
-title:  "FastRecord: Voice Recording Made Simple"
+title:  "FastRecord: Screen Recording Made Simple"
 author: ron
 categories: [ tool, audio, webapp ]
 image: assets/images/fast-record.png
