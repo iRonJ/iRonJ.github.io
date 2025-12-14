@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Neo-Gothic Sailing V10</title>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #000; touch-action: none; user-select: none; -webkit-user-select: none; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: rgba(200, 230, 255, 0.8);
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 14px;
+            pointer-events: none;
+            text-shadow: 0 0 5px #000;
+            z-index: 10;
+        }
+
+        #error-log {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #ff5555;
+            background: rgba(0,0,0,0.8);
+            padding: 20px;
+            font-family: monospace;
+            display: none;
+            z-index: 100;
+            max-width: 80%;
+            word-wrap: break-word;
+        }
+
+        #joystick-zone {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            width: 120px;
+            height: 120px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            touch-action: none;
+            pointer-events: auto;
+        }
+
+        #joystick-knob {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+    <div id="error-log"></div>
+    <div id="ui">
+        <div>NEO-GOTHIC SAIL V10</div>
+        <div id="debug">System Online</div>
+        <div style="font-size:10px; opacity:0.6; margin-top:5px">DRAG CIRCLE OR USE WASD TO SAIL</div>
+    </div>
+
+    <div id="joystick-zone">
+        <div id="joystick-knob"></div>
+    </div>
+
+    <canvas id="glcanvas"></canvas>
+
+    <script>
+        function logError(msg) {
+            const el = document.getElementById('error-log');
+            el.style.display = 'block';
+            el.innerText = "ERROR: " + msg;
+            console.error(msg);
+        }
+
+        // --- GLOBAL INPUT STATE ---
+        window.INPUT = { x: 0, y: 0 };
+
+        // --- CONFIGURATION ---
+        const CONFIG = {
+            camHeightOffset: 4.0,
+            boatLength: 4.0,
+            boatWidth: 2.0,
+            maxSpeed: 5.0,         
+            pitchSurgeMax: 0.5,    
+            turnSpeed: 1.0,
+            damping: 0.03,
+            waveScale: 1.0,
+            gridSpacing: 20.0, // Matches shader
+            collisionRadius: 2.0
+        };
+
+        // --- PHYSICS HELPERS (CPU) ---
+        function fract(x) { return x - Math.floor(x); }
+        function mix(x, y, a) { return x * (1 - a) + y * a; }
+        
+        // Pseudo-random hash (Matches shader logic somewhat)
+        function hash12(x, y) {
+            // p = fract(p * vec2(123.34, 456.21));
+            let px = fract(x * 123.34 + y * 456.21); // Simplification for JS
+            let py = fract(x * 456.21 + y * 123.34); // Just ensuring variation
+            // p += dot(p, p + 45.32);
+            let dot = px * px + py * py + 45.32; // Approx dot(p, p+45.32)
+            px += dot; py += dot;
+            // return fract(p.x * p.y);
+            // Need a more stable JS hash to match visual buildings for collision
+            // Using simple sine based hash for reliability across platforms
+            let n = Math.sin(x * 12.9898 + y * 78.233) * 43758.5453;
+            return fract(n);
+        }
+
+        // Better Noise
+        function noise(x, z) {
+            const pX = Math.floor(x);
+            const pZ = Math.floor(z);
+            const fX = fract(x);
+            const fZ = fract(z);
+            const uX = fX * fX * (3.0 - 2.0 * fX);
+            const uZ = fZ * fZ * (3.0 - 2.0 * fZ);
+            function h(a, b) {
+                const n = Math.sin(a * 12.9898 + b * 78.233) * 43758.5453;
+                return fract(n);
+            }
+            return mix(
+                mix(h(pX, pZ), h(pX + 1, pZ), uX),
+                mix(h(pX, pZ + 1), h(pX + 1, pZ + 1), uX),
+                uZ
+            );
+        }
+
+        // Water Height (CPU Physics)
+        function getWaterHeightCPU(x, z, time) {
+            let y = 0;
+            y += noise(x * 0.03 + time * 0.1, z * 0.03) * 4.0;
+            y += noise(x * 0.1 - time * 0.2, z * 0.08) * 1.5;
+            return y * CONFIG.waveScale;
+        }
+
+        // --- COLLISION DETECTION (CPU) ---
+        function checkCollision(x, z) {
+            // Must match shader modulo logic
+            // Shader: q.xz = mod(p.xz + 1000.0, spacing) - spacing * 0.5
+            const spacing = CONFIG.gridSpacing;
+            const offset = 1000.0;
+            
+            // Grid ID
+            const idX = Math.floor((x + offset) / spacing);
+            const idZ = Math.floor((z + offset) / spacing);
+            
+            // Local Coord (Center of cell is 0,0)
+            const lx = ((x + offset) % spacing) - spacing * 0.5;
+            const lz = ((z + offset) % spacing) - spacing * 0.5;
+            
+            // Building Size (Replicating Shader Hash logic roughly)
+            // Note: Exact synchronization between JS Math.sin and GPU sin is impossible
+            // across all devices, but this is usually close enough for gameplay.
+            const h1 = hash12(idX, idZ);     // Base hash
+            const h2 = hash12(idX, idZ + 1); // Width hash
+            
+            // Shader: float bWidth = 2.0 + hash(id + vec2(0,1)) * 3.0;
+            // Note: We use h2 for width
+            const bWidth = 2.0 + h2 * 3.0; // Half-extent
+            
+            // SDF Box 2D
+            // q = abs(p) - b
+            const dx = Math.abs(lx) - bWidth;
+            const dz = Math.abs(lz) - bWidth;
+            
+            // Distance to building block
+            const dist = Math.sqrt(Math.max(dx, 0)**2 + Math.max(dz, 0)**2) + Math.min(Math.max(dx, dz), 0);
+            
+            return dist;
+        }
+
+        // --- WEBGL SETUP ---
+        const canvas = document.getElementById('glcanvas');
+        const gl = canvas.getContext('webgl'); 
+        if (!gl) { logError("WebGL not supported"); }
+
+        const vsSource = `
+            attribute vec4 aVertexPosition;
+            void main() { gl_Position = aVertexPosition; }
+        `;
+
+        const fsSource = `
+            precision highp float;
+            
+            uniform vec2 iResolution;
+            uniform float iTime;
+            uniform vec3 uCamPos;
+            uniform vec3 uCamForward;
+            uniform vec3 uCamUp;
+            uniform vec3 uCamRight;
+
+            #define MAX_STEPS 80
+            #define MAX_DIST 250.0
+            #define SURF_DIST 0.02
+            
+            // Hash (Matches JS hash12 roughly)
+            float hash(vec2 p) {
+                // Using sin based hash for better sync possibilities with JS
+                return fract(sin(dot(p, vec2(12.9898, 78.233))) * 43758.5453);
+            }
+
+            // 2D Noise
+            float noise(vec2 p) {
+                vec2 i = floor(p);
+                vec2 f = fract(p);
+                f = f*f*(3.0-2.0*f);
+                float a = hash(i);
+                float b = hash(i + vec2(1.0, 0.0));
+                float c = hash(i + vec2(0.0, 1.0));
+                float d = hash(i + vec2(1.0, 1.0));
+                return mix(mix(a, b, f.x), mix(c, d, f.x), f.y);
+            }
+
+            // FBM for foam
+            float fbm(vec2 p) {
+                float sum = 0.0;
+                float amp = 0.5;
+                for(int i = 0; i < 3; i++) { // Reduced to 3 octaves for perf
+                    sum += amp * noise(p);
+                    p = p * 2.0;
+                    amp *= 0.5;
+                }
+                return sum;
+            }
+            
+            // SDF Box
+            float sdBox(vec3 p, vec3 b) {
+                vec3 q = abs(p) - b;
+                return length(max(q, 0.0)) + min(max(q.x, max(q.y, q.z)), 0.0);
+            }
+
+            // --- WORLD MAP ---
+            float getWaterHeight(vec2 p) {
+                float time = iTime * 0.5;
+                float h = sin(p.x * 0.1 + time) * 1.5 + sin(p.y * 0.08 + time * 0.8) * 1.5;
+                h += sin(p.x * 0.3 - time * 1.5) * 0.5;
+                return h * 1.0; 
+            }
+
+            vec2 map(vec3 p) {
+                // 1. Water
+                float h = getWaterHeight(p.xz);
+                float dWater = p.y - h;
+                
+                // 2. City Grid
+                float spacing = 20.0;
+                vec2 id = floor((p.xz + 1000.0) / spacing);
+                vec3 q = p;
+                q.xz = mod(p.xz + 1000.0, spacing) - spacing * 0.5;
+                
+                // Building Logic (From User Snippet)
+                float bRand = hash(id);
+                float bHeight = 10.0 + bRand * 30.0; // Random height 10 to 40
+                if (hash(id + vec2(1.0, 0.0)) > 0.95) bHeight += 40.0; // Rare mega towers
+                
+                float bWidth = 2.0 + hash(id + vec2(0.0, 1.0)) * 3.0; // Width 2 to 5
+                
+                // Main Tower Box
+                // Shift Y so the building sits on the "floor" (-10) and goes up
+                float dBuilding = sdBox(q - vec3(0, bHeight - 10.0, 0), vec3(bWidth, bHeight, bWidth));
+                
+                // Add Spire
+                float spireH = bHeight * 0.5;
+                float dSpire = sdBox(q - vec3(0, bHeight * 2.0 - 10.0 + spireH - 1.0, 0), vec3(0.5, spireH, 0.5));
+                dBuilding = min(dBuilding, dSpire);
+
+                if(dWater < dBuilding) return vec2(dWater, 1.0); 
+                return vec2(dBuilding, 2.0); 
+            }
+
+            // --- RENDER ---
+            void main() {
+                vec2 uv = (gl_FragCoord.xy - 0.5 * iResolution.xy) / iResolution.y;
+                vec3 ro = uCamPos;
+                vec3 rd = normalize(uCamForward + uv.x * uCamRight + uv.y * uCamUp);
+                
+                // Sky
+                vec3 col = vec3(0.01, 0.012, 0.02); 
+                
+                // Lightning
+                float storm = fract(sin(floor(iTime*8.0)*12.0)*45.0);
+                float flash = smoothstep(0.96, 1.0, storm) * exp(-fract(iTime*8.0)*5.0);
+                col += flash * 0.2;
+
+                // Raymarch
+                float d = 0.0;
+                float m = 0.0;
+                for(int i=0; i<MAX_STEPS; i++) {
+                    vec3 p = ro + rd * d;
+                    vec2 res = map(p);
+                    if(res.x < SURF_DIST) { d += res.x; m = res.y; break; }
+                    d += res.x * 0.6;
+                    if(d > MAX_DIST) break;
+                }
+
+                if(d < MAX_DIST) {
+                    vec3 p = ro + rd * d;
+                    vec2 e = vec2(0.02, 0); 
+                    vec3 n = normalize(vec3(
+                        map(p+e.xyy).x - map(p-e.xyy).x,
+                        map(p+e.yxy).x - map(p-e.yxy).x,
+                        map(p+e.yyx).x - map(p-e.yyx).x
+                    ));
+                    vec3 lightDir = normalize(vec3(0.5, 0.8, -0.5));
+                    float dif = max(dot(n, lightDir), 0.0);
+                    
+                    if (m == 1.0) { 
+                        // --- WATER ---
+                        vec3 ref = reflect(rd, n);
+                        float fresnel = pow(clamp(1.0 + dot(rd, n), 0.0, 1.0), 4.0);
+                        
+                        // Base colors
+                        vec3 waterDeep = vec3(0.002, 0.005, 0.01);
+                        vec3 waterShallow = vec3(0.01, 0.03, 0.04);
+                        vec3 baseCol = mix(waterDeep, waterShallow, fresnel);
+                        
+                        // Reflection
+                        vec3 envCol = mix(vec3(0.01), vec3(0.05, 0.1, 0.15), smoothstep(-0.2, 0.4, ref.y));
+                        envCol += flash * 0.5;
+                        col = mix(baseCol, envCol, 0.5 + fresnel * 0.4);
+                        
+                        // Specular
+                        float spec = pow(max(dot(ref, lightDir), 0.0), 40.0);
+                        col += spec * (0.8 + flash);
+
+                        // Foam (Frothing Ocean)
+                        // Calculate foam based on slope and noise
+                        float slope = smoothstep(0.7, 1.0, n.y); // Peaks are flatter
+                        float froth = fbm(p.xz * 0.3 + iTime * 0.1); 
+                        float foamMask = froth * slope * smoothstep(-1.0, 2.0, p.y);
+                        vec3 foamCol = vec3(0.7, 0.8, 0.8) * (0.5 + flash * 0.5);
+                        col = mix(col, foamCol, smoothstep(0.4, 0.8, foamMask));
+
+                    } else {
+                        // --- BUILDING (Snippet Logic) ---
+                        vec3 stone = vec3(0.04, 0.04, 0.05);
+                        
+                        // Window Logic from Snippet
+                        float wx = fract(p.x * 0.4);
+                        float wy = fract(p.y * 0.6);
+                        float win = step(0.6, wx) * step(0.6, wy);
+                        
+                        // Random off
+                        // Using p.xz + 1000.0 to match grid offset
+                        float blockNoise = hash(floor((p.xz + 1000.0)/20.0)); 
+                        float floorNoise = hash(vec2(blockNoise, floor(p.y)));
+                        if(floorNoise > 0.4) win = 0.0;
+                        
+                        vec3 emit = vec3(1.0, 0.8, 0.3) * win * 3.0;
+                        col = stone * dif + emit;
+                        col += stone * flash * 3.0; 
+                    }
+                    
+                    // Fog
+                    float fog = 1.0 - exp(-d*d*0.00006);
+                    vec3 fogCol = vec3(0.01, 0.012, 0.02) + flash*0.1;
+                    col = mix(col, fogCol, fog);
+                } else {
+                     vec3 fogCol = vec3(0.01, 0.012, 0.02) + flash*0.1;
+                     col = mix(col, fogCol, 1.0);
+                }
+
+                col = pow(col, vec3(0.4545)); 
+                gl_FragColor = vec4(col, 1.0);
+            }
+        `;
+
+        function createShader(gl, type, source) {
+            const s = gl.createShader(type);
+            gl.shaderSource(s, source);
+            gl.compileShader(s);
+            if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+                logError(gl.getShaderInfoLog(s));
+                return null;
+            }
+            return s;
+        }
+
+        const program = gl.createProgram();
+        const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+        const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+        
+        if (vs && fs) {
+            gl.attachShader(program, vs);
+            gl.attachShader(program, fs);
+            gl.linkProgram(program);
+            if (!gl.getProgramParameter(program, gl.LINK_STATUS)) {
+                logError(gl.getProgramInfoLog(program));
+            }
+            gl.useProgram(program);
+
+            const buf = gl.createBuffer();
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,1, 1,1, -1,-1, 1,-1]), gl.STATIC_DRAW);
+            const aPos = gl.getAttribLocation(program, 'aVertexPosition');
+            gl.enableVertexAttribArray(aPos);
+            gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+            const uRes = gl.getUniformLocation(program, 'iResolution');
+            const uTime = gl.getUniformLocation(program, 'iTime');
+            const uCamPos = gl.getUniformLocation(program, 'uCamPos');
+            const uCamFwd = gl.getUniformLocation(program, 'uCamForward');
+            const uCamUp = gl.getUniformLocation(program, 'uCamUp');
+            const uCamRight = gl.getUniformLocation(program, 'uCamRight');
+
+            // --- PHYSICS LOOP ---
+            const boat = {
+                // START POSITION: 0,0 is exactly at the cross-section of 4 grid cells
+                // because buildings are centered in cells.
+                x: 0, z: 0, 
+                yaw: 0, speed: 0,
+                camPos: [0, 5, 0],
+                camFwd: [0, 0, 1],
+                camUp: [0, 1, 0],
+                camRight: [1, 0, 0]
+            };
+
+            let lastTime = 0;
+
+            function updatePhysics(dt) {
+                const time = performance.now() * 0.001;
+                const inputX = window.INPUT.x;
+                const inputY = window.INPUT.y;
+
+                // SURGE
+                let pitchFactor = -boat.camFwd[1]; 
+                let surge = Math.max(0, pitchFactor);
+                let speedBoost = Math.min(CONFIG.pitchSurgeMax, surge * 2.0);
+
+                let targetSpeed = inputY * CONFIG.maxSpeed;
+                if(inputY >= -0.1) targetSpeed += speedBoost;
+
+                boat.speed = mix(boat.speed, targetSpeed, 0.05);
+                boat.yaw += inputX * CONFIG.turnSpeed * dt * (Math.abs(boat.speed) * 0.1 + 0.2); 
+                
+                // PREDICT NEXT POS
+                let nextX = boat.x + Math.sin(boat.yaw) * boat.speed * dt;
+                let nextZ = boat.z + Math.cos(boat.yaw) * boat.speed * dt;
+
+                // COLLISION CHECK
+                let distToWall = checkCollision(nextX, nextZ);
+                
+                if (distToWall < CONFIG.collisionRadius) {
+                    // Collision!
+                    // Simple bounce/slide: Negate speed (bounce) or just stop.
+                    // We'll reverse speed slightly to bounce off
+                    boat.speed *= -0.5; 
+                    // Don't update X/Z this frame
+                    document.getElementById('debug').style.color = '#ff5555';
+                    document.getElementById('debug').innerText = "COLLISION ALERT";
+                } else {
+                    boat.x = nextX;
+                    boat.z = nextZ;
+                    document.getElementById('debug').style.color = 'rgba(200, 230, 255, 0.8)';
+                }
+
+                // Water Sampling
+                const hC = getWaterHeightCPU(boat.x, boat.z, time);
+                const fX = boat.x + Math.sin(boat.yaw) * CONFIG.boatLength;
+                const fZ = boat.z + Math.cos(boat.yaw) * CONFIG.boatLength;
+                const hF = getWaterHeightCPU(fX, fZ, time);
+                const rX = boat.x + Math.cos(boat.yaw) * CONFIG.boatWidth;
+                const rZ = boat.z - Math.sin(boat.yaw) * CONFIG.boatWidth;
+                const hR = getWaterHeightCPU(rX, rZ, time);
+
+                const targetY = hC + CONFIG.camHeightOffset;
+                const vFwd = [Math.sin(boat.yaw) * CONFIG.boatLength, hF - hC, Math.cos(boat.yaw) * CONFIG.boatLength];
+                const vRight = [Math.cos(boat.yaw) * CONFIG.boatWidth, hR - hC, -Math.sin(boat.yaw) * CONFIG.boatWidth];
+                
+                const norm = (v) => {
+                    let l = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+                    if(l===0) return [0,1,0];
+                    return [v[0]/l, v[1]/l, v[2]/l];
+                };
+                const cross = (a, b) => [
+                    a[1]*b[2] - a[2]*b[1],
+                    a[2]*b[0] - a[0]*b[2],
+                    a[0]*b[1] - a[1]*b[0]
+                ];
+                
+                let tUp = norm(cross(vFwd, vRight));
+                tUp[1] = Math.abs(tUp[1]);
+                tUp[0] -= inputX * 0.5 * (Math.abs(boat.speed)/CONFIG.maxSpeed); 
+                tUp = norm(tUp);
+
+                let tFwd = norm(vFwd);
+                let tRight = norm(cross(tUp, tFwd));
+                tUp = cross(tFwd, tRight); 
+
+                const lerp = (a, b, t) => a + (b - a) * t;
+                const lerpV = (a, b, t) => norm([lerp(a[0],b[0],t), lerp(a[1],b[1],t), lerp(a[2],b[2],t)]);
+
+                boat.camPos[0] = boat.x;
+                boat.camPos[1] = lerp(boat.camPos[1], targetY, CONFIG.damping);
+                boat.camPos[2] = boat.z;
+                
+                boat.camFwd = lerpV(boat.camFwd, tFwd, CONFIG.damping);
+                boat.camUp = lerpV(boat.camUp, tUp, CONFIG.damping);
+                boat.camRight = lerpV(boat.camRight, tRight, CONFIG.damping);
+
+                if (distToWall >= CONFIG.collisionRadius) {
+                    let surgeText = speedBoost > 0.1 ? " [SURGE]" : "";
+                    document.getElementById('debug').innerText = `SPD: ${boat.speed.toFixed(1)} kn${surgeText}`;
+                }
+            }
+
+            function render(now) {
+                const dt = Math.min((now - lastTime) / 1000, 0.1);
+                lastTime = now;
+                updatePhysics(dt);
+
+                gl.viewport(0, 0, canvas.width, canvas.height);
+                gl.uniform2f(uRes, canvas.width, canvas.height);
+                gl.uniform1f(uTime, now * 0.001);
+                gl.uniform3fv(uCamPos, boat.camPos);
+                gl.uniform3fv(uCamFwd, boat.camFwd);
+                gl.uniform3fv(uCamUp, boat.camUp);
+                gl.uniform3fv(uCamRight, boat.camRight);
+
+                gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+                requestAnimationFrame(render);
+            }
+            requestAnimationFrame(render);
+        }
+
+        // --- INPUT ---
+        const joyZone = document.getElementById('joystick-zone');
+        const joyKnob = document.getElementById('joystick-knob');
+        let dragging = false;
+        let joyStart = {x:0, y:0};
+        const maxRad = 40; 
+
+        // --- KEYBOARD CONTROLS (WASD) ---
+        const keys = { w: false, a: false, s: false, d: false };
+        
+        const updateKeyboardInput = () => {
+            // Only update INPUT if not dragging (joystick has priority)
+            if (!dragging) {
+                let kbX = 0;
+                let kbY = 0;
+                
+                // Forward/Backward (W/S)
+                if (keys.w) kbY += 1;
+                if (keys.s) kbY -= 1;
+                
+                // Left/Right (A/D)
+                if (keys.a) kbX -= 1;
+                if (keys.d) kbX += 1;
+                
+                window.INPUT.x = kbX;
+                window.INPUT.y = kbY;
+            }
+        };
+
+        const startDrag = (x, y) => {
+            dragging = true;
+            const rect = joyZone.getBoundingClientRect();
+            joyStart = { x: rect.left + rect.width/2, y: rect.top + rect.height/2 };
+            updateDrag(x, y);
+        };
+        const updateDrag = (x, y) => {
+            if(!dragging) return;
+            let dx = x - joyStart.x;
+            let dy = y - joyStart.y;
+            const dist = Math.sqrt(dx*dx + dy*dy);
+            if(dist > maxRad) { dx = (dx/dist)*maxRad; dy = (dy/dist)*maxRad; }
+            joyKnob.style.transform = `translate(calc(-50% + ${dx}px), calc(-50% + ${dy}px))`;
+            window.INPUT.x = dx / maxRad; 
+            window.INPUT.y = -(dy / maxRad); 
+        };
+        const endDrag = () => {
+            dragging = false;
+            joyKnob.style.transform = `translate(-50%, -50%)`;
+            window.INPUT.x = 0;
+            window.INPUT.y = 0;
+            // Resume keyboard input if keys are held
+            updateKeyboardInput();
+        };
+
+        joyZone.addEventListener('mousedown', e => startDrag(e.clientX, e.clientY));
+        window.addEventListener('mousemove', e => updateDrag(e.clientX, e.clientY));
+        window.addEventListener('mouseup', endDrag);
+        joyZone.addEventListener('touchstart', e => { e.preventDefault(); startDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+        window.addEventListener('touchmove', e => { if(dragging) e.preventDefault(); updateDrag(e.touches[0].clientX, e.touches[0].clientY); }, {passive:false});
+        window.addEventListener('touchend', endDrag);
+        
+        window.addEventListener('keydown', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                keys[key] = true;
+                updateKeyboardInput();
+            }
+        });
+        
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            if (key in keys) {
+                e.preventDefault(); // Prevent default browser behavior (scrolling, etc.)
+                keys[key] = false;
+                updateKeyboardInput();
+            }
+        });
+
+        window.addEventListener('resize', () => { canvas.width = window.innerWidth; canvas.height = window.innerHeight; });
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    </script>
+</body>
+</html>
+
