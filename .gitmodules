@@ -1,0 +1,3 @@
+[submodule "assets/apps/fast-record"]
+	path = assets/apps/fast-record
+	url = https://github.com/iRonJ/FastRecord.git
