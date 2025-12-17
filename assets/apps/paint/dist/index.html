@@ -6,41 +6,38 @@
     <title>Paint Mix Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; touch-action: none; }
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; touch-action: none; -webkit-tap-highlight-color: transparent; }
         canvas { display: block; width: 100vw; height: 100vh; }
-        
-        .paint-swatch-container {
-            position: relative;
-            transition: transform 0.2s ease;
-            /* Ensure container doesn't flatten 3D space for z-index */
-            transform-style: preserve-3d;
-        }
-        .paint-swatch-container:active {
-            transform: scale(0.95);
-        }
-        .paint-swatch {
-            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            height: 100%;
-            border-radius: 0.5rem;
-            pointer-events: none;
-        }
-        .color-input {
-            position: absolute;
-            /* Make the hit area slightly larger than the visual box */
-            top: -10%; left: -10%; 
-            width: 120%; height: 120%;
-            opacity: 0; 
-            cursor: pointer; 
-            z-index: 100; /* Highest local z-index */
-            pointer-events: auto !important; /* Force clickable */
-            -webkit-tap-highlight-color: transparent;
-        }
         
         .ui-panel {
             backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             background-color: rgba(255, 255, 255, 0.92);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Swatch Animation */
+        .swatch-label {
+            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .swatch-label:active {
+            transform: scale(0.9);
+        }
+        
+        /* The invisible input needs to be physically present to catch touches */
+        .color-input-hidden {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            cursor: pointer;
+            appearance: none;
+            -webkit-appearance: none;
+            border: none;
+            padding: 0;
+            margin: 0;
         }
 
         @keyframes pulse-soft {
@@ -55,19 +52,19 @@
 </head>
 <body>
 
-    <!-- TOP PANEL: Info & Inputs -->
-    <!-- Z-50 ensures this layer sits ABOVE the bottom panel (Z-40) -->
-    <div class="absolute top-0 left-0 w-full p-3 flex justify-center pointer-events-none z-50 landscape:w-auto landscape:justify-start landscape:left-4 landscape:top-2">
-        <div class="ui-panel pointer-events-auto rounded-2xl shadow-xl p-3 max-w-md w-full border border-slate-200/60 flex flex-col items-center transition-all duration-300 landscape:w-auto landscape:scale-90 landscape:origin-top-left">
+    <!-- TOP PANEL WRAPPER -->
+    <!-- Removed w-full. Centered using transform to minimize overlay area. -->
+    <div class="absolute top-2 left-1/2 -translate-x-1/2 z-50 landscape:left-4 landscape:translate-x-0 landscape:top-4 max-w-[95vw]">
+        <div class="ui-panel rounded-2xl p-3 border border-slate-200/60 flex flex-col items-center landscape:scale-90 landscape:origin-top-left min-w-[300px]">
             
             <!-- Header -->
-            <div class="flex justify-between items-center w-full mb-2 px-1">
+            <div class="flex justify-between items-center w-full mb-2 px-1 gap-4">
                 <div class="w-8"></div> 
-                <div class="text-center">
-                    <h1 id="modeTitle" class="text-slate-800 text-base font-bold tracking-tight leading-none">HELL'S KITCHEN</h1>
+                <div class="text-center flex-1">
+                    <h1 id="modeTitle" class="text-slate-800 text-base font-bold tracking-tight leading-none whitespace-nowrap">HELL'S KITCHEN</h1>
                     <p id="modeDesc" class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Match the target!</p>
                 </div>
-                <button id="challengeToggle" class="w-8 h-8 flex items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform hover:scale-110 active:scale-90" title="Toggle Mode">
+                <button id="challengeToggle" class="w-8 h-8 flex shrink-0 items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform active:scale-90 shadow-sm" title="Toggle Mode">
                     👨‍🍳
                 </button>
             </div>
@@ -77,7 +74,7 @@
                 
                 <!-- Target -->
                 <div id="targetSection" class="flex flex-col items-center gap-1">
-                    <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Target</span>
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Target</span>
                     <div id="targetSwatch" class="w-12 h-12 rounded-xl border-4 border-slate-100 shadow-inner bg-gray-200"></div>
                 </div>
 
@@ -86,20 +83,28 @@
 
                 <!-- Ingredients -->
                 <div class="flex flex-col items-center gap-1">
-                    <span id="ingredientsLabel" class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Ingredients</span>
+                    <span id="ingredientsLabel" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Ingredients</span>
                     <div class="flex gap-2">
-                        <div class="w-12 h-12 paint-swatch-container">
-                            <input type="color" id="picker1" class="color-input">
-                            <div id="swatch1" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
-                        </div>
-                        <div class="w-12 h-12 paint-swatch-container">
-                            <input type="color" id="picker2" class="color-input">
-                            <div id="swatch2" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
-                        </div>
-                        <div class="w-12 h-12 paint-swatch-container">
-                            <input type="color" id="picker3" class="color-input">
-                            <div id="swatch3" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
-                        </div>
+                        
+                        <!-- Swatch 1 -->
+                        <label class="swatch-label relative w-12 h-12 block cursor-pointer">
+                            <div id="swatch1" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                            <!-- Input is inside label, opacity 0, covering full area -->
+                            <input type="color" id="picker1" class="color-input-hidden">
+                        </label>
+
+                        <!-- Swatch 2 -->
+                        <label class="swatch-label relative w-12 h-12 block cursor-pointer">
+                            <div id="swatch2" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                            <input type="color" id="picker2" class="color-input-hidden">
+                        </label>
+
+                        <!-- Swatch 3 -->
+                        <label class="swatch-label relative w-12 h-12 block cursor-pointer">
+                            <div id="swatch3" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                            <input type="color" id="picker3" class="color-input-hidden">
+                        </label>
+
                     </div>
                 </div>
             </div>
@@ -110,8 +115,7 @@
     </div>
 
     <!-- BOTTOM PANEL: Actions -->
-    <!-- Z-40 ensures it sits BELOW the top panel if they overlap on tiny screens -->
-    <div class="absolute bottom-0 left-0 w-full p-6 pb-8 flex justify-between items-end pointer-events-none z-40 landscape:w-auto landscape:left-auto landscape:right-0 landscape:bottom-0 landscape:p-6">
+    <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end pointer-events-none z-40 landscape:w-auto landscape:right-6 landscape:bottom-6 landscape:left-auto landscape:px-0">
         
         <!-- Reset Button -->
         <button id="resetBtn" class="pointer-events-auto bg-white hover:bg-slate-50 text-slate-600 font-bold p-3 rounded-full border border-slate-200 shadow-lg transition-all active:scale-90 mr-auto landscape:mr-4" title="Reset Colors">
@@ -119,14 +123,14 @@
         </button>
         
         <!-- Main Mix Button -->
-        <button id="mixBtn" class="pointer-events-auto bg-slate-900 text-white font-bold py-4 px-8 rounded-full shadow-2xl transition-all active:scale-95 text-sm tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700/50">
+        <button id="mixBtn" class="pointer-events-auto bg-slate-900 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl transition-all active:scale-95 text-sm tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700/50">
             <span>Serve Dish</span>
             <span class="text-xl">🍽️</span>
         </button>
     </div>
 
-    <!-- Result Modal -->
-    <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none opacity-0 transition-opacity duration-300">
+    <!-- Result Modal (Z-Index increased to 100) -->
+    <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none opacity-0 transition-opacity duration-300">
         <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-sm w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto mx-4">
             <div id="resultIcon" class="text-6xl mb-4 block animate-bounce">🤬</div>
             <h2 id="resultTitle" class="text-3xl font-black text-slate-800 mb-2 tracking-tighter uppercase italic">IT'S RAW!</h2>
@@ -193,6 +197,7 @@
             float aspect = u_resolution.x / u_resolution.y;
             st.x *= aspect;
             
+            // --- Responsive Geometry Logic ---
             vec2 center = vec2(aspect * 0.5, 0.45);
             float radius = min(0.32, aspect * 0.42); 
 
@@ -526,7 +531,6 @@
             requestAnimationFrame(render);
         }
 
-        // Start in Challenge Mode by default
         resetGame();
         requestAnimationFrame(render);
 
