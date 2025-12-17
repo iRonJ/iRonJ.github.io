@@ -12,6 +12,8 @@
         .paint-swatch-container {
             position: relative;
             transition: transform 0.2s ease;
+            /* Ensure container doesn't flatten 3D space for z-index */
+            transform-style: preserve-3d;
         }
         .paint-swatch-container:active {
             transform: scale(0.95);
@@ -25,8 +27,14 @@
         }
         .color-input {
             position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            opacity: 0; cursor: pointer; z-index: 50;
+            /* Make the hit area slightly larger than the visual box */
+            top: -10%; left: -10%; 
+            width: 120%; height: 120%;
+            opacity: 0; 
+            cursor: pointer; 
+            z-index: 100; /* Highest local z-index */
+            pointer-events: auto !important; /* Force clickable */
+            -webkit-tap-highlight-color: transparent;
         }
         
         .ui-panel {
@@ -48,7 +56,8 @@
 <body>
 
     <!-- TOP PANEL: Info & Inputs -->
-    <div class="absolute top-0 left-0 w-full p-3 flex justify-center pointer-events-none z-40 landscape:w-auto landscape:justify-start landscape:left-4 landscape:top-2">
+    <!-- Z-50 ensures this layer sits ABOVE the bottom panel (Z-40) -->
+    <div class="absolute top-0 left-0 w-full p-3 flex justify-center pointer-events-none z-50 landscape:w-auto landscape:justify-start landscape:left-4 landscape:top-2">
         <div class="ui-panel pointer-events-auto rounded-2xl shadow-xl p-3 max-w-md w-full border border-slate-200/60 flex flex-col items-center transition-all duration-300 landscape:w-auto landscape:scale-90 landscape:origin-top-left">
             
             <!-- Header -->
@@ -101,6 +110,7 @@
     </div>
 
     <!-- BOTTOM PANEL: Actions -->
+    <!-- Z-40 ensures it sits BELOW the top panel if they overlap on tiny screens -->
     <div class="absolute bottom-0 left-0 w-full p-6 pb-8 flex justify-between items-end pointer-events-none z-40 landscape:w-auto landscape:left-auto landscape:right-0 landscape:bottom-0 landscape:p-6">
         
         <!-- Reset Button -->
@@ -183,7 +193,6 @@
             float aspect = u_resolution.x / u_resolution.y;
             st.x *= aspect;
             
-            // --- Responsive Geometry Logic ---
             vec2 center = vec2(aspect * 0.5, 0.45);
             float radius = min(0.32, aspect * 0.42); 
 
@@ -328,30 +337,20 @@
         ];
         
         function getScore(c1, c2) {
-            // "Redmean" perceptual distance approximation
             let r1 = c1[0]*255, g1 = c1[1]*255, b1 = c1[2]*255;
             let r2 = c2[0]*255, g2 = c2[1]*255, b2 = c2[2]*255;
-            
             let rBar = (r1 + r2) / 2;
             let dR = r1 - r2;
             let dG = g1 - g2;
             let dB = b1 - b2;
-            
             let dist = Math.sqrt(
                 (2 + rBar/256) * dR*dR +
                 4 * dG*dG +
                 (2 + (255-rBar)/256) * dB*dB
             );
-            
-            // Max acceptable distance before 0 score
-            // 400 covers "random vs random" territory
             const maxDist = 400;
             if (dist > maxDist) return 0;
-            
-            // Normalized error 0..1
             let error = dist / maxDist; 
-            
-            // Convex curve: score drops slowly at first, then fast
             return Math.round(100 * Math.pow(1 - error, 1.5));
         }
 
