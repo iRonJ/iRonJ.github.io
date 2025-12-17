@@ -2,19 +2,20 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Paint Mix Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         body, html { margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; touch-action: none; -webkit-tap-highlight-color: transparent; }
         canvas { display: block; width: 100vw; height: 100vh; }
         
+        /* Glassmorphism Panel */
         .ui-panel {
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             background-color: rgba(255, 255, 255, 0.92);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
         /* Swatch Animation */
@@ -24,13 +25,14 @@
             width: 3rem;
             height: 3rem;
             flex-shrink: 0;
-            transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
         }
         .swatch-label:active {
             transform: scale(0.9);
         }
         
-        /* The invisible input needs to be physically present to catch touches */
+        /* Hidden Input Logic */
         .color-input-hidden {
             position: absolute;
             inset: 0;
@@ -43,7 +45,7 @@
             border: none;
             padding: 0;
             margin: 0;
-            z-index: 10;
+            z-index: 20;
             pointer-events: auto;
         }
 
@@ -56,130 +58,139 @@
             animation: pulse-soft 2s infinite;
         }
 
-        /* Responsive adjustments for very small screens */
-        @media (max-width: 380px) {
-            .swatch-label {
-                width: 2.5rem;
-                height: 2.5rem;
+        /* Safe Area Utilities */
+        .pt-safe { padding-top: env(safe-area-inset-top); }
+        .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
+        .pl-safe { padding-left: env(safe-area-inset-left); }
+        .pr-safe { padding-right: env(safe-area-inset-right); }
+
+        /* Small Screen / Landscape Optimization */
+        @media (max-height: 500px) and (orientation: landscape) {
+            .landscape-compact {
+                transform: scale(0.8);
+                transform-origin: top left;
             }
-            #targetSwatch.w-12.h-12 {
-                width: 2.5rem;
-                height: 2.5rem;
+            .landscape-compact-bottom {
+                transform: scale(0.8);
+                transform-origin: bottom right;
             }
-        }
-        
-        /* Even smaller for very tiny screens */
-        @media (max-width: 350px) {
-            .swatch-label {
-                width: 2rem;
-                height: 2rem;
+            .modal-compact {
+                padding-top: 1rem;
+                padding-bottom: 1rem;
             }
-            #targetSwatch.w-12.h-12 {
-                width: 2rem;
-                height: 2rem;
+            .modal-icon {
+                display: none; /* Hide big icon on short screens */
             }
         }
     </style>
 </head>
 <body>
 
-    <!-- TOP PANEL WRAPPER -->
-    <!-- Removed w-full. Centered using transform to minimize overlay area. -->
-    <div class="absolute top-2 left-1/2 -translate-x-1/2 z-50 landscape:left-4 landscape:translate-x-0 landscape:top-4 max-w-[95vw]">
-        <div class="ui-panel rounded-2xl p-3 border border-slate-200/60 flex flex-col items-center landscape:scale-90 landscape:origin-top-left w-full">
-            
-            <!-- Header -->
-            <div class="flex justify-between items-center w-full mb-2 px-1 gap-4">
-                <div class="w-8"></div> 
-                <div class="text-center flex-1">
-                    <h1 id="modeTitle" class="text-slate-800 text-base font-bold tracking-tight leading-none whitespace-nowrap">HELL'S KITCHEN</h1>
-                    <p id="modeDesc" class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Match the target!</p>
-                </div>
-                <button id="challengeToggle" class="w-8 h-8 flex shrink-0 items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform active:scale-90 shadow-sm" title="Toggle Mode">
-                    👨‍🍳
-                </button>
-            </div>
+    <!-- UI LAYER WRAPPER -->
+    <!-- pointer-events-none allows clicks to pass through empty space to canvas -->
+    <div class="absolute inset-0 pointer-events-none z-10 flex flex-col justify-between pt-safe pb-safe pl-safe pr-safe overflow-hidden">
 
-            <!-- Swatches Row -->
-            <div class="flex items-center justify-center gap-3 w-full flex-wrap" id="swatchRow">
+        <!-- TOP PANEL -->
+        <!-- pointer-events-auto ensures panel is clickable -->
+        <div class="w-full flex justify-center landscape:justify-start landscape:items-start p-2">
+            <div class="ui-panel pointer-events-auto rounded-2xl p-3 border border-slate-200/60 flex flex-col items-center landscape-compact landscape:origin-top-left min-w-[280px]">
                 
-                <!-- Target -->
-                <div id="targetSection" class="flex flex-col items-center gap-1">
-                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Target</span>
-                    <div id="targetSwatch" class="w-12 h-12 rounded-xl border-4 border-slate-100 shadow-inner bg-gray-200"></div>
+                <!-- Header -->
+                <div class="flex justify-between items-center w-full mb-2 px-1 gap-2">
+                    <div class="w-8"></div> 
+                    <div class="text-center flex-1">
+                        <h1 id="modeTitle" class="text-slate-800 text-xs font-black tracking-tighter leading-none whitespace-nowrap uppercase">HELL'S KITCHEN</h1>
+                        <p id="modeDesc" class="text-slate-400 text-[9px] uppercase tracking-wider font-bold">Match Target</p>
+                    </div>
+                    <button id="challengeToggle" class="w-8 h-8 flex shrink-0 items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform active:scale-90 shadow-sm" title="Toggle Mode">
+                        👨‍🍳
+                    </button>
                 </div>
 
-                <!-- Divider -->
-                <div id="dividerSection" class="h-8 w-px bg-slate-200 mx-1"></div>
+                <!-- Swatches Row -->
+                <div class="flex items-center justify-center gap-2 w-full" id="swatchRow">
+                    
+                    <!-- Target -->
+                    <div id="targetSection" class="flex flex-col items-center gap-1">
+                        <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Goal</span>
+                        <div id="targetSwatch" class="w-10 h-10 rounded-lg border-2 border-slate-200 shadow-inner bg-gray-200"></div>
+                    </div>
 
-                <!-- Ingredients -->
-                <div class="flex flex-col items-center gap-1">
-                    <span id="ingredientsLabel" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Ingredients</span>
-                    <div class="flex gap-2 justify-center">
-                        
-                        <!-- Swatch 1 -->
-                        <label class="swatch-label cursor-pointer">
-                            <div id="swatch1" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                            <!-- Input is inside label, opacity 0, covering full area -->
-                            <input type="color" id="picker1" class="color-input-hidden">
-                        </label>
+                    <!-- Divider -->
+                    <div id="dividerSection" class="h-8 w-px bg-slate-200 mx-1"></div>
 
-                        <!-- Swatch 2 -->
-                        <label class="swatch-label cursor-pointer">
-                            <div id="swatch2" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                            <input type="color" id="picker2" class="color-input-hidden">
-                        </label>
+                    <!-- Ingredients -->
+                    <div class="flex flex-col items-center gap-1">
+                        <span id="ingredientsLabel" class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Mix</span>
+                        <div class="flex gap-2 justify-center">
+                            
+                            <!-- Swatch 1 -->
+                            <label class="swatch-label">
+                                <div id="swatch1" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                                <input type="color" id="picker1" class="color-input-hidden">
+                            </label>
 
-                        <!-- Swatch 3 -->
-                        <label class="swatch-label cursor-pointer">
-                            <div id="swatch3" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                            <input type="color" id="picker3" class="color-input-hidden">
-                        </label>
+                            <!-- Swatch 2 -->
+                            <label class="swatch-label">
+                                <div id="swatch2" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                                <input type="color" id="picker2" class="color-input-hidden">
+                            </label>
 
+                            <!-- Swatch 3 -->
+                            <label class="swatch-label">
+                                <div id="swatch3" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
+                                <input type="color" id="picker3" class="color-input-hidden">
+                            </label>
+
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Free Mode Preview Bar -->
-            <div id="finalColorPreview" class="mt-2 h-1 rounded-full w-full bg-transparent transition-colors duration-1000 opacity-0"></div>
+                <!-- Free Mode Preview Bar -->
+                <div id="finalColorPreview" class="mt-2 h-1 rounded-full w-full bg-transparent transition-colors duration-1000 opacity-0"></div>
+            </div>
         </div>
-    </div>
 
-    <!-- BOTTOM PANEL: Actions -->
-    <div class="absolute bottom-6 left-0 w-full px-6 flex justify-between items-end pointer-events-none z-40 landscape:w-auto landscape:right-6 landscape:bottom-6 landscape:left-auto landscape:px-0">
-        
-        <!-- Reset Button -->
-        <button id="resetBtn" class="pointer-events-auto bg-white hover:bg-slate-50 text-slate-600 font-bold p-3 rounded-full border border-slate-200 shadow-lg transition-all active:scale-90 mr-auto landscape:mr-4" title="Reset Colors">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
-        </button>
-        
-        <!-- Main Mix Button -->
-        <button id="mixBtn" class="pointer-events-auto bg-slate-900 text-white font-bold py-4 px-8 rounded-2xl shadow-2xl transition-all active:scale-95 text-sm tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700/50">
-            <span>Serve Dish</span>
-            <span class="text-xl">🍽️</span>
-        </button>
-    </div>
-
-    <!-- Result Modal (Z-Index increased to 100) -->
-    <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none opacity-0 transition-opacity duration-300">
-        <div class="bg-white/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl max-w-sm w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto mx-4">
-            <div id="resultIcon" class="text-6xl mb-4 block animate-bounce">🤬</div>
-            <h2 id="resultTitle" class="text-3xl font-black text-slate-800 mb-2 tracking-tighter uppercase italic">IT'S RAW!</h2>
-            <p id="resultMessage" class="text-slate-600 text-base mb-6 font-medium leading-relaxed">You call that paint?</p>
+        <!-- BOTTOM PANEL -->
+        <div class="w-full flex justify-between items-end p-4 landscape:p-2 landscape-compact-bottom landscape:justify-end landscape:gap-4">
             
-            <div class="flex justify-center items-center gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
-                <div class="flex flex-col items-center gap-2">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Target</span>
-                    <div id="modalTarget" class="w-14 h-14 rounded-full border-4 border-white shadow-md"></div>
+            <!-- Reset Button -->
+            <button id="resetBtn" class="pointer-events-auto bg-white hover:bg-slate-50 text-slate-600 font-bold p-3 rounded-full border border-slate-200 shadow-lg transition-transform active:scale-90 flex items-center justify-center w-12 h-12 landscape:order-1" title="Reset Colors">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
+            </button>
+            
+            <!-- Main Mix Button -->
+            <button id="mixBtn" class="pointer-events-auto bg-slate-900 text-white font-bold py-3 px-6 rounded-2xl shadow-xl transition-transform active:scale-95 text-xs tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700 landscape:order-2 h-12">
+                <span>Serve</span>
+                <span class="text-lg">🍽️</span>
+            </button>
+        </div>
+
+    </div>
+
+    <!-- Result Modal -->
+    <!-- Max height and auto overflow ensures it's scrollable on landscape phones -->
+    <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none opacity-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm p-4">
+        <div class="bg-white/95 rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto flex flex-col items-center max-h-full overflow-y-auto modal-compact">
+            
+            <div id="resultIcon" class="text-5xl mb-2 block animate-bounce modal-icon">🤬</div>
+            
+            <h2 id="resultTitle" class="text-2xl font-black text-slate-800 mb-1 tracking-tighter uppercase italic leading-none">IT'S RAW!</h2>
+            <p id="resultMessage" class="text-slate-500 text-xs mb-4 font-medium leading-tight">You call that paint?</p>
+            
+            <div class="flex justify-center items-center gap-4 mb-5 bg-slate-50 p-3 rounded-2xl border border-slate-100 w-full">
+                <div class="flex flex-col items-center gap-1">
+                    <span class="text-[9px] uppercase font-bold text-slate-400 tracking-widest">Goal</span>
+                    <div id="modalTarget" class="w-10 h-10 rounded-full border-2 border-white shadow-md bg-gray-200"></div>
                 </div>
-                <div class="text-slate-300 font-bold text-xl italic">vs</div>
-                <div class="flex flex-col items-center gap-2">
-                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Yours</span>
-                    <div id="modalYours" class="w-14 h-14 rounded-full border-4 border-white shadow-md"></div>
+                <div class="text-slate-300 font-bold text-lg italic">vs</div>
+                <div class="flex flex-col items-center gap-1">
+                    <span class="text-[9px] uppercase font-bold text-slate-400 tracking-widest">You</span>
+                    <div id="modalYours" class="w-10 h-10 rounded-full border-2 border-white shadow-md bg-gray-200"></div>
                 </div>
             </div>
             
-            <button id="modalBtn" class="w-full bg-slate-900 text-white py-4 px-6 rounded-2xl font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20 uppercase tracking-wide">Yes Chef</button>
+            <button id="modalBtn" class="w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg uppercase text-xs tracking-wide shrink-0">Yes Chef</button>
         </div>
     </div>
 
@@ -228,7 +239,6 @@
             float aspect = u_resolution.x / u_resolution.y;
             st.x *= aspect;
             
-            // --- Responsive Geometry Logic ---
             vec2 center = vec2(aspect * 0.5, 0.45);
             float radius = min(0.32, aspect * 0.42); 
 
@@ -398,13 +408,13 @@
             
             if(state.challengeMode) {
                 ui.previewBar.style.opacity = '0';
-                ui.mixBtn.innerHTML = `<span>Serve Dish</span><span class="text-xl">🍽️</span>`;
+                ui.mixBtn.innerHTML = `<span>Serve</span><span class="text-lg">🍽️</span>`;
                 ui.mixBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
                 ui.mixBtn.classList.add('bg-slate-900', 'hover:bg-slate-800');
             } else {
                 ui.previewBar.style.opacity = '1';
                 ui.previewBar.style.backgroundColor = toCss(state.finalColor);
-                ui.mixBtn.innerHTML = `<span>Mix Paint</span><span class="text-xl">🎨</span>`;
+                ui.mixBtn.innerHTML = `<span>Mix Paint</span><span class="text-lg">🎨</span>`;
                 ui.mixBtn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
                 ui.mixBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
             }
@@ -562,6 +572,7 @@
             requestAnimationFrame(render);
         }
 
+        // Start in Challenge Mode by default
         resetGame();
         requestAnimationFrame(render);
 
