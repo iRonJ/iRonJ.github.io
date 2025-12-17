@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paint Mix Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body, html { margin: 0; padding: 0; overflow: hidden; background-color: #f3f4f6; }
+        canvas { display: block; width: 100vw; height: 100vh; }
+        
+        .paint-swatch-container {
+            position: relative;
+            transition: transform 0.2s ease;
+        }
+        .paint-swatch-container:hover {
+            transform: scale(1.1);
+            z-index: 10;
+        }
+        .paint-swatch {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            height: 100%;
+            border-radius: 0.5rem;
+            pointer-events: none;
+        }
+        .color-input {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            opacity: 0; cursor: pointer; z-index: 5;
+        }
+        .paint-swatch-container::after {
+            content: 'edit';
+            position: absolute; font-size: 9px; color: rgba(255,255,255,0.9);
+            bottom: 2px; width: 100%; text-align: center;
+            opacity: 0; transition: opacity 0.2s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5); pointer-events: none;
+        }
+        .paint-swatch-container:hover::after { opacity: 1; }
+        
+        .ui-panel {
+            backdrop-filter: blur(20px);
+            background-color: rgba(255, 255, 255, 0.92);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- UI Overlay -->
+    <div class="absolute top-0 left-0 w-full z-10 p-2 flex flex-col items-center pointer-events-none">
+        
+        <!-- Main Control Panel -->
+        <div class="ui-panel pointer-events-auto rounded-2xl shadow-2xl p-5 max-w-md w-full border border-slate-200/60 mt-4 flex flex-col items-center relative transition-all duration-300">
+            
+            <!-- Header Row -->
+            <div class="flex justify-between items-center w-full mb-1 px-1">
+                <div class="w-8"></div> <!-- Spacer for centering -->
+                <div class="text-center">
+                    <h1 id="modeTitle" class="text-slate-800 text-lg font-bold tracking-tight">Paint Mixer</h1>
+                    <p id="modeDesc" class="text-slate-400 text-[10px] uppercase tracking-wider font-semibold">Free Play Mode</p>
+                </div>
+                <!-- Challenge Toggle Button -->
+                <button id="challengeToggle" class="w-8 h-8 flex items-center justify-center rounded-full hover:bg-slate-100 text-lg transition-transform hover:scale-110 active:scale-90" title="Toggle Challenge Mode">
+                    👨‍🍳
+                </button>
+            </div>
+
+            <!-- Main Swatch Area (Layout changes based on mode) -->
+            <div class="flex items-center justify-center gap-4 my-6 w-full transition-all duration-300" id="swatchRow">
+                
+                <!-- Target (Hidden by default) -->
+                <div id="targetSection" class="hidden flex-col items-center gap-1 animate-in fade-in slide-in-from-left-4 duration-300">
+                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Target</span>
+                    <div id="targetSwatch" class="w-14 h-14 rounded-xl border-4 border-slate-100 shadow-inner bg-gray-200 relative overflow-hidden"></div>
+                </div>
+
+                <!-- Divider (Hidden by default) -->
+                <div id="dividerSection" class="hidden h-10 w-px bg-slate-200 mx-1"></div>
+
+                <!-- Ingredients -->
+                <div class="flex flex-col items-center gap-1">
+                    <span id="ingredientsLabel" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest opacity-0 h-0 overflow-hidden transition-all">My Mix</span>
+                    <div class="flex gap-3">
+                        <div class="w-14 h-14 paint-swatch-container">
+                            <input type="color" id="picker1" class="color-input">
+                            <div id="swatch1" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
+                        </div>
+                        <div class="w-14 h-14 paint-swatch-container">
+                            <input type="color" id="picker2" class="color-input">
+                            <div id="swatch2" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
+                        </div>
+                        <div class="w-14 h-14 paint-swatch-container">
+                            <input type="color" id="picker3" class="color-input">
+                            <div id="swatch3" class="paint-swatch border-2 border-white ring-1 ring-slate-200"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="flex gap-2 w-full">
+                <button id="mixBtn" class="flex-1 bg-slate-900 hover:bg-slate-800 text-white font-bold py-3 px-4 rounded-xl transition-all active:scale-95 shadow-xl shadow-slate-900/10 text-sm tracking-wide">
+                    MIX PAINT
+                </button>
+                <button id="resetBtn" class="bg-slate-100 hover:bg-slate-200 text-slate-600 font-bold py-3 px-4 rounded-xl border border-transparent transition-all active:scale-95 shadow-sm" title="Reset Colors">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </div>
+            
+            <!-- Result Preview Bar (Visible in Free Mode) -->
+            <div id="finalColorPreview" class="mt-4 h-1.5 rounded-full w-full bg-transparent transition-colors duration-1000 opacity-100"></div>
+        </div>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-50 pointer-events-none opacity-0 transition-opacity duration-300">
+        <div class="bg-white/95 backdrop-blur-xl rounded-2xl p-8 shadow-2xl max-w-sm w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto mx-4">
+            <div id="resultIcon" class="text-6xl mb-4 block animate-bounce">🤬</div>
+            <h2 id="resultTitle" class="text-3xl font-black text-slate-800 mb-2 tracking-tighter uppercase italic">IT'S RAW!</h2>
+            <p id="resultMessage" class="text-slate-600 text-base mb-6 font-medium leading-relaxed">You call that paint?</p>
+            
+            <div class="flex justify-center items-center gap-6 mb-8 bg-slate-50 p-4 rounded-xl border border-slate-100">
+                <div class="flex flex-col items-center gap-2">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Target</span>
+                    <div id="modalTarget" class="w-14 h-14 rounded-full border-4 border-white shadow-md"></div>
+                </div>
+                <div class="text-slate-300 font-bold text-xl italic">vs</div>
+                <div class="flex flex-col items-center gap-2">
+                    <span class="text-[10px] uppercase font-bold text-slate-400 tracking-widest">Yours</span>
+                    <div id="modalYours" class="w-14 h-14 rounded-full border-4 border-white shadow-md"></div>
+                </div>
+            </div>
+            
+            <button id="modalBtn" class="w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg shadow-slate-900/20">YES CHEF</button>
+        </div>
+    </div>
+
+    <canvas id="glCanvas"></canvas>
+
+    <!-- VERTEX SHADER -->
+    <script id="vertex-shader" type="x-shader/x-vertex">
+        attribute vec2 a_position;
+        void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
+    </script>
+
+    <!-- FRAGMENT SHADER -->
+    <script id="fragment-shader" type="x-shader/x-fragment">
+        precision highp float;
+        uniform vec2 u_resolution;
+        uniform float u_time;
+        uniform float u_mixProgress;
+        uniform vec3 u_col1;
+        uniform vec3 u_col2;
+        uniform vec3 u_col3;
+        uniform vec3 u_finalMix;
+        
+        vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
+        float snoise(vec2 v){
+            const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+            vec2 i  = floor(v + dot(v, C.yy) );
+            vec2 x0 = v -   i + dot(i, C.xx);
+            vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+            vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+            i = mod(i, 289.0);
+            vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+            vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+            m = m*m ; m = m*m ;
+            vec3 x = 2.0 * fract(p * C.www) - 1.0;
+            vec3 h = abs(x) - 0.5;
+            vec3 ox = floor(x + 0.5);
+            vec3 a0 = x - ox;
+            m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+            vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+            return 130.0 * dot(m, g);
+        }
+        mat2 rotate(float angle) { return mat2(cos(angle), -sin(angle), sin(angle), cos(angle)); }
+
+        void main() {
+            vec2 st = gl_FragCoord.xy / u_resolution.xy;
+            float aspect = u_resolution.x / u_resolution.y;
+            st.x *= aspect;
+            vec2 center = vec2(aspect * 0.5, 0.35); 
+            float radius = 0.30; 
+            float distToCenter = length(st - center);
+            float containerMask = smoothstep(radius, radius - 0.005, distToCenter);
+            if (containerMask < 0.01) discard; 
+
+            vec2 p = st - center;
+            float spinAngle = u_time * 2.0; 
+            p = rotate(spinAngle) * p;
+            float warpScale = 2.5;
+            float n = snoise(p * warpScale - u_time * 0.3);
+            p.x += sin(p.y * 5.0 + u_time) * 0.15;
+            p.y += n * 0.25;
+
+            float d1 = length(p - vec2(0.12, 0.0));
+            float d2 = length(p - vec2(-0.06, 0.10));
+            float d3 = length(p - vec2(-0.06, -0.10));
+            float spread = 0.35 + 0.05 * sin(u_time * 2.0);
+            float mask1 = smoothstep(spread, spread - 0.2, d1);
+            float mask2 = smoothstep(spread, spread - 0.2, d2);
+            float mask3 = smoothstep(spread, spread - 0.2, d3);
+            
+            vec3 swirlColor = vec3(0.96, 0.96, 0.96);
+            swirlColor -= 0.03 * snoise(st * 15.0);
+            swirlColor = mix(swirlColor, u_col1, mask1);
+            swirlColor = mix(swirlColor, u_col2, mask2);
+            swirlColor = mix(swirlColor, u_col3, mask3);
+
+            float blendFactor = smoothstep(0.1, 0.85, u_mixProgress);
+            vec3 finalColor = mix(swirlColor, u_finalMix, blendFactor);
+            float rim = smoothstep(radius - 0.05, radius, distToCenter);
+            finalColor *= (1.0 - rim * 0.3); 
+            float lightAngle = u_time;
+            vec2 lightDir = vec2(cos(lightAngle), sin(lightAngle));
+            float spec = max(0.0, dot(normalize(p), lightDir));
+            spec = pow(spec, 12.0); 
+            finalColor += spec * 0.15;
+
+            gl_FragColor = vec4(finalColor, containerMask);
+        }
+    </script>
+
+    <script>
+        // --- WebGL Setup ---
+        const canvas = document.getElementById('glCanvas');
+        const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
+        if (!gl) alert('WebGL not supported');
+
+        function createShader(gl, type, source) {
+            const shader = gl.createShader(type);
+            gl.shaderSource(shader, source);
+            gl.compileShader(shader);
+            if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { gl.deleteShader(shader); return null; }
+            return shader;
+        }
+        const program = gl.createProgram();
+        gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, document.getElementById('vertex-shader').text));
+        gl.attachShader(program, createShader(gl, gl.FRAGMENT_SHADER, document.getElementById('fragment-shader').text));
+        gl.linkProgram(program);
+
+        const locs = {
+            pos: gl.getAttribLocation(program, 'a_position'),
+            res: gl.getUniformLocation(program, 'u_resolution'),
+            time: gl.getUniformLocation(program, 'u_time'),
+            mix: gl.getUniformLocation(program, 'u_mixProgress'),
+            c1: gl.getUniformLocation(program, 'u_col1'),
+            c2: gl.getUniformLocation(program, 'u_col2'),
+            c3: gl.getUniformLocation(program, 'u_col3'),
+            final: gl.getUniformLocation(program, 'u_finalMix')
+        };
+
+        const buf = gl.createBuffer();
+        gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
+
+        // --- Game Logic ---
+        const state = {
+            colors: [[0,0,0], [0,0,0], [0,0,0]],
+            finalColor: [0,0,0],
+            targetColor: null,
+            isMixing: false,
+            mixStartTime: 0,
+            simTime: 0,
+            lastFrameTime: 0,
+            mixDuration: 4000,
+            challengeMode: false,
+            timerId: null
+        };
+
+        const RAMSAY_QUOTES = {
+            perfect: ["Finally, some good f***ing paint.", "Stunning. Absolutely stunning.", "You've treated that color with respect."],
+            good: ["Not bad. Not amazing, but not bad.", "It's edible. I mean, visible.", "You haven't embarrassed yourself."],
+            bad: ["It's bland! It's dry! It's tasteless!", "Have you given up?", "My gran mixes better than that!", "Wake up!", "Absolute donut."],
+            terrible: ["IT'S RAW!", "GET OUT!", "I wouldn't trust you to run a bath!", "This is a disaster.", "Idiot sandwich!"]
+        };
+
+        const ui = {
+            swatches: [document.getElementById('swatch1'), document.getElementById('swatch2'), document.getElementById('swatch3')],
+            pickers: [document.getElementById('picker1'), document.getElementById('picker2'), document.getElementById('picker3')],
+            mixBtn: document.getElementById('mixBtn'),
+            resetBtn: document.getElementById('resetBtn'),
+            previewBar: document.getElementById('finalColorPreview'),
+            challengeBtn: document.getElementById('challengeToggle'),
+            targetSection: document.getElementById('targetSection'),
+            dividerSection: document.getElementById('dividerSection'),
+            ingredientsLabel: document.getElementById('ingredientsLabel'),
+            targetSwatch: document.getElementById('targetSwatch'),
+            modeTitle: document.getElementById('modeTitle'),
+            modeDesc: document.getElementById('modeDesc'),
+            modal: document.getElementById('resultModal'),
+            modalContent: document.querySelector('#resultModal > div'),
+            modalIcon: document.getElementById('resultIcon'),
+            modalTitle: document.getElementById('resultTitle'),
+            modalMsg: document.getElementById('resultMessage'),
+            modalTarget: document.getElementById('modalTarget'),
+            modalYours: document.getElementById('modalYours'),
+            modalBtn: document.getElementById('modalBtn')
+        };
+
+        // --- Helpers ---
+        const hexToRgb = h => { const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h); return r?[parseInt(r[1],16)/255,parseInt(r[2],16)/255,parseInt(r[3],16)/255]:[0,0,0]; };
+        const rgbToHex = (r,g,b) => "#" + [r,g,b].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
+        const toCss = c => `rgb(${Math.round(c[0]*255)}, ${Math.round(c[1]*255)}, ${Math.round(c[2]*255)})`;
+        const randCol = () => {
+            const h=Math.random(), s=0.6+Math.random()*0.4, l=0.4+Math.random()*0.3;
+            let r,g,b; if(s===0)r=g=b=l; else {
+                const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+                const hue=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+                r=hue(p,q,h+1.0/3); g=hue(p,q,h); b=hue(p,q,h-1.0/3);
+            }
+            return [r,g,b];
+        };
+        const calcAvg = cols => [
+            (cols[0][0]+cols[1][0]+cols[2][0])/3,
+            (cols[0][1]+cols[1][1]+cols[2][1])/3,
+            (cols[0][2]+cols[1][2]+cols[2][2])/3
+        ];
+        
+        // Updates swatches and text, BUT DOES NOT TOUCH INPUT VALUES
+        function updateUI() {
+            state.finalColor = calcAvg(state.colors);
+            ui.swatches.forEach((el, i) => {
+                el.style.backgroundColor = toCss(state.colors[i]);
+            });
+            
+            if(state.challengeMode) {
+                ui.previewBar.style.backgroundColor = 'transparent';
+                ui.mixBtn.textContent = state.isMixing ? "Mixing..." : "SUBMIT DISH";
+                ui.mixBtn.classList.add('bg-slate-900', 'text-white');
+            } else {
+                ui.previewBar.style.backgroundColor = toCss(state.finalColor);
+                ui.mixBtn.textContent = state.isMixing ? "Mixing..." : "MIX PAINT";
+            }
+        }
+
+        // Only updates the hidden color picker inputs (Called on Reset/Init only)
+        function syncPickers() {
+            ui.pickers.forEach((p, i) => {
+                p.value = rgbToHex(...state.colors[i]);
+            });
+        }
+
+        function stopMixing() {
+            if (state.timerId) {
+                clearTimeout(state.timerId);
+                state.timerId = null;
+            }
+            state.isMixing = false;
+            state.mixStartTime = 0;
+            ui.mixBtn.disabled = false;
+            ui.mixBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            updateUI();
+        }
+
+        function resetGame() {
+            stopMixing();
+
+            if (state.challengeMode) {
+                ui.targetSection.classList.remove('hidden');
+                ui.targetSection.classList.add('flex');
+                ui.dividerSection.classList.remove('hidden');
+                ui.ingredientsLabel.classList.remove('h-0', 'opacity-0');
+                
+                ui.modeTitle.textContent = "HELL'S KITCHEN";
+                ui.modeDesc.textContent = "Replicate this color or get out!";
+                ui.challengeBtn.classList.add('bg-yellow-100', 'scale-110');
+                
+                const sol = [randCol(), randCol(), randCol()];
+                state.targetColor = calcAvg(sol);
+                ui.targetSwatch.style.backgroundColor = toCss(state.targetColor);
+                state.colors = [[0.95,0.95,0.95], [0.95,0.95,0.95], [0.95,0.95,0.95]];
+            } else {
+                ui.targetSection.classList.add('hidden');
+                ui.targetSection.classList.remove('flex');
+                ui.dividerSection.classList.add('hidden');
+                ui.ingredientsLabel.classList.add('h-0', 'opacity-0');
+                
+                ui.modeTitle.textContent = "Paint Mixer";
+                ui.modeDesc.textContent = "Free Play Mode";
+                ui.challengeBtn.classList.remove('bg-yellow-100', 'scale-110');
+
+                state.colors = [randCol(), randCol(), randCol()];
+                state.targetColor = null;
+            }
+            updateUI();
+            syncPickers(); // Only sync pickers on full reset
+        }
+
+        function showResult() {
+            if(!state.targetColor) return;
+            
+            const c1 = state.finalColor;
+            const c2 = state.targetColor;
+            const dist = Math.sqrt(Math.pow(c1[0]-c2[0], 2) + Math.pow(c1[1]-c2[1], 2) + Math.pow(c1[2]-c2[2], 2));
+
+            let score = Math.max(0, Math.round((1 - (dist / 0.5)) * 100));
+            
+            ui.modalTarget.style.backgroundColor = toCss(state.targetColor);
+            ui.modalYours.style.backgroundColor = toCss(state.finalColor);
+            
+            let quotes = [], icon = "", title = "";
+
+            if (score > 90) {
+                quotes = RAMSAY_QUOTES.perfect; icon = "👨‍🍳"; title = "DELICIOUS.";
+            } else if (score > 75) {
+                quotes = RAMSAY_QUOTES.good; icon = "🤔"; title = "ADEQUATE.";
+            } else if (score > 40) {
+                quotes = RAMSAY_QUOTES.bad; icon = "🤬"; title = "DISASTER!";
+            } else {
+                quotes = RAMSAY_QUOTES.terrible; icon = "🍩"; title = "GET OUT!";
+            }
+
+            const quote = quotes[Math.floor(Math.random() * quotes.length)];
+            ui.modalIcon.textContent = icon;
+            ui.modalTitle.textContent = title;
+            ui.modalMsg.textContent = `"${quote}" (Accuracy: ${score}%)`;
+
+            ui.modal.classList.remove('opacity-0', 'pointer-events-none');
+            ui.modalContent.classList.remove('scale-90');
+        }
+
+        // --- Event Listeners ---
+        ui.challengeBtn.addEventListener('click', () => {
+            state.challengeMode = !state.challengeMode;
+            resetGame();
+        });
+
+        ui.pickers.forEach((p, i) => {
+            const handleColorChange = (e) => {
+                stopMixing(); // Ensure any running game loop stops on manual edit
+                state.colors[i] = hexToRgb(e.target.value);
+                updateUI();
+            };
+
+            // Listen for input (live drag) and change (commit/close)
+            p.addEventListener('input', handleColorChange);
+            p.addEventListener('change', handleColorChange);
+        });
+
+        ui.mixBtn.addEventListener('click', () => {
+            if(state.isMixing) return;
+            state.isMixing = true;
+            state.mixStartTime = performance.now();
+            ui.mixBtn.textContent = "Cooking...";
+            ui.mixBtn.disabled = true;
+            ui.mixBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            if(state.challengeMode) {
+                state.timerId = setTimeout(showResult, state.mixDuration + 500);
+            }
+        });
+
+        ui.resetBtn.addEventListener('click', resetGame);
+        ui.modalBtn.addEventListener('click', () => {
+            ui.modal.classList.add('opacity-0', 'pointer-events-none');
+            ui.modalContent.classList.add('scale-90');
+            resetGame();
+        });
+
+        // --- Render Loop ---
+        function render(now) {
+            if(!state.lastFrameTime) state.lastFrameTime = now;
+            const dt = now - state.lastFrameTime;
+            state.lastFrameTime = now;
+            const w = canvas.clientWidth, h = canvas.clientHeight;
+            if(canvas.width!==w || canvas.height!==h) { canvas.width=w; canvas.height=h; gl.viewport(0,0,w,h); }
+
+            let speed = state.isMixing ? 0.002 : 0.00005; 
+            state.simTime += dt * speed;
+            
+            let mixProgress = 0.0;
+            if (state.isMixing) {
+                let mixDt = now - state.mixStartTime;
+                if (mixDt > state.mixDuration) {
+                    mixProgress = 1.0;
+                    if(!state.challengeMode) ui.mixBtn.textContent = "SERVICE!";
+                } else {
+                    mixProgress = mixDt / state.mixDuration;
+                }
+            }
+
+            gl.useProgram(program);
+            gl.enableVertexAttribArray(locs.pos);
+            gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+            gl.vertexAttribPointer(locs.pos, 2, gl.FLOAT, false, 0, 0);
+            gl.uniform2f(locs.res, canvas.width, canvas.height);
+            gl.uniform1f(locs.time, state.simTime);
+            gl.uniform1f(locs.mix, mixProgress);
+            gl.uniform3fv(locs.c1, state.colors[0]);
+            gl.uniform3fv(locs.c2, state.colors[1]);
+            gl.uniform3fv(locs.c3, state.colors[2]);
+            gl.uniform3fv(locs.final, state.finalColor);
+            gl.drawArrays(gl.TRIANGLES, 0, 6);
+            requestAnimationFrame(render);
+        }
+
+        resetGame();
+        requestAnimationFrame(render);
+
+    </script>
+</body>
+</html>
+
+
