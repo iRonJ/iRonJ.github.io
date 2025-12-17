@@ -2,198 +2,208 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"
-  />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <title>Paint Mix Simulator</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    /* Allow normal tap/click behavior on the document.
-       Prevent scroll via overflow, not via touch-action. */
+    /* Reset & Base */
     html, body {
-      margin: 0;
-      padding: 0;
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
       overflow: hidden;
       background-color: #f3f4f6;
       -webkit-tap-highlight-color: transparent;
-      height: 100%;
+      touch-action: none; /* Prevent scroll/zoom on body */
     }
 
-    /* Canvas should block gestures (no page scroll/zoom) */
     canvas {
       display: block;
-      width: 100vw;
-      height: 100dvh; /* modern mobile viewport */
-      touch-action: none;
-    }
-
-    /* Glassmorphism Panel */
-    .ui-panel {
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
-      background-color: rgba(255, 255, 255, 0.92);
-      transition: all 0.3s ease;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
-    }
-
-    /* Swatch Animation */
-    .swatch-label {
-      position: relative;
-      display: inline-block;
-      width: 3rem;
-      height: 3rem;
-      flex-shrink: 0;
-      transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-      cursor: pointer;
-      touch-action: manipulation; /* helps mobile tap responsiveness */
-    }
-    .swatch-label:active { transform: scale(0.9); }
-
-    /* Hidden Input Logic */
-    .color-input-hidden {
-      position: absolute;
-      inset: 0;
       width: 100%;
       height: 100%;
-      opacity: 0;
+    }
+
+    /* UI Panels */
+    .ui-panel {
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      background-color: rgba(255, 255, 255, 0.92);
+      box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+      border: 1px solid rgba(255,255,255,0.6);
+      transition: all 0.3s ease;
+    }
+
+    /* Swatch Container */
+    .swatch-wrapper {
+      position: relative;
+      width: 3.5rem;  /* Slightly larger touch target */
+      height: 3.5rem;
+      flex-shrink: 0;
+      transition: transform 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .swatch-wrapper:active { transform: scale(0.92); }
+
+    /* The Real Input: Sitting on top, almost transparent */
+    .color-input-overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      opacity: 0.01; /* Critical: iOS sometimes ignores opacity:0 touches */
+      z-index: 50;   /* Must be on top */
       cursor: pointer;
       appearance: none;
       -webkit-appearance: none;
       border: none;
       padding: 0;
       margin: 0;
-      z-index: 20;
-      pointer-events: auto;
+      touch-action: manipulation;
     }
 
+    /* The Visuals: Sitting below */
+    .swatch-visual {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      border-radius: 0.75rem;
+      border: 2px solid white;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      pointer-events: none; /* Pass touches to the input above */
+    }
+
+    /* Button Pulse Animation */
     @keyframes pulse-soft {
-      0%   { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.3); }
-      70%  { box-shadow: 0 0 0 10px rgba(15, 23, 42, 0); }
+      0% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0.3); }
+      70% { box-shadow: 0 0 0 10px rgba(15, 23, 42, 0); }
       100% { box-shadow: 0 0 0 0 rgba(15, 23, 42, 0); }
     }
     .btn-pulse { animation: pulse-soft 2s infinite; }
 
-    /* Safe Area Utilities */
-    .pt-safe { padding-top: env(safe-area-inset-top); }
-    .pb-safe { padding-bottom: env(safe-area-inset-bottom); }
-    .pl-safe { padding-left: env(safe-area-inset-left); }
-    .pr-safe { padding-right: env(safe-area-inset-right); }
-
-    /* Fixed HUD panels (no fullscreen pointer-events tricks needed) */
-    #uiTop, #uiBottom {
-      position: fixed;
-      left: 0;
-      right: 0;
-      z-index: 10;
-      pointer-events: none; /* only children receive events */
+    /* Safe Area Handling */
+    .safe-padding {
+      padding-top: env(safe-area-inset-top, 20px);
+      padding-bottom: env(safe-area-inset-bottom, 20px);
+      padding-left: env(safe-area-inset-left, 20px);
+      padding-right: env(safe-area-inset-right, 20px);
     }
-    #uiTop > * , #uiBottom > * { pointer-events: auto; }
 
-    #uiTop { top: 0; }
-    #uiBottom { bottom: 0; }
-
-    /* Small Screen / Landscape Optimization */
-    @media (max-height: 500px) and (orientation: landscape) {
-      .landscape-compact { transform: scale(0.8); transform-origin: top left; }
-      .landscape-compact-bottom { transform: scale(0.8); transform-origin: bottom right; }
-      .modal-compact { padding-top: 1rem; padding-bottom: 1rem; }
-      .modal-icon { display: none; }
+    /* Responsive Landscape Adjustments */
+    @media (orientation: landscape) {
+      .landscape-corner-top {
+        position: absolute;
+        top: 1rem;
+        left: 1rem;
+        width: auto;
+        transform: scale(0.9);
+        transform-origin: top left;
+      }
+      .landscape-corner-bottom {
+        position: absolute;
+        bottom: 1rem;
+        right: 1rem;
+        width: auto;
+        transform: scale(0.9);
+        transform-origin: bottom right;
+      }
+      /* Ensure modal fits on short screens */
+      .modal-scrollable {
+        max-height: 85vh;
+        overflow-y: auto;
+      }
+      .hide-landscape { display: none; }
     }
   </style>
 </head>
 <body>
 
-  <!-- TOP HUD (fixed) -->
-  <div id="uiTop" class="pt-safe pl-safe pr-safe">
-    <div class="w-full flex justify-center landscape:justify-start landscape:items-start p-2">
-      <div class="ui-panel rounded-2xl p-3 border border-slate-200/60 flex flex-col items-center landscape-compact landscape:origin-top-left min-w-[280px]">
+  <!-- UI CONTAINER -->
+  <!-- pointer-events-none on wrapper so clicks pass through empty space -->
+  <div class="absolute inset-0 z-10 pointer-events-none safe-padding flex flex-col justify-between overflow-hidden">
 
+    <!-- TOP PANEL -->
+    <!-- pointer-events-auto ensures interactions work -->
+    <div class="w-full flex justify-center pointer-events-none landscape-corner-top">
+      <div class="ui-panel pointer-events-auto rounded-2xl p-3 flex flex-col items-center min-w-[280px]">
+        
         <!-- Header -->
-        <div class="flex justify-between items-center w-full mb-2 px-1 gap-2">
-          <div class="w-8"></div>
+        <div class="flex justify-between items-center w-full mb-2 px-1 gap-3">
+          <div class="w-8"></div> 
           <div class="text-center flex-1">
-            <h1 id="modeTitle" class="text-slate-800 text-xs font-black tracking-tighter leading-none whitespace-nowrap uppercase">HELL'S KITCHEN</h1>
+            <h1 id="modeTitle" class="text-slate-800 text-xs font-black tracking-tighter leading-none uppercase">HELL'S KITCHEN</h1>
             <p id="modeDesc" class="text-slate-400 text-[9px] uppercase tracking-wider font-bold">Match Target</p>
           </div>
-          <button id="challengeToggle"
-            class="w-8 h-8 flex shrink-0 items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform active:scale-90 shadow-sm"
-            title="Toggle Mode"
-            style="touch-action: manipulation;"
-          >👨‍🍳</button>
+          <button id="challengeToggle" class="w-8 h-8 flex shrink-0 items-center justify-center rounded-full bg-yellow-100 hover:bg-yellow-200 text-lg transition-transform active:scale-90 shadow-sm" title="Toggle Mode">
+            👨‍🍳
+          </button>
         </div>
 
-        <!-- Swatches Row -->
-        <div class="flex items-center justify-center gap-2 w-full" id="swatchRow">
+        <!-- Palette Area -->
+        <div class="flex items-center justify-center gap-3 w-full" id="swatchRow">
+          
           <!-- Target -->
           <div id="targetSection" class="flex flex-col items-center gap-1">
-            <span class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Goal</span>
-            <div id="targetSwatch" class="w-10 h-10 rounded-lg border-2 border-slate-200 shadow-inner bg-gray-200"></div>
+            <span class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Goal</span>
+            <div id="targetSwatch" class="w-10 h-10 rounded-xl border-2 border-slate-200 shadow-inner bg-gray-200"></div>
           </div>
 
-          <!-- Divider -->
           <div id="dividerSection" class="h-8 w-px bg-slate-200 mx-1"></div>
 
-          <!-- Ingredients -->
+          <!-- Active Ingredients (The Fix) -->
           <div class="flex flex-col items-center gap-1">
-            <span id="ingredientsLabel" class="text-[8px] font-bold text-slate-400 uppercase tracking-widest">Mix</span>
+            <span id="ingredientsLabel" class="text-[9px] font-bold text-slate-400 uppercase tracking-widest">Mix</span>
             <div class="flex gap-2 justify-center">
+              
+              <!-- 1 -->
+              <div class="swatch-wrapper">
+                <input type="color" id="picker1" class="color-input-overlay" />
+                <div id="swatch1" class="swatch-visual bg-gray-300"></div>
+              </div>
 
-              <label class="swatch-label">
-                <div id="swatch1" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                <input type="color" id="picker1" class="color-input-hidden">
-              </label>
+              <!-- 2 -->
+              <div class="swatch-wrapper">
+                <input type="color" id="picker2" class="color-input-overlay" />
+                <div id="swatch2" class="swatch-visual bg-gray-300"></div>
+              </div>
 
-              <label class="swatch-label">
-                <div id="swatch2" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                <input type="color" id="picker2" class="color-input-hidden">
-              </label>
-
-              <label class="swatch-label">
-                <div id="swatch3" class="w-full h-full rounded-xl border-2 border-white ring-1 ring-slate-200 shadow-sm bg-gray-300"></div>
-                <input type="color" id="picker3" class="color-input-hidden">
-              </label>
+              <!-- 3 -->
+              <div class="swatch-wrapper">
+                <input type="color" id="picker3" class="color-input-overlay" />
+                <div id="swatch3" class="swatch-visual bg-gray-300"></div>
+              </div>
 
             </div>
           </div>
         </div>
 
-        <!-- Free Mode Preview Bar -->
+        <!-- Progress Bar -->
         <div id="finalColorPreview" class="mt-2 h-1 rounded-full w-full bg-transparent transition-colors duration-1000 opacity-0"></div>
       </div>
     </div>
-  </div>
 
-  <!-- BOTTOM HUD (fixed) -->
-  <div id="uiBottom" class="pb-safe pl-safe pr-safe">
-    <div class="w-full flex justify-between items-end p-4 landscape:p-2 landscape-compact-bottom landscape:justify-end landscape:gap-4">
-      <button id="resetBtn"
-        class="bg-white hover:bg-slate-50 text-slate-600 font-bold p-3 rounded-full border border-slate-200 shadow-lg transition-transform active:scale-90 flex items-center justify-center w-12 h-12 landscape:order-1"
-        title="Reset Colors"
-        style="touch-action: manipulation;"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/>
-        </svg>
+    <!-- BOTTOM PANEL -->
+    <div class="w-full flex justify-between items-end p-4 pointer-events-none landscape-corner-bottom">
+      
+      <!-- Reset -->
+      <button id="resetBtn" class="pointer-events-auto bg-white hover:bg-slate-50 text-slate-600 font-bold p-3 rounded-full border border-slate-200 shadow-lg transition-transform active:scale-90 flex items-center justify-center w-12 h-12">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"/><path d="M21 3v5h-5"/><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"/><path d="M3 21v-5h5"/></svg>
       </button>
-
-      <button id="mixBtn"
-        class="bg-slate-900 text-white font-bold py-3 px-6 rounded-2xl shadow-xl transition-transform active:scale-95 text-xs tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700 landscape:order-2 h-12"
-        style="touch-action: manipulation;"
-      >
+      
+      <!-- Action -->
+      <button id="mixBtn" class="pointer-events-auto bg-slate-900 text-white font-bold py-3 px-6 rounded-2xl shadow-xl transition-transform active:scale-95 text-xs tracking-widest uppercase btn-pulse flex items-center gap-2 border-2 border-slate-700 h-12 ml-auto">
         <span>Serve</span><span class="text-lg">🍽️</span>
       </button>
     </div>
+
   </div>
 
   <!-- Result Modal -->
-  <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none opacity-0 transition-opacity duration-300 bg-black/30 backdrop-blur-sm p-4">
-    <div class="bg-white/95 rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto flex flex-col items-center max-h-full overflow-y-auto modal-compact">
-      <div id="resultIcon" class="text-5xl mb-2 block animate-bounce modal-icon">🤬</div>
+  <div id="resultModal" class="fixed inset-0 flex items-center justify-center z-[100] pointer-events-none opacity-0 transition-opacity duration-300 bg-black/40 backdrop-blur-sm p-4">
+    <div class="bg-white/95 rounded-3xl p-6 shadow-2xl max-w-xs w-full text-center border border-white/50 transform scale-90 transition-transform duration-300 pointer-events-auto flex flex-col items-center modal-scrollable">
+      
+      <div id="resultIcon" class="text-5xl mb-2 block animate-bounce hide-landscape">🤬</div>
+      
       <h2 id="resultTitle" class="text-2xl font-black text-slate-800 mb-1 tracking-tighter uppercase italic leading-none">IT'S RAW!</h2>
       <p id="resultMessage" class="text-slate-500 text-xs mb-4 font-medium leading-tight">You call that paint?</p>
-
-      <div class="flex justify-center items-center gap-4 mb-5 bg-slate-50 p-3 rounded-2xl border border-slate-100 w-full">
+      
+      <div class="flex justify-center items-center gap-4 mb-5 bg-slate-50 p-3 rounded-2xl border border-slate-100 w-full shrink-0">
         <div class="flex flex-col items-center gap-1">
           <span class="text-[9px] uppercase font-bold text-slate-400 tracking-widest">Goal</span>
           <div id="modalTarget" class="w-10 h-10 rounded-full border-2 border-white shadow-md bg-gray-200"></div>
@@ -204,8 +214,8 @@
           <div id="modalYours" class="w-10 h-10 rounded-full border-2 border-white shadow-md bg-gray-200"></div>
         </div>
       </div>
-
-      <button id="modalBtn" class="w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg uppercase text-xs tracking-wide shrink-0" style="touch-action: manipulation;">
+      
+      <button id="modalBtn" class="w-full bg-slate-900 text-white py-3 px-6 rounded-xl font-bold hover:bg-slate-800 transition-colors shadow-lg uppercase text-xs tracking-wide shrink-0">
         Yes Chef
       </button>
     </div>
@@ -213,13 +223,11 @@
 
   <canvas id="glCanvas"></canvas>
 
-  <!-- VERTEX SHADER -->
+  <!-- WebGL Shaders (Standard) -->
   <script id="vertex-shader" type="x-shader/x-vertex">
     attribute vec2 a_position;
     void main() { gl_Position = vec4(a_position, 0.0, 1.0); }
   </script>
-
-  <!-- FRAGMENT SHADER -->
   <script id="fragment-shader" type="x-shader/x-fragment">
     precision highp float;
     uniform vec2 u_resolution;
@@ -229,94 +237,90 @@
     uniform vec3 u_col2;
     uniform vec3 u_col3;
     uniform vec3 u_finalMix;
-
+    
     vec3 permute(vec3 x) { return mod(((x*34.0)+1.0)*x, 289.0); }
     float snoise(vec2 v){
-      const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
-      vec2 i  = floor(v + dot(v, C.yy) );
-      vec2 x0 = v -   i + dot(i, C.xx);
-      vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
-      vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
-      i = mod(i, 289.0);
-      vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
-      vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
-      m = m*m ; m = m*m ;
-      vec3 x = 2.0 * fract(p * C.www) - 1.0;
-      vec3 h = abs(x) - 0.5;
-      vec3 ox = floor(x + 0.5);
-      vec3 a0 = x - ox;
-      m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
-      vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
-      return 130.0 * dot(m, g);
+        const vec4 C = vec4(0.211324865405187, 0.366025403784439, -0.577350269189626, 0.024390243902439);
+        vec2 i  = floor(v + dot(v, C.yy) );
+        vec2 x0 = v -   i + dot(i, C.xx);
+        vec2 i1; i1 = (x0.x > x0.y) ? vec2(1.0, 0.0) : vec2(0.0, 1.0);
+        vec4 x12 = x0.xyxy + C.xxzz; x12.xy -= i1;
+        i = mod(i, 289.0);
+        vec3 p = permute( permute( i.y + vec3(0.0, i1.y, 1.0 )) + i.x + vec3(0.0, i1.x, 1.0 ));
+        vec3 m = max(0.5 - vec3(dot(x0,x0), dot(x12.xy,x12.xy), dot(x12.zw,x12.zw)), 0.0);
+        m = m*m ; m = m*m ;
+        vec3 x = 2.0 * fract(p * C.www) - 1.0;
+        vec3 h = abs(x) - 0.5;
+        vec3 ox = floor(x + 0.5);
+        vec3 a0 = x - ox;
+        m *= 1.79284291400159 - 0.85373472095314 * ( a0*a0 + h*h );
+        vec3 g; g.x  = a0.x  * x0.x  + h.x  * x0.y; g.yz = a0.yz * x12.xz + h.yz * x12.yw;
+        return 130.0 * dot(m, g);
     }
     mat2 rotate(float angle) { return mat2(cos(angle), -sin(angle), sin(angle), cos(angle)); }
 
     void main() {
-      vec2 st = gl_FragCoord.xy / u_resolution.xy;
-      float aspect = u_resolution.x / u_resolution.y;
-      st.x *= aspect;
+        vec2 st = gl_FragCoord.xy / u_resolution.xy;
+        float aspect = u_resolution.x / u_resolution.y;
+        st.x *= aspect;
+        
+        vec2 center = vec2(aspect * 0.5, 0.45);
+        float radius = min(0.32, aspect * 0.42); 
+        float distToCenter = length(st - center);
+        float containerMask = smoothstep(radius, radius - 0.005, distToCenter);
+        if (containerMask < 0.01) discard; 
 
-      vec2 center = vec2(aspect * 0.5, 0.45);
-      float radius = min(0.32, aspect * 0.42);
+        vec2 p = st - center;
+        float spinAngle = u_time * 2.0; 
+        p = rotate(spinAngle) * p;
+        float warpScale = 2.5;
+        float n = snoise(p * warpScale - u_time * 0.3);
+        p.x += sin(p.y * 5.0 + u_time) * 0.15;
+        p.y += n * 0.25;
 
-      float distToCenter = length(st - center);
-      float containerMask = smoothstep(radius, radius - 0.005, distToCenter);
+        float rScale = radius / 0.3;
+        float d1 = length(p - vec2(0.12 * rScale, 0.0));
+        float d2 = length(p - vec2(-0.06 * rScale, 0.10 * rScale));
+        float d3 = length(p - vec2(-0.06 * rScale, -0.10 * rScale));
+        
+        float spread = radius + 0.05 * sin(u_time * 2.0);
+        
+        float mask1 = smoothstep(spread, spread - 0.2 * rScale, d1);
+        float mask2 = smoothstep(spread, spread - 0.2 * rScale, d2);
+        float mask3 = smoothstep(spread, spread - 0.2 * rScale, d3);
+        
+        vec3 swirlColor = vec3(0.96, 0.96, 0.96);
+        swirlColor -= 0.03 * snoise(st * 15.0);
+        swirlColor = mix(swirlColor, u_col1, mask1);
+        swirlColor = mix(swirlColor, u_col2, mask2);
+        swirlColor = mix(swirlColor, u_col3, mask3);
 
-      if (containerMask < 0.01) discard;
+        float blendFactor = smoothstep(0.1, 0.85, u_mixProgress);
+        vec3 finalColor = mix(swirlColor, u_finalMix, blendFactor);
+        float rim = smoothstep(radius - 0.05 * rScale, radius, distToCenter);
+        finalColor *= (1.0 - rim * 0.3); 
+        float lightAngle = u_time;
+        vec2 lightDir = vec2(cos(lightAngle), sin(lightAngle));
+        float spec = max(0.0, dot(normalize(p), lightDir));
+        spec = pow(spec, 12.0); 
+        finalColor += spec * 0.15;
 
-      vec2 p = st - center;
-      float spinAngle = u_time * 2.0;
-      p = rotate(spinAngle) * p;
-      float warpScale = 2.5;
-      float n = snoise(p * warpScale - u_time * 0.3);
-      p.x += sin(p.y * 5.0 + u_time) * 0.15;
-      p.y += n * 0.25;
-
-      float rScale = radius / 0.3;
-      float d1 = length(p - vec2(0.12 * rScale, 0.0));
-      float d2 = length(p - vec2(-0.06 * rScale, 0.10 * rScale));
-      float d3 = length(p - vec2(-0.06 * rScale, -0.10 * rScale));
-
-      float spread = radius + 0.05 * sin(u_time * 2.0);
-
-      float mask1 = smoothstep(spread, spread - 0.2 * rScale, d1);
-      float mask2 = smoothstep(spread, spread - 0.2 * rScale, d2);
-      float mask3 = smoothstep(spread, spread - 0.2 * rScale, d3);
-
-      vec3 swirlColor = vec3(0.96, 0.96, 0.96);
-      swirlColor -= 0.03 * snoise(st * 15.0);
-      swirlColor = mix(swirlColor, u_col1, mask1);
-      swirlColor = mix(swirlColor, u_col2, mask2);
-      swirlColor = mix(swirlColor, u_col3, mask3);
-
-      float blendFactor = smoothstep(0.1, 0.85, u_mixProgress);
-      vec3 finalColor = mix(swirlColor, u_finalMix, blendFactor);
-
-      float rim = smoothstep(radius - 0.05 * rScale, radius, distToCenter);
-      finalColor *= (1.0 - rim * 0.3);
-
-      float lightAngle = u_time;
-      vec2 lightDir = vec2(cos(lightAngle), sin(lightAngle));
-      float spec = max(0.0, dot(normalize(p), lightDir));
-      spec = pow(spec, 12.0);
-      finalColor += spec * 0.15;
-
-      gl_FragColor = vec4(finalColor, containerMask);
+        gl_FragColor = vec4(finalColor, containerMask);
     }
   </script>
 
   <script>
-    // --- WebGL Setup ---
+    // --- Setup ---
     const canvas = document.getElementById('glCanvas');
     const gl = canvas.getContext('webgl', { alpha: true, premultipliedAlpha: false });
     if (!gl) alert('WebGL not supported');
 
     function createShader(gl, type, source) {
-      const shader = gl.createShader(type);
-      gl.shaderSource(shader, source);
-      gl.compileShader(shader);
-      if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { gl.deleteShader(shader); return null; }
-      return shader;
+        const shader = gl.createShader(type);
+        gl.shaderSource(shader, source);
+        gl.compileShader(shader);
+        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) { gl.deleteShader(shader); return null; }
+        return shader;
     }
     const program = gl.createProgram();
     gl.attachShader(program, createShader(gl, gl.VERTEX_SHADER, document.getElementById('vertex-shader').text));
@@ -324,269 +328,215 @@
     gl.linkProgram(program);
 
     const locs = {
-      pos: gl.getAttribLocation(program, 'a_position'),
-      res: gl.getUniformLocation(program, 'u_resolution'),
-      time: gl.getUniformLocation(program, 'u_time'),
-      mix: gl.getUniformLocation(program, 'u_mixProgress'),
-      c1: gl.getUniformLocation(program, 'u_col1'),
-      c2: gl.getUniformLocation(program, 'u_col2'),
-      c3: gl.getUniformLocation(program, 'u_col3'),
-      final: gl.getUniformLocation(program, 'u_finalMix')
+        pos: gl.getAttribLocation(program, 'a_position'),
+        res: gl.getUniformLocation(program, 'u_resolution'),
+        time: gl.getUniformLocation(program, 'u_time'),
+        mix: gl.getUniformLocation(program, 'u_mixProgress'),
+        c1: gl.getUniformLocation(program, 'u_col1'),
+        c2: gl.getUniformLocation(program, 'u_col2'),
+        c3: gl.getUniformLocation(program, 'u_col3'),
+        final: gl.getUniformLocation(program, 'u_finalMix')
     };
 
     const buf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, buf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, -1,1, 1,-1, 1,1]), gl.STATIC_DRAW);
 
-    // --- Game Logic ---
+    // --- State & UI ---
     const state = {
-      colors: [[0,0,0], [0,0,0], [0,0,0]],
-      finalColor: [0,0,0],
-      targetColor: null,
-      isMixing: false,
-      mixStartTime: 0,
-      simTime: 0,
-      lastFrameTime: 0,
-      mixDuration: 4000,
-      challengeMode: true,
-      timerId: null
+        colors: [[0,0,0], [0,0,0], [0,0,0]],
+        finalColor: [0,0,0],
+        targetColor: null,
+        isMixing: false,
+        mixStartTime: 0,
+        simTime: 0,
+        lastFrameTime: 0,
+        mixDuration: 4000,
+        challengeMode: true, 
+        timerId: null
     };
 
     const RAMSAY_QUOTES = {
-      perfect: ["Finally, some good f***ing paint.", "Stunning. Absolutely stunning.", "You've treated that color with respect."],
-      good: ["Not bad. Not amazing, but not bad.", "It's edible. I mean, visible.", "You haven't embarrassed yourself."],
-      bad: ["It's bland! It's dry! It's tasteless!", "Have you given up?", "My gran mixes better than that!", "Wake up!", "Absolute donut."],
-      terrible: ["IT'S RAW!", "GET OUT!", "I wouldn't trust you to run a bath!", "This is a disaster.", "Idiot sandwich!"]
+        perfect: ["Finally, some good f***ing paint.", "Stunning. Absolutely stunning.", "You've treated that color with respect."],
+        good: ["Not bad. Not amazing, but not bad.", "It's edible. I mean, visible.", "You haven't embarrassed yourself."],
+        bad: ["It's bland! It's dry! It's tasteless!", "Have you given up?", "My gran mixes better than that!", "Wake up!", "Absolute donut."],
+        terrible: ["IT'S RAW!", "GET OUT!", "I wouldn't trust you to run a bath!", "This is a disaster.", "Idiot sandwich!"]
     };
 
     const ui = {
-      swatches: [document.getElementById('swatch1'), document.getElementById('swatch2'), document.getElementById('swatch3')],
-      pickers: [document.getElementById('picker1'), document.getElementById('picker2'), document.getElementById('picker3')],
-      mixBtn: document.getElementById('mixBtn'),
-      resetBtn: document.getElementById('resetBtn'),
-      previewBar: document.getElementById('finalColorPreview'),
-      challengeBtn: document.getElementById('challengeToggle'),
-      targetSection: document.getElementById('targetSection'),
-      dividerSection: document.getElementById('dividerSection'),
-      ingredientsLabel: document.getElementById('ingredientsLabel'),
-      targetSwatch: document.getElementById('targetSwatch'),
-      modeTitle: document.getElementById('modeTitle'),
-      modeDesc: document.getElementById('modeDesc'),
-      modal: document.getElementById('resultModal'),
-      modalContent: document.querySelector('#resultModal > div'),
-      modalIcon: document.getElementById('resultIcon'),
-      modalTitle: document.getElementById('resultTitle'),
-      modalMsg: document.getElementById('resultMessage'),
-      modalTarget: document.getElementById('modalTarget'),
-      modalYours: document.getElementById('modalYours'),
-      modalBtn: document.getElementById('modalBtn')
+        swatches: [document.getElementById('swatch1'), document.getElementById('swatch2'), document.getElementById('swatch3')],
+        pickers: [document.getElementById('picker1'), document.getElementById('picker2'), document.getElementById('picker3')],
+        mixBtn: document.getElementById('mixBtn'),
+        resetBtn: document.getElementById('resetBtn'),
+        previewBar: document.getElementById('finalColorPreview'),
+        challengeBtn: document.getElementById('challengeToggle'),
+        targetSection: document.getElementById('targetSection'),
+        dividerSection: document.getElementById('dividerSection'),
+        ingredientsLabel: document.getElementById('ingredientsLabel'),
+        targetSwatch: document.getElementById('targetSwatch'),
+        modeTitle: document.getElementById('modeTitle'),
+        modeDesc: document.getElementById('modeDesc'),
+        modal: document.getElementById('resultModal'),
+        modalIcon: document.getElementById('resultIcon'),
+        modalTitle: document.getElementById('resultTitle'),
+        modalMsg: document.getElementById('resultMessage'),
+        modalTarget: document.getElementById('modalTarget'),
+        modalYours: document.getElementById('modalYours'),
+        modalBtn: document.getElementById('modalBtn')
     };
 
-    const hexToRgb = h => {
-      const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h);
-      return r?[parseInt(r[1],16)/255,parseInt(r[2],16)/255,parseInt(r[3],16)/255]:[0,0,0];
-    };
+    const hexToRgb = h => { const r=/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(h); return r?[parseInt(r[1],16)/255,parseInt(r[2],16)/255,parseInt(r[3],16)/255]:[0,0,0]; };
     const rgbToHex = (r,g,b) => "#" + [r,g,b].map(x => Math.round(x*255).toString(16).padStart(2,'0')).join('');
     const toCss = c => `rgb(${Math.round(c[0]*255)}, ${Math.round(c[1]*255)}, ${Math.round(c[2]*255)})`;
     const randCol = () => {
-      const h=Math.random(), s=0.6+Math.random()*0.4, l=0.4+Math.random()*0.3;
-      let r,g,b; if(s===0)r=g=b=l; else {
-        const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
-        const hue=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
-        r=hue(p,q,h+1.0/3); g=hue(p,q,h); b=hue(p,q,h-1.0/3);
-      }
-      return [r,g,b];
+        const h=Math.random(), s=0.6+Math.random()*0.4, l=0.4+Math.random()*0.3;
+        let r,g,b; if(s===0)r=g=b=l; else {
+            const q=l<0.5?l*(1+s):l+s-l*s, p=2*l-q;
+            const hue=(p,q,t)=>{if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<1/2)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;};
+            r=hue(p,q,h+1.0/3); g=hue(p,q,h); b=hue(p,q,h-1.0/3);
+        }
+        return [r,g,b];
     };
     const calcAvg = cols => [
-      (cols[0][0]+cols[1][0]+cols[2][0])/3,
-      (cols[0][1]+cols[1][1]+cols[2][1])/3,
-      (cols[0][2]+cols[1][2]+cols[2][2])/3
+        (cols[0][0]+cols[1][0]+cols[2][0])/3,
+        (cols[0][1]+cols[1][1]+cols[2][1])/3,
+        (cols[0][2]+cols[1][2]+cols[2][2])/3
     ];
-
+    
     function getScore(c1, c2) {
-      let r1 = c1[0]*255, g1 = c1[1]*255, b1 = c1[2]*255;
-      let r2 = c2[0]*255, g2 = c2[1]*255, b2 = c2[2]*255;
-      let rBar = (r1 + r2) / 2;
-      let dR = r1 - r2;
-      let dG = g1 - g2;
-      let dB = b1 - b2;
-      let dist = Math.sqrt(
-        (2 + rBar/256) * dR*dR +
-        4 * dG*dG +
-        (2 + (255-rBar)/256) * dB*dB
-      );
-      const maxDist = 400;
-      if (dist > maxDist) return 0;
-      let error = dist / maxDist;
-      return Math.round(100 * Math.pow(1 - error, 1.5));
+        let r1=c1[0]*255, g1=c1[1]*255, b1=c1[2]*255;
+        let r2=c2[0]*255, g2=c2[1]*255, b2=c2[2]*255;
+        let rBar=(r1+r2)/2, dR=r1-r2, dG=g1-g2, dB=b1-b2;
+        let dist = Math.sqrt((2+rBar/256)*dR*dR + 4*dG*dG + (2+(255-rBar)/256)*dB*dB);
+        const maxDist = 400; if(dist>maxDist) return 0;
+        let error = dist/maxDist; return Math.round(100*Math.pow(1-error, 1.5));
     }
 
     function updateUI() {
-      state.finalColor = calcAvg(state.colors);
-      ui.swatches.forEach((el, i) => { el.style.backgroundColor = toCss(state.colors[i]); });
-
-      if(state.challengeMode) {
-        ui.previewBar.style.opacity = '0';
-        ui.mixBtn.innerHTML = `<span>Serve</span><span class="text-lg">🍽️</span>`;
-        ui.mixBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
-        ui.mixBtn.classList.add('bg-slate-900', 'hover:bg-slate-800');
-      } else {
-        ui.previewBar.style.opacity = '1';
-        ui.previewBar.style.backgroundColor = toCss(state.finalColor);
-        ui.mixBtn.innerHTML = `<span>Mix Paint</span><span class="text-lg">🎨</span>`;
-        ui.mixBtn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
-        ui.mixBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
-      }
+        state.finalColor = calcAvg(state.colors);
+        ui.swatches.forEach((el, i) => { el.style.backgroundColor = toCss(state.colors[i]); });
+        
+        if(state.challengeMode) {
+            ui.previewBar.style.opacity = '0';
+            ui.mixBtn.innerHTML = `<span>Serve</span><span class="text-lg">🍽️</span>`;
+            ui.mixBtn.classList.remove('bg-purple-600', 'hover:bg-purple-700');
+            ui.mixBtn.classList.add('bg-slate-900', 'hover:bg-slate-800');
+        } else {
+            ui.previewBar.style.opacity = '1';
+            ui.previewBar.style.backgroundColor = toCss(state.finalColor);
+            ui.mixBtn.innerHTML = `<span>Mix Paint</span><span class="text-lg">🎨</span>`;
+            ui.mixBtn.classList.remove('bg-slate-900', 'hover:bg-slate-800');
+            ui.mixBtn.classList.add('bg-purple-600', 'hover:bg-purple-700');
+        }
     }
 
-    function syncPickers() {
-      ui.pickers.forEach((p, i) => { p.value = rgbToHex(...state.colors[i]); });
-    }
+    function syncPickers() { ui.pickers.forEach((p, i) => { p.value = rgbToHex(...state.colors[i]); }); }
 
     function stopMixing() {
-      if (state.timerId) { clearTimeout(state.timerId); state.timerId = null; }
-      state.isMixing = false;
-      state.mixStartTime = 0;
-      ui.mixBtn.disabled = false;
-      ui.mixBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
-      updateUI();
+        if (state.timerId) { clearTimeout(state.timerId); state.timerId = null; }
+        state.isMixing = false;
+        state.mixStartTime = 0;
+        ui.mixBtn.disabled = false;
+        ui.mixBtn.classList.remove('opacity-50', 'cursor-not-allowed', 'scale-95');
+        updateUI();
     }
 
     function resetGame() {
-      stopMixing();
-
-      if (state.challengeMode) {
-        ui.targetSection.classList.remove('hidden'); ui.targetSection.classList.add('flex');
-        ui.dividerSection.classList.remove('hidden');
-        ui.ingredientsLabel.classList.remove('hidden');
-
-        ui.modeTitle.textContent = "HELL'S KITCHEN";
-        ui.modeDesc.textContent = "Match the target!";
-        ui.challengeBtn.classList.add('bg-yellow-100', 'scale-110');
-
-        const sol = [randCol(), randCol(), randCol()];
-        state.targetColor = calcAvg(sol);
-        ui.targetSwatch.style.backgroundColor = toCss(state.targetColor);
-        state.colors = [[0.9,0.9,0.9], [0.9,0.9,0.9], [0.9,0.9,0.9]];
-      } else {
-        ui.targetSection.classList.add('hidden'); ui.targetSection.classList.remove('flex');
-        ui.dividerSection.classList.add('hidden');
-        ui.ingredientsLabel.classList.add('hidden');
-
-        ui.modeTitle.textContent = "Paint Mixer";
-        ui.modeDesc.textContent = "Free Play";
-        ui.challengeBtn.classList.remove('bg-yellow-100', 'scale-110');
-
-        state.colors = [randCol(), randCol(), randCol()];
-        state.targetColor = null;
-      }
-      updateUI();
-      syncPickers();
+        stopMixing();
+        if (state.challengeMode) {
+            ui.targetSection.classList.remove('hidden'); ui.targetSection.classList.add('flex');
+            ui.dividerSection.classList.remove('hidden'); ui.ingredientsLabel.classList.remove('hidden');
+            ui.modeTitle.textContent = "HELL'S KITCHEN"; ui.modeDesc.textContent = "Match the target!";
+            ui.challengeBtn.classList.add('bg-yellow-100', 'scale-110');
+            const sol = [randCol(), randCol(), randCol()];
+            state.targetColor = calcAvg(sol);
+            ui.targetSwatch.style.backgroundColor = toCss(state.targetColor);
+            state.colors = [[0.9,0.9,0.9], [0.9,0.9,0.9], [0.9,0.9,0.9]];
+        } else {
+            ui.targetSection.classList.add('hidden'); ui.targetSection.classList.remove('flex');
+            ui.dividerSection.classList.add('hidden'); ui.ingredientsLabel.classList.add('hidden');
+            ui.modeTitle.textContent = "Paint Mixer"; ui.modeDesc.textContent = "Free Play";
+            ui.challengeBtn.classList.remove('bg-yellow-100', 'scale-110');
+            state.colors = [randCol(), randCol(), randCol()];
+            state.targetColor = null;
+        }
+        updateUI(); syncPickers();
     }
 
     function showResult() {
-      if(!state.targetColor) return;
-      const score = getScore(state.finalColor, state.targetColor);
-      ui.modalTarget.style.backgroundColor = toCss(state.targetColor);
-      ui.modalYours.style.backgroundColor = toCss(state.finalColor);
+        if(!state.targetColor) return;
+        const score = getScore(state.finalColor, state.targetColor);
+        ui.modalTarget.style.backgroundColor = toCss(state.targetColor);
+        ui.modalYours.style.backgroundColor = toCss(state.finalColor);
+        
+        let quotes = [], icon = "", title = "";
+        if (score > 90) { quotes = RAMSAY_QUOTES.perfect; icon = "👨‍🍳"; title = "DELICIOUS."; }
+        else if (score > 75) { quotes = RAMSAY_QUOTES.good; icon = "🤔"; title = "ADEQUATE."; }
+        else if (score > 40) { quotes = RAMSAY_QUOTES.bad; icon = "🤬"; title = "DISASTER!"; }
+        else { quotes = RAMSAY_QUOTES.terrible; icon = "🍩"; title = "GET OUT!"; }
 
-      let quotes = [], icon = "", title = "";
-      if (score > 90) { quotes = RAMSAY_QUOTES.perfect; icon = "👨‍🍳"; title = "DELICIOUS."; }
-      else if (score > 75) { quotes = RAMSAY_QUOTES.good; icon = "🤔"; title = "ADEQUATE."; }
-      else if (score > 40) { quotes = RAMSAY_QUOTES.bad; icon = "🤬"; title = "DISASTER!"; }
-      else { quotes = RAMSAY_QUOTES.terrible; icon = "🍩"; title = "GET OUT!"; }
-
-      const quote = quotes[Math.floor(Math.random() * quotes.length)];
-      ui.modalIcon.textContent = icon;
-      ui.modalTitle.textContent = title;
-      ui.modalMsg.textContent = `"${quote}" (Accuracy: ${score}%)`;
-
-      ui.modal.classList.remove('opacity-0', 'pointer-events-none');
-      ui.modalContent.classList.remove('scale-90');
+        const quote = quotes[Math.floor(Math.random() * quotes.length)];
+        ui.modalIcon.textContent = icon; ui.modalTitle.textContent = title;
+        ui.modalMsg.textContent = `"${quote}" (Accuracy: ${score}%)`;
+        ui.modal.classList.remove('opacity-0', 'pointer-events-none');
     }
 
+    // Interactions
     ui.challengeBtn.addEventListener('click', () => { state.challengeMode = !state.challengeMode; resetGame(); });
-
+    
+    // Direct input listeners
     ui.pickers.forEach((p, i) => {
-      const handleColorChange = (e) => {
-        stopMixing();
-        state.colors[i] = hexToRgb(e.target.value);
-        updateUI();
-      };
-      p.addEventListener('input', handleColorChange);
-      p.addEventListener('change', handleColorChange);
+        const handleColorChange = (e) => {
+            stopMixing();
+            state.colors[i] = hexToRgb(e.target.value);
+            updateUI();
+        };
+        p.addEventListener('input', handleColorChange);
+        p.addEventListener('change', handleColorChange);
     });
 
     ui.mixBtn.addEventListener('click', () => {
-      if(state.isMixing) return;
-      state.isMixing = true;
-      state.mixStartTime = performance.now();
-      ui.mixBtn.innerHTML = `<span>COOKING...</span>`;
-      ui.mixBtn.disabled = true;
-      ui.mixBtn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
-      if(state.challengeMode) state.timerId = setTimeout(showResult, state.mixDuration + 500);
+        if(state.isMixing) return;
+        state.isMixing = true; state.mixStartTime = performance.now();
+        ui.mixBtn.innerHTML = `<span>COOKING...</span>`;
+        ui.mixBtn.disabled = true;
+        ui.mixBtn.classList.add('opacity-50', 'cursor-not-allowed', 'scale-95');
+        if(state.challengeMode) state.timerId = setTimeout(showResult, state.mixDuration + 500);
     });
 
     ui.resetBtn.addEventListener('click', resetGame);
     ui.modalBtn.addEventListener('click', () => {
-      ui.modal.classList.add('opacity-0', 'pointer-events-none');
-      ui.modalContent.classList.add('scale-90');
-      resetGame();
+        ui.modal.classList.add('opacity-0', 'pointer-events-none');
+        resetGame();
     });
 
-    function resizeCanvasToDisplaySize() {
-      // Use devicePixelRatio for crispness + correct hit testing
-      const dpr = Math.max(1, window.devicePixelRatio || 1);
-      const rect = canvas.getBoundingClientRect();
-      const w = Math.round(rect.width * dpr);
-      const h = Math.round(rect.height * dpr);
-      if (canvas.width !== w || canvas.height !== h) {
-        canvas.width = w;
-        canvas.height = h;
-        gl.viewport(0, 0, w, h);
-      }
-    }
-
     function render(now) {
-      if(!state.lastFrameTime) state.lastFrameTime = now;
-      const dt = now - state.lastFrameTime;
-      state.lastFrameTime = now;
+        if(!state.lastFrameTime) state.lastFrameTime = now;
+        const dt = now - state.lastFrameTime; state.lastFrameTime = now;
+        
+        const dpr = Math.max(1, window.devicePixelRatio || 1);
+        const rect = canvas.getBoundingClientRect();
+        const w = Math.round(rect.width * dpr); const h = Math.round(rect.height * dpr);
+        if (canvas.width !== w || canvas.height !== h) { canvas.width = w; canvas.height = h; gl.viewport(0, 0, w, h); }
 
-      resizeCanvasToDisplaySize();
-
-      let speed = state.isMixing ? 0.002 : 0.00005;
-      state.simTime += dt * speed;
-
-      let mixProgress = 0.0;
-      if (state.isMixing) {
-        let mixDt = now - state.mixStartTime;
-        if (mixDt > state.mixDuration) {
-          mixProgress = 1.0;
-          if(!state.challengeMode) ui.mixBtn.innerHTML = `<span>SERVICE!</span>`;
-        } else {
-          mixProgress = mixDt / state.mixDuration;
+        let speed = state.isMixing ? 0.002 : 0.00005; state.simTime += dt * speed;
+        let mixProgress = 0.0;
+        if (state.isMixing) {
+            let mixDt = now - state.mixStartTime;
+            if (mixDt > state.mixDuration) { mixProgress = 1.0; if(!state.challengeMode) ui.mixBtn.innerHTML = `<span>SERVICE!</span>`; } 
+            else { mixProgress = mixDt / state.mixDuration; }
         }
-      }
 
-      gl.useProgram(program);
-      gl.enableVertexAttribArray(locs.pos);
-      gl.bindBuffer(gl.ARRAY_BUFFER, buf);
-      gl.vertexAttribPointer(locs.pos, 2, gl.FLOAT, false, 0, 0);
-      gl.uniform2f(locs.res, canvas.width, canvas.height);
-      gl.uniform1f(locs.time, state.simTime);
-      gl.uniform1f(locs.mix, mixProgress);
-      gl.uniform3fv(locs.c1, state.colors[0]);
-      gl.uniform3fv(locs.c2, state.colors[1]);
-      gl.uniform3fv(locs.c3, state.colors[2]);
-      gl.uniform3fv(locs.final, state.finalColor);
-      gl.drawArrays(gl.TRIANGLES, 0, 6);
-
-      requestAnimationFrame(render);
+        gl.useProgram(program);
+        gl.enableVertexAttribArray(locs.pos); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+        gl.vertexAttribPointer(locs.pos, 2, gl.FLOAT, false, 0, 0);
+        gl.uniform2f(locs.res, canvas.width, canvas.height);
+        gl.uniform1f(locs.time, state.simTime); gl.uniform1f(locs.mix, mixProgress);
+        gl.uniform3fv(locs.c1, state.colors[0]); gl.uniform3fv(locs.c2, state.colors[1]);
+        gl.uniform3fv(locs.c3, state.colors[2]); gl.uniform3fv(locs.final, state.finalColor);
+        gl.drawArrays(gl.TRIANGLES, 0, 6);
+        requestAnimationFrame(render);
     }
-
-    // Keep canvas sized correctly on mobile viewport changes
-    window.addEventListener('resize', () => resizeCanvasToDisplaySize());
-    window.addEventListener('orientationchange', () => setTimeout(resizeCanvasToDisplaySize, 50));
 
     resetGame();
     requestAnimationFrame(render);
