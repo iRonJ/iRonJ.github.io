@@ -16,6 +16,10 @@ This isn't just a demo; it's a next-generation AI-powered desktop environment wh
 
 ### Overview
 
+<p><iframe style="width:100%;" height="515" src="https://www.youtube.com/embed/dthf15gqcQM" frameborder="0" allowfullscreen></iframe></p>
+
+#### Further Examples
+
 <p><iframe style="width:100%;" height="515" src="https://www.youtube.com/embed/eFMeGK16u8U" frameborder="0" allowfullscreen></iframe></p>
 This project represents a massive shift from static applications to a **dynamic, agentic OS**. Instead of pre-compiled binaries, the "OS" is a living conversation with a high-speed LLM that can:
 1.  **Generate Apps**: Create full HTML/JS/WebGL applications on the fly.
