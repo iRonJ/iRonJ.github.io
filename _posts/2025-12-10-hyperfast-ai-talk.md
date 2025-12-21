@@ -88,7 +88,7 @@ graph TD
     *   **Live Injection**: Receives HTML/JS payloads from the server and injects them into sandboxed containers.
 
 3.  **Cerebras Engine**: The brain of the operation.
-    *   Utilizes the **GLM model** (an open-source model focused on coding) via Cerebras API for sub-second inference. The GLM model quality is somewhere between GPT-4 and GPT-5 class. Once better programming models get hyperfast support in the coming months, this will be even more powerful.
+    *   Utilizes the **GLM model** (an open-source model focused on coding) via Cerebras API for sub-second inference. The GLM model offers strong coding capabilities comparable to modern frontier models. Once better programming models get hyperfast support in the coming months, this will be even more powerful.
 
 ### How It Scales: The Tool-First Architecture
 
@@ -112,7 +112,7 @@ A sophisticated 2-loop architecture ensures reliability:
 
 Here's where it gets really interesting. Everything goes through a single API endpoint, which creates a unique side effect: the system can make "fake" API calls on the fly.
 
-For example, I can request a webpage for "Raleigh Travel" that doesn't exist on my computer. The API endpoint sees I'm requesting an HTML page and just generates one instantly. I can add URL parameters like `?theme=terminator2`, and even though none of this maps to any actual code, the AI sees the request and generates the themed page on the fly.
+For example, I can request a webpage for "Raleigh Travel" that doesn't exist on my computer. The API endpoint sees I'm requesting an HTML page and just generates one instantly. I can add URL parameters like `?theme=Terminator 2`, and even though none of this maps to any actual code, the AI sees the request and generates the themed page on the fly.
 
 For requests that don't need a UI (like "Generate a CSV report of my files"), the system bypasses the App Generator and streams raw content directly to the client, acting as a virtual file server.
 
