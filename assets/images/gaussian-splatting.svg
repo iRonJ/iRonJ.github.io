@@ -1,0 +1,26 @@
+<svg width="1200" height="630" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="630" fill="#0f172a"/>
+  
+  <!-- Gaussian splat circles -->
+  <circle cx="200" cy="150" r="60" fill="#6366f1" opacity="0.3"/>
+  <circle cx="350" cy="200" r="50" fill="#8b5cf6" opacity="0.3"/>
+  <circle cx="500" cy="180" r="70" fill="#3b82f6" opacity="0.3"/>
+  <circle cx="650" cy="220" r="55" fill="#06b6d4" opacity="0.3"/>
+  <circle cx="800" cy="160" r="65" fill="#6366f1" opacity="0.3"/>
+  <circle cx="950" cy="190" r="50" fill="#8b5cf6" opacity="0.3"/>
+  
+  <circle cx="250" cy="400" r="50" fill="#3b82f6" opacity="0.3"/>
+  <circle cx="400" cy="450" r="60" fill="#06b6d4" opacity="0.3"/>
+  <circle cx="550" cy="420" r="55" fill="#6366f1" opacity="0.3"/>
+  <circle cx="700" cy="470" r="50" fill="#8b5cf6" opacity="0.3"/>
+  <circle cx="850" cy="430" r="65" fill="#3b82f6" opacity="0.3"/>
+  <circle cx="1000" cy="460" r="50" fill="#06b6d4" opacity="0.3"/>
+  
+  <!-- Title text -->
+  <text x="600" y="280" font-family="Arial, sans-serif" font-size="72" font-weight="bold" 
+        fill="#ffffff" text-anchor="middle">Gaussian Splatting</text>
+  
+  <!-- Subtitle -->
+  <text x="600" y="350" font-family="Arial, sans-serif" font-size="40" 
+        fill="#6366f1" text-anchor="middle">ML-SHARP to ONNX</text>
+</svg>
