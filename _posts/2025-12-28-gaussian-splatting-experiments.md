@@ -36,7 +36,6 @@ Check out the screen recording below showing some of the experiments in action:
 <div style="margin-bottom: 20px;">
 <video width="100%" controls>
   <source src="/assets/videos/ScreenRecording_12-28-2025 05-53-45_1.mov" type="video/quicktime">
-  <source src="/assets/videos/ScreenRecording_12-28-2025 05-53-45_1.mov" type="video/mp4">
   Your browser does not support the video tag.
 </video>
 </div>
