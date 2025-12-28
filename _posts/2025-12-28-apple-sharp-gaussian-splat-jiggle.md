@@ -15,7 +15,7 @@ What if your photos could move? Not just play back as videos, but actually *exis
 We're living through a quiet revolution in how we interact with visual memories. For over a century, photos have been flat rectangles—windows into moments, sure, but always at a distance. Video added time but kept us behind the screen. Now, with AI-powered 3D reconstruction and spatial computing, something fundamentally different is emerging.
 
 <video width="100%" controls>
-  <source src="/assets/videos/ScreenRecording_12-28-2025 05-53-45_1.mov" type="video/mp4">
+  <source src="/assets/videos/ScreenRecording_12-28-2025 05-53-45_1.mov" type="video/quicktime">
   Your browser does not support the video tag.
 </video>
 
