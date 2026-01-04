@@ -1,0 +1,238 @@
+---
+layout: none
+permalink: /resume_principal
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ron Jailall - Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @media print {
+            @page {
+                margin: 0.5in;
+                size: auto; 
+            }
+            body {
+                background-color: white;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+            .page-break-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .resume-container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Ensure links are readable but don't look like blueprints */
+            a {
+                color: #1a202c !important; /* gray-900 */
+                text-decoration: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 antialiased py-10 print:py-0 print:bg-white">
+
+    <!-- Instructions Banner (Hidden when printing) -->
+    <div class="print-hidden max-w-[8.5in] mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 shadow-sm">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    <strong>To Save as PDF:</strong> Press <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Ctrl + P</code> (Windows) or <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Cmd + P</code> (Mac).
+                    <br>Select <strong>"Save as PDF"</strong> as the destination. This blue box will disappear automatically in the PDF.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Container -->
+    <div class="resume-container max-w-[8.5in] mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:p-0">
+        
+        <!-- Header -->
+        <header class="border-b-2 border-gray-800 pb-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-tight uppercase">Ron Jailall</h1>
+                    <h2 class="text-xl font-semibold text-gray-600 mt-1">Principal AI Engineer & Architect</h2>
+                </div>
+                <div class="mt-4 md:mt-0 text-left md:text-right text-sm text-gray-600 leading-relaxed">
+                    <p>Raleigh, NC | (608) 332-8605</p>
+                    <p><a href="mailto:rojailal@gmail.com" class="hover:text-blue-600 transition">rojailal@gmail.com</a></p>
+                    <p><a href="https://ironj.github.io/" target="_blank" class="hover:text-blue-600 transition font-medium text-blue-600">https://ironj.github.io/</a></p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Professional Profile -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Professional Profile</h3>
+            <p class="text-gray-700 leading-relaxed text-sm text-justify">
+                Principal AI Engineer & Architect with 15+ years of experience delivering high-impact ML solutions and distributed systems. Expert in NVIDIA AI ecosystems (TensorRT, Riva, Jetson), Agentic Workflows, and LLM Inference Optimization. Proven track record of taking complex AI features from concept to production, optimizing for both cloud (AWS/GCP) and edge environments. Passionate about bridging the gap between research and real-world application to solve enterprise-scale problems.
+            </p>
+        </section>
+
+        <!-- Core Competencies -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Core Competencies</h3>
+            <div class="grid grid-cols-1 gap-y-2 text-sm">
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">NVIDIA AI Stack:</span>
+                    <span class="text-gray-700">TensorRT, Triton Inference Server, Nvidia Riva, JetPack/DeepStream, CUDA Optimization.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">Agentic & GenAI:</span>
+                    <span class="text-gray-700">RAG Pipelines, Multi-Step Reasoning Agents, LangChain concepts, LLM Fine-tuning (PEFT), Vector Databases.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">ML Optimization:</span>
+                    <span class="text-gray-700">Quantization (INT8/FP16), KV Caching strategies, ONNX Runtime, MobileNet/EfficientNet architectures.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">Engineering Leadership:</span>
+                    <span class="text-gray-700">End-to-End ML Lifecycle (MLOps), CI/CD (GitLab/Terraform), Mentorship, Technical Strategy.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Selected Technical Talks -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Selected Technical Talks</h3>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-gray-900 text-sm">Hyperfast AI: Rethinking Design for 1000 tokens/s</h4>
+                        <span class="text-gray-500 text-xs font-medium italic">AI Tinkerers Raleigh, Dec 2025</span>
+                    </div>
+                    <ul class="list-disc list-outside ml-4 text-sm text-gray-700">
+                        <li>Presented on Agentic AI design patterns enabled by ultra-low latency inference, focusing on self-correction loops and real-time planning.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-gray-900 text-sm">Apple's On-Device VLM: The Future of Multimodal AI</h4>
+                        <span class="text-gray-500 text-xs font-medium italic">Conference Talk, Sep 2025</span>
+                    </div>
+                    <ul class="list-disc list-outside ml-4 text-sm text-gray-700">
+                        <li>Deep dive into optimizing Vision Language Models for edge devices, a key parallel to NVIDIA's edge AI strategies.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Experience -->
+        <section class="mb-6">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-4 pb-1">Professional Experience</h3>
+
+            <!-- Job 1 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">ML Engineering Consultant / Technical Lead</h4>
+                    <span class="text-gray-600 text-sm font-medium">2024 – Present</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Delivering "Intelligent AI Solutions" and optimizing ML architectures for diverse enterprise clients.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">NVIDIA Ecosystem Optimization & Migration:</strong> Migrated Nvidia Riva/Triton microservice-based applications to AWS, re-architecting for high-availability. Optimized Computer Vision models for embedded Nvidia Jetson platforms using TensorRT/ONNX, achieving significant latency reduction. Architected a Jetson-based multi-view camera tracking system for precise real-time tracking.</li>
+                    <li><strong class="text-gray-900">Agentic AI & High-Performance Inference (<a href="https://github.com/iRonJ/cerebras_hackathon" target="_blank" class="hover:text-blue-600 transition text-blue-600">Cerebras Project</a>):</strong> Developing a high-speed Agentic AI framework leveraging >1000 tokens/s inference to enable complex, multi-step reasoning. Designed interruptible agent loops that handle ambiguity and user correction in real-time.</li>
+                    <li><strong class="text-gray-900">End-to-End ML Systems Ownership (Matte Model):</strong> Architected a CPU-efficient portrait matting system (MobileNetV2/MODNet) using TensorFlow 2, replacing legacy SDKs in a production Electron app. Built full MLOps pipelines on GCP Vertex AI for training, evaluation, and seamless ONNX deployment.</li>
+                </ul>
+            </div>
+
+            <!-- Job 2 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer, AI R&D</h4>
+                    <span class="text-gray-600 text-sm font-medium">2023 – 2024</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Vidable.ai | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Spearheaded the design and deployment of Generative AI solutions and RAG pipelines.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">RAG & GenAI Development:</strong> Designed and implemented real-time RAG-based inference pipelines (Vector DBs, LLMs) to power dynamic, personalized recommendations and search. Evaluated and productized latest GenAI tools (MLFlow, AuroraDB), bridging the gap between PhD research and engineering implementation.</li>
+                    <li><strong class="text-gray-900">ML Infrastructure & Ops:</strong> Built CI/CD pipelines in Terraform/GitLab/AWS to deploy scalable ML inference servers (Docker, Kubernetes). Optimized performance of Python-based API endpoints (FastAPI/Uvicorn) and modified C/C++ code (llama.cpp) for custom production use cases.</li>
+                    <li><strong class="text-gray-900">Mentorship:</strong> Hosted weekly cross-company meetings to share latest AI news and best practices, mentoring engineers on new prompting techniques and model architectures.</li>
+                </ul>
+            </div>
+
+            <!-- Job 3 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer</h4>
+                    <span class="text-gray-600 text-sm font-medium">2014 – 2023</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Sonic Foundry | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Led the transition to cloud-native architectures and pioneered early AI adoption.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Enterprise Scale:</strong> Architected data pipelines serving the company's 5 largest customers (100k+ users), ensuring high reliability and throughput.</li>
+                    <li><strong class="text-gray-900">Cloud Architecture:</strong> Designed an AWS cloud-native Archive utility (Lambda, Batch) that generated millions in revenue, demonstrating ability to align technical design with business outcomes.</li>
+                    <li><strong class="text-gray-900">Early Transformer & LLM Work:</strong> Developed pipelines to deploy GGML Llama models to AWS Serverless Architecture (C++, C#) for cost-effective inference. Developed prefix-tuning datasets for Nvidia Megatron LLM, gaining early experience with large-scale model adaptation.</li>
+                    <li><strong class="text-gray-900">Innovation:</strong> Founded the company's internal AI reading group (~25% employee participation) and led hackathons to drive AI adoption across the org.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Ways I Stand Out (Projects & Research) -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Ways I Stand Out (Projects & Research)</h3>
+            <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                <li><strong class="text-gray-900">Agentic AI Mastery - <a href="https://github.com/TechronicHackathon/Aisistant" target="_blank" class="hover:text-blue-600 transition text-blue-600">Cohere AI Hackathon (3rd Place)</a>:</strong> Built an "LLM as Learning Assistant" using agentic prompting to parse keywords, search external knowledge bases, and re-phrase results in real-time.</li>
+                <li><strong class="text-gray-900">LLM Inference Optimization - Matte Model Project:</strong> Demonstrated deep understanding of model optimization by retraining MobileNetV2 backbones for CPU-specific inference targets, managing the trade-off between accuracy and latency.</li>
+                <li><strong class="text-gray-900">Research & Continuous Learning:</strong> Regularly attend NeurIPS and CVPR workshops on distributed processing, federated learning, and VLMs to stay at the cutting edge of ML research.</li>
+            </ul>
+        </section>
+
+        <!-- Education -->
+        <section class="page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Education & Certifications</h3>
+            <div class="text-sm text-gray-700 space-y-2">
+                <div>
+                    <span class="font-bold text-gray-900">NC State University</span> | Electrical & Computer Engineering (75 Credit Hours) | <span class="italic text-gray-600">15+ Years Equivalent Industry Experience</span>
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900 block mb-1">Coursera Verified Certificates:</span>
+                    <ul class="list-disc list-outside ml-4 space-y-1">
+                        <li>Neural Networks for Machine Learning (Hinton) | <span class="text-gray-600 font-mono text-xs">ID: 3MJACUGZ4LMA</span></li>
+                        <li>Image and Video Processing | <span class="text-gray-600 font-mono text-xs">ID: E9JX646TTS</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
