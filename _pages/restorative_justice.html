@@ -1,0 +1,38 @@
+---
+layout: page
+title: The Missing Voices
+permalink: /restorative_justice
+comments: false
+---
+
+<style>
+  /* Override any default padding/margins to give full width to the iframe */
+  .article-post {
+    padding: 0 !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+  }
+  
+  .section-title {
+    display: none;
+  }
+  
+  /* Make the iframe responsive and full height */
+  #restorative-justice-iframe {
+    width: 100%;
+    min-height: 100vh;
+    border: none;
+    display: block;
+  }
+</style>
+
+<iframe id="restorative-justice-iframe" src="/assets/apps/restorative-justice/dist/index.html"></iframe>
+
+<script>
+  // Adjust iframe height dynamically if needed
+  window.addEventListener('message', function(e) {
+    if (e.data && e.data.height) {
+      document.getElementById('restorative-justice-iframe').style.height = e.data.height + 'px';
+    }
+  });
+</script>
