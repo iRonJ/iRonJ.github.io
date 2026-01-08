@@ -104,8 +104,7 @@ const processedData = rawData.map(d => {
   // Calculate Base Trend
   const rawTrend = (slope * d.congress) + intercept;
   
-  // Trend should never effectively be lower than real history for the "gap" visualization logic, 
-  // but we want the raw mathematical trend for the "What If" line.
+  // Prevent negative values (which would be meaningless for representation count)
   const trend = Math.max(rawTrend, 0); 
   
   // Calculate Polynomial Error (Cone of Uncertainty)
