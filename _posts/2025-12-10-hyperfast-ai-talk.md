@@ -9,7 +9,7 @@ featured: true
 
 I recently spoke at [AI Tinkerers Raleigh](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4) about hyperfast inference systems and how they're fundamentally changing AI application design. If you haven't heard of Cerebras (or however they pronounce it), you're in for a treat—this is one of the most exciting areas of research in AI right now.
 
-Check out the repo on Github: https://github.com/iRonJ/cerebras_hackathon
+Check out the repo on Github: [AI Desktop Environment](https://github.com/iRonJ/cerebras_hackathon)
 
 ## The Speed Revolution
 
