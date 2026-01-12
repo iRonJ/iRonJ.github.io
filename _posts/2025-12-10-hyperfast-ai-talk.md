@@ -9,6 +9,8 @@ featured: true
 
 I recently spoke at [AI Tinkerers Raleigh](https://raleigh.aitinkerers.org/talks/rsvp_rjOw3LBlaI4) about hyperfast inference systems and how they're fundamentally changing AI application design. If you haven't heard of Cerebras (or however they pronounce it), you're in for a treat—this is one of the most exciting areas of research in AI right now.
 
+Check out the repo on Github: https://github.com/iRonJ/cerebras_hackathon
+
 ## The Speed Revolution
 
 The folks at Cerebras have done something remarkable: they've built a complete custom hardware stack using a full silicon wafer to create an incredibly fast inference chip. While your typical ChatGPT system delivers less than 100 tokens per second—and often drops to 20-30 tokens per second under load—Cerebras blasts through at **1,700 tokens per second**. That's almost 20x faster than standard transformer-based inference providers.
