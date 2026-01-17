@@ -1,0 +1,240 @@
+---
+layout: none
+permalink: /resume_arvr
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3BZXXT97Y"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-H3BZXXT97Y');
+    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ron Jailall - Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @media print {
+            @page {
+                margin: 0.5in;
+                size: auto; 
+            }
+            body {
+                background-color: white;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+            .page-break-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .resume-container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Ensure links are readable but don't look like blueprints */
+            a {
+                color: #1a202c !important; /* gray-900 */
+                text-decoration: none !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800 antialiased py-10 print:py-0 print:bg-white">
+
+    <!-- Instructions Banner (Hidden when printing) -->
+    <div class="print-hidden max-w-[8.5in] mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 shadow-sm">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    <strong>To Save as PDF:</strong> Press <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Ctrl + P</code> (Windows) or <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Cmd + P</code> (Mac).
+                    <br>Select <strong>"Save as PDF"</strong> as the destination. This blue box will disappear automatically in the PDF.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Container -->
+    <div class="resume-container max-w-[8.5in] mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:p-0">
+        
+        <!-- Header -->
+        <header class="border-b-2 border-gray-800 pb-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-tight uppercase">Ron Jailall</h1>
+                    <h2 class="text-xl font-semibold text-gray-600 mt-1">Senior Systems & AI Engineer</h2>
+                </div>
+                <div class="mt-4 md:mt-0 text-left md:text-right text-sm text-gray-600 leading-relaxed">
+                    <p>Raleigh, NC | (608) 332-8605</p>
+                    <p><a href="mailto:rojailal@gmail.com" class="hover:text-blue-600 transition">rojailal@gmail.com</a></p>
+                    <p><a href="https://ironj.github.io/" target="_blank" class="hover:text-blue-600 transition font-medium text-blue-600">https://ironj.github.io/</a></p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Professional Profile -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Professional Profile</h3>
+            <p class="text-gray-700 leading-relaxed text-sm text-justify">
+                Senior Systems & AI Engineer with 15+ years of experience building robust, production-ready systems at scale. Expert in Swift, C++, and On-Device Inference, with a specific focus on VisionOS/AR and high-performance embedded systems. Proven track record of bridging the gap between research (AI/ML) and engineering (System Frameworks) to ship cutting-edge vision experiences under strict performance and privacy constraints.
+            </p>
+        </section>
+
+        <!-- Core Competencies -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Core Competencies</h3>
+            <div class="grid grid-cols-1 gap-y-2 text-sm">
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">Languages:</span>
+                    <span class="text-gray-700">Swift, C++, Python, C#, Objective-C (Familiarity), Metal Shading Language (MSL).</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">Apple Ecosystem:</span>
+                    <span class="text-gray-700">VisionOS, RealityKit, CoreML, ARKit, Metal, AVFoundation.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">AI & Computer Vision:</span>
+                    <span class="text-gray-700">On-Device Inference (LLMs/VLMs), Gaussian Splatting, TensorRT, Sensor Fusion (Camera/IMU).</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-40 shrink-0">Systems Engineering:</span>
+                    <span class="text-gray-700">Privacy-by-Design, Real-time Resource Management, Cross-Device Architecture, Performance Optimization.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Featured Systems Projects -->
+        <section class="mb-6 page-break-avoid bg-gray-50 border border-gray-200 rounded p-4 print:border-l-4 print:border-r-0 print:border-t-0 print:border-b-0 print:border-gray-300 print:bg-white print:pl-4 print:p-0 print:rounded-none">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Featured Systems Projects</h3>
+            
+            <div class="mb-4 last:mb-0">
+                <div class="flex justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-800 text-sm">Interactive Volumetric Rendering on VisionOS</h4>
+                    <span class="text-gray-500 text-xs font-medium italic">Swift / RealityKit / Metal</span>
+                </div>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">System-Level Implementation:</strong> Engineered a native VisionOS application using Swift and RealityKit to render volumetric Gaussian Splats, overcoming strict browser-based memory sandboxing by moving to a native systems architecture.</li>
+                    <li><strong class="text-gray-900">Performance Optimization:</strong> Wrote custom Metal vertex and fragment shaders to implement real-time physics ("jiggle" effects) at high frame rates, optimizing GPU resource usage for the Apple Vision Pro hardware constraints.</li>
+                    <li><strong class="text-gray-900">On-Device AI Integration:</strong> Managed the end-to-end pipeline of converting research-grade models (SHARP) into optimized CoreML packages, ensuring efficient on-device inference without cloud dependency.</li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-800 text-sm">Real-Time Multi-View Tracking System</h4>
+                    <span class="text-gray-500 text-xs font-medium italic">C++ / CUDA / Jetson</span>
+                </div>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Sensor Data Processing:</strong> Architected a multi-camera tracking system on Nvidia Jetson embedded devices, writing optimized C++ and CUDA code to ingest and synchronize raw sensor streams in real-time.</li>
+                    <li><strong class="text-gray-900">Resource-Constrained Optimization:</strong> Optimized computer vision models using TensorRT and ONNX, achieving sub-millisecond latency on resource-constrained edge hardware.</li>
+                    <li><strong class="text-gray-900">Robustness:</strong> Implemented fault-tolerant GStreamer pipelines to ensure system stability and recovery during continuous operation in the field.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Professional Experience -->
+        <section class="mb-6">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-4 pb-1">Professional Experience</h3>
+
+            <!-- Job 1 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">ML Engineering Consultant / Systems Architect</h4>
+                    <span class="text-gray-600 text-sm font-medium">2024 – Present</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Building privacy-centric AI tools and high-performance vision systems.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Privacy & Security (FastRecord Project):</strong> Developed "FastRecord," a lightweight screen recording tool designed with privacy-by-design principles. Engineered the system to process all video data locally on-device, ensuring zero data egress to the cloud.</li>
+                    <li><strong class="text-gray-900">On-Device Inference & LLMs:</strong> Authored technical research on Apple's On-Device VLM, analyzing memory management strategies for running multimodal models locally. Architected "Matte Model," a CPU-optimized portrait matting system (MobileNetV2) deployed via Electron/ONNX, replacing heavy cloud dependencies with efficient local execution.</li>
+                    <li><strong class="text-gray-900">Cross-Functional Collaboration:</strong> Partnered with client engineering and product teams to translate high-level AI research goals into shipping technical requirements and production-ready code.</li>
+                </ul>
+            </div>
+
+            <!-- Job 2 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer, AI R&D</h4>
+                    <span class="text-gray-600 text-sm font-medium">2023 – 2024</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Vidable.ai | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Bridging research and production engineering for GenAI products.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Systems-Level Thinking:</strong> Designed the infrastructure for deploying LLM inference on varied hardware targets, evaluating trade-offs between latency, cost, and model quality.</li>
+                    <li><strong class="text-gray-900">Research to Engineering:</strong> Collaborated closely with PhD researchers to validate "state-of-the-art" algorithms (Diffusion/Transformers) and refactor them into robust, maintainable production microservices.</li>
+                    <li><strong class="text-gray-900">Mentorship:</strong> Mentored junior engineers on shipping discipline, code quality, and the intricacies of deploying ML models to production environments.</li>
+                </ul>
+            </div>
+
+            <!-- Job 3 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer</h4>
+                    <span class="text-gray-600 text-sm font-medium">2014 – 2023</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Sonic Foundry | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Engineering leadership for a video platform serving millions of users.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Shipping at Scale:</strong> Architected and maintained core data pipelines for a video platform used by the company's largest enterprise customers (100k+ concurrent users), ensuring high availability and system resilience.</li>
+                    <li><strong class="text-gray-900">Production Quality:</strong> Led the transition to cloud-native architectures (AWS Lambda/Batch), enforcing strict CI/CD practices (GitLab/Terraform) and code review standards across the team.</li>
+                    <li><strong class="text-gray-900">Team Leadership:</strong> Founded and led the internal AI reading group, fostering a culture of continuous learning and technical excellence across the engineering organization.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section class="page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Education & Certifications</h3>
+            <div class="text-sm text-gray-700 space-y-2">
+                <div>
+                    <span class="font-bold text-gray-900">NC State University</span> | Electrical & Computer Engineering (Completed 75 Credit Hours)
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900 block mb-1">Coursera Verified Certificates:</span>
+                    <ul class="list-disc list-outside ml-4 space-y-1">
+                        <li>Neural Networks for Machine Learning (Hinton) | <span class="text-gray-600 font-mono text-xs">ID: 3MJACUGZ4LMA</span></li>
+                        <li>Image and Video Processing | <span class="text-gray-600 font-mono text-xs">ID: E9JX646TTS</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
+</body>
+</html>
