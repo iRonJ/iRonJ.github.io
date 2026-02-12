@@ -17,7 +17,247 @@ permalink: /resume_deep_gen
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ron Jailall - Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @media print {
+            @page {
+                margin: 0.5in;
+                size: auto; 
+            }
+            body {
+                background-color: white;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+            .page-break-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .resume-container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Ensure links are readable but don't look like blueprints */
+            a {
+                color: #1a202c !important; /* gray-900 */
+                text-decoration: none !important;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans text-gray-800 antialiased py-10 print:py-0 print:bg-white">
+
+    <!-- Instructions Banner (Hidden when printing) -->
+    <div class="print-hidden max-w-[8.5in] mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 shadow-sm">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    <strong>To Save as PDF:</strong> Press <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Ctrl + P</code> (Windows) or <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Cmd + P</code> (Mac).
+                    <br>Select <strong>"Save as PDF"</strong> as the destination. This blue box will disappear automatically in the PDF.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Container -->
+    <div class="resume-container max-w-[8.5in] mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:p-0">
+        
+        <!-- Header -->
+        <header class="border-b-2 border-gray-800 pb-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-tight uppercase">Ron Jailall</h1>
+                    <h2 class="text-xl font-semibold text-gray-600 mt-1">Deep Learning & Generative AI Engineer</h2>
+                </div>
+                <div class="mt-4 md:mt-0 text-left md:text-right text-sm text-gray-600 leading-relaxed">
+                    <p>Raleigh, NC | (608) 332-8605</p>
+                    <p><a href="mailto:rojailal@gmail.com" class="hover:text-blue-600 transition">rojailal@gmail.com</a></p>
+                    <p><a href="https://ironj.github.io/" target="_blank" class="hover:text-blue-600 transition font-medium text-blue-600">https://ironj.github.io/</a></p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Professional Profile -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Professional Profile</h3>
+            <p class="text-gray-700 leading-relaxed text-sm text-justify">
+                Deep Learning & Generative AI Engineer with 15+ years of experience building and deploying neural network solutions from research to production. Expert in Transformer architectures, Diffusion Models, and Large Language Models, with deep hands-on experience in PyTorch and TensorFlow. Proven track record of owning the complete ML lifecycle—from dataset curation and model training to optimization and deployment at scale. Specializes in rapid prototyping, model fine-tuning, and bridging the gap between cutting-edge research and real-world applications.
+            </p>
+        </section>
+
+        <!-- Technical Skills -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Technical Skills</h3>
+            <div class="grid grid-cols-1 gap-y-2 text-sm">
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Deep Learning Architectures:</span>
+                    <span class="text-gray-700">Transformers (GPT, Llama, BERT), Vision Transformers (ViT), Diffusion Models (Stable Diffusion, DDPM), CNNs (ResNet, MobileNet, U-Net).</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Generative AI:</span>
+                    <span class="text-gray-700">LLM Fine-Tuning (LoRA, PEFT, Prefix-Tuning), Prompt Engineering, Text-to-Image Generation, Image Segmentation & Matting.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">ML Frameworks & Tools:</span>
+                    <span class="text-gray-700">PyTorch, TensorFlow 2/Keras, Hugging Face Transformers, ONNX, TensorRT, Weights & Biases, Ray.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Engineering & DevOps:</span>
+                    <span class="text-gray-700">Python, C++, Docker, Kubernetes, AWS (Sagemaker, Lambda, Batch), GCP (Vertex AI), CI/CD (GitLab, Terraform).</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Professional Experience -->
+        <section class="mb-6">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-4 pb-1">Professional Experience</h3>
+
+            <!-- Job 1 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">ML Engineering Consultant / Technical Lead</h4>
+                    <span class="text-gray-600 text-sm font-medium">2024 – Present</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Delivering end-to-end deep learning solutions for diverse clients, from research prototypes to production systems.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Computer Vision (Portrait Matting Project):</strong> Owned the complete lifecycle of a custom human matting model, from dataset selection (P3M-10k) to production deployment. Architected a MobileNetV2-based U-Net in TensorFlow 2/Keras, implementing advanced data augmentation pipelines to handle diverse lighting and background conditions. Exported to ONNX for cross-platform inference, achieving real-time performance on CPU.</li>
+                    <li><strong class="text-gray-900">Generative AI & Diffusion Models:</strong> Optimized Stable Diffusion models for low-latency inference in video pipelines, implementing techniques like attention slicing and mixed-precision inference. Built production-ready inference servers for text-to-image generation, handling dynamic batching and GPU memory management.</li>
+                    <li><strong class="text-gray-900">LLM & Transformer Optimization:</strong> Migrated and optimized Nvidia Riva (transformer-based ASR/NLP) microservices to AWS, implementing efficient batching and model quantization strategies. Fine-tuned open-source LLMs (Llama, Mistral) for domain-specific tasks, utilizing parameter-efficient methods like LoRA.</li>
+                    <li><strong class="text-gray-900">RAG & Embeddings:</strong> Designed and deployed vector embedding pipelines for semantic search and recommendation systems, leveraging sentence transformers and FAISS for efficient similarity search at scale.</li>
+                </ul>
+            </div>
+
+            <!-- Job 2 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer, AI R&D</h4>
+                    <span class="text-gray-600 text-sm font-medium">2023 – 2024</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Vidable.ai | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Led R&D team in evaluating and deploying cutting-edge generative models for production applications.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">LLM Research & Deployment:</strong> Evaluated latest LLM architectures (GPT-4, Claude, Llama family) for production use cases. Modified C++ inference engines (llama.cpp) to support custom quantization schemes, achieving 4-bit inference with minimal quality degradation.</li>
+                    <li><strong class="text-gray-900">Generative Model Prototyping:</strong> Built rapid prototypes combining LLMs with diffusion models, creating end-to-end generative workflows. Implemented prompt engineering strategies and few-shot learning techniques to maximize model performance without expensive fine-tuning.</li>
+                    <li><strong class="text-gray-900">Infrastructure & MLOps:</strong> Designed CI/CD pipelines (Terraform/AWS) for deploying ML inference endpoints, implementing auto-scaling and monitoring. Created model evaluation frameworks to assess generation quality, prompt robustness, and model drift.</li>
+                </ul>
+            </div>
+
+            <!-- Job 3 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer</h4>
+                    <span class="text-gray-600 text-sm font-medium">2014 – 2023</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Sonic Foundry | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Pioneered deep learning initiatives, introducing neural networks and transformer models to the organization.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Neural Network Training & Fine-Tuning:</strong> Built and trained U-Nets in PyTorch for image segmentation tasks on AWS Sagemaker. Developed prefix-tuning datasets for Nvidia Megatron LLM (early PEFT exploration), optimizing for domain-specific language generation.</li>
+                    <li><strong class="text-gray-900">Computer Vision Research:</strong> Prototyped neural search of video archives using Vision Transformers and CLIP-like models in PyTorch/TensorFlow. Implemented video segmentation and classification pipelines, significantly improving content discoverability.</li>
+                    <li><strong class="text-gray-900">NLP & Speech:</strong> Created custom NLP preprocessing pipelines (TF-IDF, stemming) to prepare sentence corpuses for speech recognition model training with IBM Watson. Built text classification models for automated video metadata tagging.</li>
+                    <li><strong class="text-gray-900">ML Infrastructure:</strong> Founded internal AI research group, leading hackathons focused on applying transformers and generative models to core products. Deployed GGML-based Llama models to AWS Lambda for cost-effective serverless inference.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Selected Technical Talks -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Selected Technical Talks & Research</h3>
+            <div class="space-y-3">
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-gray-900 text-sm">Hyperfast AI: Rethinking Design for 1000 tokens/s</h4>
+                        <span class="text-gray-500 text-xs font-medium italic">AI Tinkerers Raleigh, Dec 2025</span>
+                    </div>
+                    <ul class="list-disc list-outside ml-4 text-sm text-gray-700">
+                        <li>Explored the implications of ultra-fast transformer inference for generative AI applications, focusing on new UX patterns enabled by near-instant token generation.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-gray-900 text-sm">Apple's On-Device VLM: The Future of Multimodal AI</h4>
+                        <span class="text-gray-500 text-xs font-medium italic">Conference Talk, Sep 2025</span>
+                    </div>
+                    <ul class="list-disc list-outside ml-4 text-sm text-gray-700">
+                        <li>Technical analysis of Vision-Language Models optimized for edge deployment, covering quantization techniques and architectural innovations for mobile Vision Transformers.</li>
+                    </ul>
+                </div>
+                <div>
+                    <div class="flex justify-between items-baseline mb-1">
+                        <h4 class="font-bold text-gray-900 text-sm">Cerebras OS: Operating Systems for AI</h4>
+                        <span class="text-gray-500 text-xs font-medium italic">Technical Blog Post, May 2025</span>
+                    </div>
+                    <ul class="list-disc list-outside ml-4 text-sm text-gray-700">
+                        <li>Deep dive into specialized hardware accelerators for transformer training and inference, analyzing architectural trade-offs in custom silicon design.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Selected Projects -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Selected Projects & Competitions</h3>
+            <div class="space-y-2 text-sm text-gray-700">
+                <div>
+                    <strong class="text-gray-900">Cohere Hackathon (3rd Place):</strong> Built an LLM-powered presentation assistant using real-time transcription and retrieval-augmented generation, demonstrating advanced prompt engineering and context management techniques.
+                </div>
+                <div>
+                    <strong class="text-gray-900">Gaussian Splatting Experiments:</strong> Explored novel 3D representation learning through Gaussian Splatting, implementing custom training loops in PyTorch for real-time neural rendering.
+                </div>
+                <div>
+                    <strong class="text-gray-900">Open Source Contributions:</strong> Active contributor to Hugging Face Transformers ecosystem, with experience debugging and optimizing transformer model implementations.
+                </div>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section class="page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Education & Certifications</h3>
+            <div class="text-sm text-gray-700 space-y-2">
+                <div>
+                    <span class="font-bold text-gray-900">NC State University</span> | Electrical & Computer Engineering (Completed 75 Credit Hours)
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900 block mb-1">Coursera Verified Certificates:</span>
+                    <ul class="list-disc list-outside ml-4 space-y-1">
+                        <li>Neural Networks for Machine Learning (Geoffrey Hinton) | <span class="text-gray-600 font-mono text-xs">ID: 3MJACUGZ4LMA</span></li>
+                        <li>Image and Video Processing | <span class="text-gray-600 font-mono text-xs">ID: E9JX646TTS</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
 </body>
 </html>
