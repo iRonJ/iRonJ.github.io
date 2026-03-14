@@ -37,7 +37,13 @@ I've been thinking about this myself, and it led me to want to build something s
 
 Cynicism says *everything is corrupt, nothing can be trusted, it's all a lie*. It's actually a kind of intellectual laziness masquerading as sophistication, and it shuts down inquiry rather than opening it. Skepticism, on the other hand, is disciplined and constructive: it asks *what's the evidence, what's the source, what would change my mind?* It's the foundation of critical thinking and the antidote to manipulation.
 
-I'm working on a small applet to help people understand this distinction. It gives them a simple, interactive way to calibrate their own thinking and recognize when they've slipped from healthy skepticism into unproductive cynicism. It's a small thing, but if engineering is about solving human problems, helping people think more clearly feels like exactly the right place to start.
+So I built a small applet to help people understand this distinction. It gives you a simple, interactive way to calibrate your own thinking and recognize when you've slipped from healthy skepticism into unproductive cynicism. Give it a try:
+
+<div style="margin-bottom: 10px; text-align: right;">
+<a href="/assets/apps/crit/dist/index.html" target="_blank" style="display: inline-block; padding: 8px 16px; background-color: #4f46e5; color: white; text-decoration: none; border-radius: 4px; font-weight: bold; font-size: 12px;">OPEN IN NEW WINDOW</a>
+</div>
+
+<iframe src="/assets/apps/crit/dist/index.html" style="width:100%; height:700px; border:none; background: #020617;"></iframe>
 
 ## The Engineer's New Job Description
 
