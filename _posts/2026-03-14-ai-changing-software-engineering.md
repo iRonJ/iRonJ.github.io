@@ -3,11 +3,10 @@ layout: post
 title:  "From Code Monkey to Problem Solver: How AI Is Redefining Software Engineering"
 author: ron
 categories: [ profession, AI ]
-image: assets/images/airoadmap.png
+image: assets/images/ai-engineering-header.png
 description: "AI isn't just changing how we write code — it's forcing us to rediscover why we became engineers in the first place."
 featured: true
 hidden: false
-rating: 5
 tags: []
 ---
 
