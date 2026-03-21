@@ -12,7 +12,11 @@ tags: []
 
 There's a lot of uncertainty right now about how AI will impact jobs, but one thing is clear: the rote era of software engineering is officially over. For the last decade, we've spent so much of our time essentially just cranking out code. It was a lot of mechanical pattern-matching—you know, tracing SDKs, wiring up APIs, and writing the exact same boilerplate over and over again.
 
-Now, though, AI coding assistants can handle a massive chunk of that scaffolding. And honestly, that's a good thing, because nobody got into computers dreaming about writing YAML files all day. We wanted to build things. We wanted to solve real problems, and code was really just the tool we used to get there. With AI kind of stripping away that entire syntactic layer, it forces a reckoning: what problems do you actually care about?
+## What Engineering Was Always Supposed to Be
+
+No kid dreams of just staring at code all day. Nobody picked up their first computer thinking, *someday I want to argue about tabs versus spaces and write YAML configuration files for a living*. They wanted to build things. They wanted to see a real problem solved and people delighted by something new that made their life easier.
+
+Now, though, AI coding assistants can handle a massive chunk of that scaffolding. And honestly, that's a good thing, because code was really just the tool we used to get there. With AI kind of stripping away that entire syntactic layer, it forces a reckoning: what problems do you actually care about?
 
 I've been thinking about this myself lately, which led me to build something small but purposeful. One thing that really bothers me is the explosion of misinformation, and I think a lot of it comes down to people confusing cynicism with actual skepticism. Cynicism is sort of this intellectual laziness where you just assume everything is a lie—often while totally convinced that this cynical thinking is somehow backed by science, even when it's based on a complete misunderstanding of it. Real skepticism, on the other hand, is disciplined and constructive; it actually looks for evidence.
 
