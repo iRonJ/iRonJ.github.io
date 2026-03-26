@@ -348,6 +348,55 @@ blockquote {
     margin: 0 0 1.5rem 0;
 }
 
+.callout-box {
+    position: relative;
+    background-color: #fff;
+    border-radius: 0.75rem;
+    padding: 1.75rem 2rem;
+    margin: 2.5rem 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    border: 1px solid #e8f5f0;
+    overflow: hidden;
+}
+
+.callout-box::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 5px;
+    background-color: #00ab6b;
+}
+
+.callout-text {
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #1a2e22;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.callout-box.callout-conclusion {
+    background-color: #f5fbf8;
+    border-color: #c8e8d8;
+}
+
+.callout-highlight {
+    background-color: #e8f5f0;
+    color: #1a4731;
+    padding: 0.1em 0.35em;
+    border-radius: 0.25em;
+    font-weight: 600;
+}
+
+.callout-body {
+    margin: 0;
+    font-size: 1.05rem;
+    color: #445566;
+    line-height: 1.7;
+}
+
 .featured-image {
     display: block;
     margin-bottom: 1.5rem;
