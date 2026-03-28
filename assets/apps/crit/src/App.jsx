@@ -142,9 +142,25 @@ export default function App() {
   const canvasRef = useRef(null);
   const gameStateRef = useRef('START');
   const engine = useRef({ stars: [], celestials: [], particles: [], frame: 0 });
+  const questionRef = useRef(null);
+  const resultRef = useRef(null);
 
   useEffect(() => {
     gameStateRef.current = gameState;
+  }, [gameState]);
+
+  // Move focus to new content whenever the game state changes so screen readers
+  // announce the question before the answers, and the result from top to bottom.
+  // A minimal delay ensures the DOM is fully painted before focus is applied.
+  useEffect(() => {
+    const id = setTimeout(() => {
+      if (gameState === 'SCANNING' && questionRef.current) {
+        questionRef.current.focus();
+      } else if (gameState === 'RESULT' && resultRef.current) {
+        resultRef.current.focus();
+      }
+    }, 100);
+    return () => clearTimeout(id);
   }, [gameState]);
 
   // --- LOCAL STORAGE ---
@@ -351,12 +367,12 @@ export default function App() {
 
   return (
     <div className="fixed top-0 left-0 w-full h-[100dvh] bg-[#020617] text-white font-sans overflow-hidden select-none touch-none">
-      <canvas ref={canvasRef} className="absolute inset-0 z-0 pointer-events-none" />
+      <canvas ref={canvasRef} aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none" />
 
       {/* Top HUD */}
       <div className="relative z-50 p-4 flex justify-between items-center bg-black/40 backdrop-blur-md border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/40">
+          <div aria-hidden="true" className="p-2 bg-blue-600 rounded-lg shadow-lg shadow-blue-900/40">
             <Rocket size={18} />
           </div>
           <div>
@@ -369,20 +385,20 @@ export default function App() {
           </div>
         </div>
         <div className="flex gap-2">
-          <div className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-center min-w-[50px]">
-            <div className="text-[8px] uppercase font-bold text-emerald-400">Critical</div>
-            <div className="text-sm font-mono text-emerald-100">{score.critical}</div>
+          <div aria-label={`Critical score: ${score.critical}`} className="px-3 py-1 bg-emerald-500/10 border border-emerald-500/20 rounded text-center min-w-[50px]">
+            <div aria-hidden="true" className="text-[8px] uppercase font-bold text-emerald-400">Critical</div>
+            <div aria-hidden="true" className="text-sm font-mono text-emerald-100">{score.critical}</div>
           </div>
-          <div className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-center min-w-[50px]">
-            <div className="text-[8px] uppercase font-bold text-rose-400">Cynical</div>
-            <div className="text-sm font-mono text-rose-100">{score.cynical}</div>
+          <div aria-label={`Cynical score: ${score.cynical}`} className="px-3 py-1 bg-rose-500/10 border border-rose-500/20 rounded text-center min-w-[50px]">
+            <div aria-hidden="true" className="text-[8px] uppercase font-bold text-rose-400">Cynical</div>
+            <div aria-hidden="true" className="text-sm font-mono text-rose-100">{score.cynical}</div>
           </div>
         </div>
       </div>
 
       {showResetNotice && (
-        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-blue-900/80 border border-blue-400/50 text-blue-200 px-4 py-2 rounded-full text-xs font-mono flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300">
-          <Database size={14} /> Memory Banks Flushed
+        <div className="absolute top-20 left-1/2 -translate-x-1/2 z-50 bg-blue-900/80 border border-blue-400/50 text-blue-200 px-4 py-2 rounded-full text-xs font-mono flex items-center gap-2 animate-in slide-in-from-top-4 fade-in duration-300" role="status">
+          <Database aria-hidden="true" size={14} /> Memory Banks Flushed
         </div>
       )}
 
@@ -392,7 +408,7 @@ export default function App() {
         {gameState === 'START' && (
           <div className="absolute inset-0 flex items-center justify-center p-6 bg-black/50">
             <div className="max-w-md text-center space-y-8 animate-in fade-in zoom-in duration-500 pb-12">
-              <Compass size={80} className="text-blue-500 mx-auto animate-pulse" />
+              <Compass aria-hidden="true" size={80} className="text-blue-500 mx-auto animate-pulse" />
               <div className="space-y-4">
                 <h2 className="text-4xl font-black italic tracking-tighter uppercase">The Illusion of Logic</h2>
                 <p className="text-slate-400 font-medium leading-relaxed text-sm">
@@ -413,48 +429,64 @@ export default function App() {
         {gameState === 'FLYING' && (
           <div className="absolute inset-0 flex items-center justify-center">
             <button 
-              onClick={handleIntercept} 
+              onClick={handleIntercept}
+              aria-label="Intercept: tap to process a cognitive signal"
               className="group relative flex flex-col items-center transition-transform hover:scale-110 active:scale-95 touch-manipulation"
             >
-              <div className="absolute -inset-16 bg-blue-500/10 blur-[70px] rounded-full animate-pulse" />
-              <Rocket size={110} className="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]" />
+              <div aria-hidden="true" className="absolute -inset-16 bg-blue-500/10 blur-[70px] rounded-full animate-pulse" />
+              <Rocket aria-hidden="true" size={110} className="text-white drop-shadow-[0_0_30px_rgba(255,255,255,0.3)]" />
               <div className="mt-16 text-center">
-                <div className="text-blue-400 font-black text-2xl tracking-[0.3em] animate-bounce uppercase">Intercept</div>
-                <div className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-2">Tap Ship to process cognitive signal</div>
+                <div aria-hidden="true" className="text-blue-400 font-black text-2xl tracking-[0.3em] animate-bounce uppercase">Intercept</div>
+                <div aria-hidden="true" className="text-[10px] text-slate-500 font-mono tracking-widest uppercase mt-2">Tap Ship to process cognitive signal</div>
               </div>
             </button>
           </div>
         )}
 
         {gameState === 'SCANNING' && currentScenario && (
-          <div className="absolute inset-0 flex flex-col items-center p-4 sm:p-6 bg-black/80 backdrop-blur-xl overflow-y-auto overscroll-contain">
+          <div
+            ref={questionRef}
+            tabIndex={-1}
+            className="absolute inset-0 flex flex-col items-center p-4 sm:p-6 bg-black/80 backdrop-blur-xl overflow-y-auto overscroll-contain focus:outline-none"
+          >
             <div className="max-w-2xl w-full flex flex-col items-center gap-8 text-center animate-in zoom-in py-8 pb-32">
               
               <div className="space-y-4 w-full">
-                <div className="text-blue-400 text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2">
+                <div aria-hidden="true" className="text-blue-400 text-xs font-bold tracking-widest uppercase flex items-center justify-center gap-2">
                   <Eye size={18} /> Bilateral Processing Active
                 </div>
-                <div className="bg-slate-900/50 border border-slate-700/50 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+                <div
+                  className="bg-slate-900/50 border border-slate-700/50 rounded-[2.5rem] p-6 sm:p-8 shadow-2xl relative overflow-hidden"
+                  role="region"
+                  aria-label="Claim to evaluate"
+                >
                   <p className="text-xl sm:text-2xl font-semibold italic text-slate-100 leading-snug">"{currentScenario.claim}"</p>
                 </div>
               </div>
               
-              <EMDRTrack />
+              <div aria-hidden="true">
+                <EMDRTrack />
+              </div>
 
-              <div className="grid grid-cols-1 gap-4 sm:gap-5 w-full animate-in slide-in-from-bottom-8 duration-700">
+              <div
+                className="grid grid-cols-1 gap-4 sm:gap-5 w-full animate-in slide-in-from-bottom-8 duration-700"
+                role="group"
+                aria-label="Choose your response"
+              >
                 {randomOrder.map(idx => {
                   const key = idx === 0 ? 'A' : 'B';
                   const text = idx === 0 ? currentScenario.optA : currentScenario.optB;
                   return (
                     <button 
                       key={key} 
-                      onClick={() => submitChoice(key)} 
+                      onClick={() => submitChoice(key)}
+                      aria-label={`Option ${idx + 1} of ${randomOrder.length}: ${text}`}
                       className="p-5 sm:p-6 bg-slate-900/80 border-2 border-slate-800 hover:border-blue-500/50 rounded-2xl text-left flex items-start gap-4 transition-all group active:scale-[0.98] touch-manipulation"
                     >
-                      <div className="shrink-0 mt-0.5 sm:mt-1 w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center font-black group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                      <div aria-hidden="true" className="shrink-0 mt-0.5 sm:mt-1 w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 text-blue-500 flex items-center justify-center font-black group-hover:bg-blue-600 group-hover:text-white transition-colors">
                         {idx + 1}
                       </div>
-                      <p className="text-slate-300 font-medium text-sm sm:text-base leading-relaxed flex-1">{text}</p>
+                      <p aria-hidden="true" className="text-slate-300 font-medium text-sm sm:text-base leading-relaxed flex-1">{text}</p>
                     </button>
                   );
                 })}
@@ -464,9 +496,13 @@ export default function App() {
         )}
 
         {gameState === 'RESULT' && (
-          <div className="absolute inset-0 flex flex-col items-center p-4 sm:p-6 bg-black/60 backdrop-blur-md overflow-y-auto overscroll-contain">
+          <div
+            ref={resultRef}
+            tabIndex={-1}
+            className="absolute inset-0 flex flex-col items-center p-4 sm:p-6 bg-black/60 backdrop-blur-md overflow-y-auto overscroll-contain focus:outline-none"
+          >
             <div className="max-w-xl w-full bg-slate-900/95 rounded-[3rem] p-6 sm:p-10 border border-slate-700 shadow-2xl text-center my-8 pb-12">
-              <div className={`mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center ${feedback.s ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}`}>
+              <div aria-hidden="true" className={`mx-auto mb-6 w-20 h-20 rounded-full flex items-center justify-center ${feedback.s ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30' : 'bg-rose-500/10 text-rose-400 border border-rose-500/30'}`}>
                 {feedback.s ? <ShieldCheck size={40} /> : <AlertTriangle size={40} />}
               </div>
               
@@ -484,7 +520,7 @@ export default function App() {
                 onClick={() => setGameState('FLYING')} 
                 className="w-full py-5 bg-slate-800 hover:bg-slate-700 rounded-2xl font-bold flex items-center justify-center gap-3 transition-colors uppercase tracking-widest text-sm touch-manipulation"
               >
-                Resume Navigation <ArrowRight size={18} />
+                Resume Navigation <ArrowRight aria-hidden="true" size={18} />
               </button>
             </div>
           </div>
@@ -507,7 +543,7 @@ function EMDRTrack() {
   
   const x = 50 + 40 * Math.sin(prog * 0.15);
   return (
-    <div className="relative h-16 w-full bg-black rounded-[2rem] border border-slate-800 overflow-hidden shadow-inner flex items-center">
+    <div aria-hidden="true" className="relative h-16 w-full bg-black rounded-[2rem] border border-slate-800 overflow-hidden shadow-inner flex items-center">
       <div 
         className="absolute w-10 h-10 bg-blue-500 rounded-full shadow-[0_0_35px_rgba(59,130,246,0.9)] border-4 border-white/10 transition-all duration-40" 
         style={{ left: `calc(${x}% - 20px)` }} 
