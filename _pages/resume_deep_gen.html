@@ -5,19 +5,234 @@ permalink: /resume_deep_gen
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-H3BZXXT97Y"></script>
-    <script>
-      window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
-      gtag('js', new Date());
-
-      gtag('config', 'G-H3BZXXT97Y');
-    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ron Jailall - Resume</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: {
+                            850: '#1e293b',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        @media print {
+            @page {
+                margin: 0.5in;
+                size: auto; 
+            }
+            body {
+                background-color: white;
+            }
+            .print-hidden {
+                display: none !important;
+            }
+            .page-break-avoid {
+                break-inside: avoid;
+                page-break-inside: avoid;
+            }
+            .resume-container {
+                box-shadow: none !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            /* Ensure links are readable but don't look like blueprints */
+            a {
+                color: #1a202c !important; /* gray-900 */
+                text-decoration: none !important;
+            }
+        }
+    </style>
 </head>
-<body>
+<body class="bg-gray-100 font-sans text-gray-800 antialiased py-10 print:py-0 print:bg-white">
+
+    <!-- Instructions Banner (Hidden when printing) -->
+    <div class="print-hidden max-w-[8.5in] mx-auto mb-6 bg-blue-50 border-l-4 border-blue-500 p-4 shadow-sm">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-blue-400" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    <strong>To Save as PDF:</strong> Press <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Ctrl + P</code> (Windows) or <code class="bg-blue-100 px-1 py-0.5 rounded text-blue-900 font-mono">Cmd + P</code> (Mac).
+                    <br>Select <strong>"Save as PDF"</strong> as the destination. This blue box will disappear automatically in the PDF.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resume Container -->
+    <div class="resume-container max-w-[8.5in] mx-auto bg-white p-8 md:p-12 shadow-xl print:shadow-none print:p-0">
+        
+        <!-- Header -->
+        <header class="border-b-2 border-gray-800 pb-6 mb-6">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-end">
+                <div>
+                    <h1 class="text-4xl font-bold text-gray-900 tracking-tight uppercase">Ron Jailall</h1>
+                    <h2 class="text-xl font-semibold text-gray-600 mt-1">Applied Research Engineer</h2>
+                </div>
+                <div class="mt-4 md:mt-0 text-left md:text-right text-sm text-gray-600 leading-relaxed">
+                    <p>Raleigh, NC | (608) 332-8605</p>
+                    <p><a href="mailto:rojailal@gmail.com" class="hover:text-blue-600 transition">rojailal@gmail.com</a></p>
+                    <p><a href="https://ironj.github.io/" target="_blank" class="hover:text-blue-600 transition font-medium text-blue-600">https://ironj.github.io/</a></p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Professional Profile -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Profile</h3>
+            <p class="text-gray-700 leading-relaxed text-sm text-justify">
+                Engineer with 15+ years of experience bridging the gap between unsolved challenges and high-impact industry applications. Expert in Volumetric World Models (Gaussian Splatting), Generative Media, and Efficient Inference. Proven ability to thrive in ambiguity, rapidly prototyping novel solutions for Video Understanding and Multimodal AI while optimizing for deployment on resource-constrained hardware. Deeply experienced in the full ML lifecycle—from dataset curation and model training to performance optimization and production.
+            </p>
+        </section>
+
+        <!-- Core Competencies -->
+        <section class="mb-6 page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Core Competencies</h3>
+            <div class="grid grid-cols-1 gap-y-2 text-sm">
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Generative & Volumetric AI:</span>
+                    <span class="text-gray-700">Diffusion Models, Gaussian Splatting (3D World Representations), NeRF concepts, Video Generation pipelines.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Multimodal Understanding:</span>
+                    <span class="text-gray-700">Vision Language Models (VLMs), Video Neural Search, Audio-Visual alignment, RAG pipelines.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Model Optimization:</span>
+                    <span class="text-gray-700">Efficient Inference (TensorRT, ONNX, CoreML), Quantization, Knowledge Distillation, MobileNet/Edge architectures.</span>
+                </div>
+                <div class="flex flex-col sm:flex-row">
+                    <span class="font-bold text-gray-900 w-48 shrink-0">Frameworks & Engineering:</span>
+                    <span class="text-gray-700">TensorFlow 2, PyTorch, JAX concepts, Python, C++, CUDA, Metal Shading Language.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Research & Technical Highlights -->
+        <section class="mb-6 page-break-avoid bg-gray-50 border border-gray-200 rounded p-4 print:border-l-4 print:border-r-0 print:border-t-0 print:border-b-0 print:border-gray-300 print:bg-white print:pl-4 print:p-0 print:rounded-none">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider mb-3">Research & Technical Highlights</h3>
+            
+            <div class="mb-4">
+                <div class="flex justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-800 text-sm">Volumetric World Representation & Physics Simulation (VisionOS Project)</h4>
+                </div>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Physics-Aware World Modeling:</strong> Designed and implemented a volumetric renderer on VisionOS that assigns physical properties ("jiggle physics") to learned 3D Gaussian representations.</li>
+                    <li><strong class="text-gray-900">Research Application:</strong> Demonstrated core World Model principles by enabling static 3D reconstructions to react dynamically to environmental stimuli, simulating cause-and-effect within a learned volumetric space.</li>
+                    <li><strong class="text-gray-900">Efficient Inference:</strong> Optimized the rendering pipeline using custom Metal compute shaders to achieve real-time performance on mobile hardware, validating the feasibility of interactive volumetric video.</li>
+                </ul>
+            </div>
+
+            <div class="mb-4">
+                <div class="flex justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-800 text-sm">End-to-End Generative Media Pipeline (Matte Model)</h4>
+                </div>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Dataset Curation to Deployment:</strong> Managed the full lifecycle of a human matting research project. Curated and augmented the P3M-10k dataset to improve robustness against diverse lighting conditions.</li>
+                    <li><strong class="text-gray-900">Model Training & Architecture:</strong> Trained a custom MobileNetV2-based architecture using TensorFlow 2, optimizing the backbone for CPU-efficient video processing.</li>
+                    <li><strong class="text-gray-900">Performance Optimization:</strong> Engineered the inference pipeline to run locally on consumer hardware via ONNX Runtime, replacing heavy cloud-dependent SDKs with a low-latency edge solution.</li>
+                </ul>
+            </div>
+
+            <div>
+                <div class="flex justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-800 text-sm">Video Understanding & Diffusion</h4>
+                </div>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Controlled Media Generation:</strong> Accelerated Stable Diffusion models for real-time thumbnail generation and webcam re-rendering pipelines, reducing latency for live interactive video applications.</li>
+                    <li><strong class="text-gray-900">Video Neural Search:</strong> Prototyped neural search algorithms for massive video archives at Sonic Foundry, utilizing segmentation and classification models to enable semantic understanding of unstructured video data.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Professional Experience -->
+        <section class="mb-6">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-4 pb-1">Professional Experience</h3>
+
+            <!-- Job 1 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">ML Engineering Consultant / Applied Research Engineer</h4>
+                    <span class="text-gray-600 text-sm font-medium">2024 – Present</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Executing applied research and prototyping for diverse clients in GenAI and Computer Vision.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Prototyping in Ambiguity:</strong> Rapidly validated and iterated on novel AI architectures, including high-speed agentic workflows (>1000 tokens/s) that require dynamic replanning and context management.</li>
+                    <li><strong class="text-gray-900">Multimodal Evaluations:</strong> Authored technical research on On-Device VLMs, evaluating the trade-offs between model size, quantization accuracy, and memory bandwidth for multimodal understanding on edge devices.</li>
+                    <li><strong class="text-gray-900">Hardware Optimization:</strong> Optimized Computer Vision models for Nvidia Jetson platforms using TensorRT, enabling real-time multi-view tracking and sensor fusion in resource-constrained environments.</li>
+                </ul>
+            </div>
+
+            <!-- Job 2 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer, AI R&D</h4>
+                    <span class="text-gray-600 text-sm font-medium">2023 – 2024</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Vidable.ai | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Led the R&D function, evaluating and implementing cutting-edge Generative Media models.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Applied Research:</strong> Collaborated with PhD researchers to evaluate emerging Diffusion Models and LLMs, translating theoretical advancements into functional product prototypes.</li>
+                    <li><strong class="text-gray-900">Model Optimization:</strong> Modified C/C++ inference engines (llama.cpp, Stable Diffusion Turbo) to run efficiently on varied hardware targets, enabling cost-effective scaling of generative features.</li>
+                    <li><strong class="text-gray-900">Cross-Functional Collaboration:</strong> Worked closely with product and engineering teams to define "success" for ambiguous AI features, establishing evaluation metrics for prompt engineering and model performance.</li>
+                </ul>
+            </div>
+
+            <!-- Job 3 -->
+            <div class="mb-5 page-break-avoid">
+                <div class="flex flex-col sm:flex-row justify-between items-baseline mb-1">
+                    <h4 class="font-bold text-gray-900 text-base">Lead Engineer</h4>
+                    <span class="text-gray-600 text-sm font-medium">2014 – 2023</span>
+                </div>
+                <div class="text-xs text-gray-500 uppercase tracking-wide font-semibold mb-2">Sonic Foundry | Remote</div>
+                <p class="text-sm text-gray-700 mb-2 italic">Engineering leadership focused on large-scale video processing and data pipelines.</p>
+                <ul class="list-disc list-outside ml-4 text-sm text-gray-700 space-y-1">
+                    <li><strong class="text-gray-900">Video at Scale:</strong> Architected data pipelines serving the company's largest enterprise customers, handling massive volumes of audio-visual data.</li>
+                    <li><strong class="text-gray-900">Innovation:</strong> Founded the company's internal AI reading group to explore early applications of Deep Learning in video, fostering a culture of research and experimentation.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Education -->
+        <section class="page-break-avoid">
+            <h3 class="text-sm font-bold text-gray-900 uppercase tracking-wider border-b border-gray-300 mb-3 pb-1">Education & Certifications</h3>
+            <div class="text-sm text-gray-700 space-y-2">
+                <div>
+                    <span class="font-bold text-gray-900">NC State University</span> | Electrical & Computer Engineering (75 Credit Hours)
+                </div>
+                <div>
+                    <span class="font-bold text-gray-900 block mb-1">Coursera Verified Certificates:</span>
+                    <ul class="list-disc list-outside ml-4 space-y-1">
+                        <li>Neural Networks for Machine Learning (Geoffrey Hinton) | <span class="text-gray-600 font-mono text-xs">ID: 3MJACUGZ4LMA</span></li>
+                        <li>Image and Video Processing | <span class="text-gray-600 font-mono text-xs">ID: E9JX646TTS</span></li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+    </div>
+
 </body>
 </html>
