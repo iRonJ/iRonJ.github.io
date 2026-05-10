@@ -5,7 +5,7 @@ author: ron
 categories: [ profession, AI ]
 image: assets/images/ai-engineering-header.png
 description: "AI isn't just changing how we write code — it's forcing us to rediscover why we became engineers in the first place."
-featured: true
+featured: false
 hidden: false
 tags: []
 ---
